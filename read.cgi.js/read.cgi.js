@@ -7,6 +7,22 @@ var speech;
 var speechUtt;
 var pm = getUrlVars();
 
+//スレ主コマンド用
+$(function(){
+
+	$(".admin_command").change(function(){
+		$("#MESSAGE").val(
+			$("#MESSAGE").val() + $(".admin_command option:selected").val()
+		);
+
+		$("#MESSAGE").focus();
+
+	});
+
+
+})
+
+
 //動画右上再生機能(PC用)
 $(function(){
 
@@ -2027,6 +2043,8 @@ function submit_form(){
 				$('#MESSAGE').val("");
 				$('#oekakiData').val("");
 				$("#parent_pid").val("");
+
+				$(".admin_command").val("");
 
 			console.log("submit-func");
 			is_textarea_focus = 0;
