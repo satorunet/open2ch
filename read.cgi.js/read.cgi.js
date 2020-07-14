@@ -1,4 +1,3 @@
-
 /* 入力中は自動更新を一時停止 */
 var is_update_que = 0;
 /*
@@ -21,7 +20,7 @@ function moveToBottom(target){
 }
 
 function moveToMiddle(target,_speed){
-	var speed = _speed ? _speed : 400;
+	var speed = _speed ? parseInt(_speed) : 400;
 	var position = target.offset().top - (window.innerHeight/2) + (target.height()/2);
 	$('body,html').animate({scrollTop:position}, speed, 'linear');
 }
@@ -29,12 +28,15 @@ function moveToMiddle(target,_speed){
 
 $(function(){
 
-	$("#gotoNewRes")
-	.css("color","lightblue")
-	.click(function(e){
+	//アラート自体をおせるように。
+	$("#new_alert")
+	.bind("click",function(e){
 		e.preventDefault();
 		moveToMiddle($("#new_res_end"));
-	})
+	});
+
+
+	$("#gotoNewRes").css("color","lightblue");
 
 	$("#get_newres_button").click(function(e){
 		e.preventDefault();
@@ -984,6 +986,10 @@ function update_res(flag){
 		},2000);
 	}
 
+
+	local_resnum = server_resnum;
+	nodejs_set_resnum(local_resnum);
+
 	$.ajax({
 		type: "GET",
 		url    : "/ajax/get_res.v7.cgi/" + bbs + "/" + key + "/",
@@ -991,11 +997,14 @@ function update_res(flag){
 		cache  : true,
 		success: function(res){
 
+
 			if(res.match(/success/)){
 				//update時に最新情報を同時に取得
 				var html = (res.split(""))[1];
-				local_resnum = (res.split(""))[2];
-				nodejs_set_resnum(local_resnum);
+				
+				
+				//local_resnum = (res.split(""))[2];
+				//nodejs_set_resnum(local_resnum);
 
 				$(html).find("a").filter(function(){
 					if( m = $(this).html().match(/^&gt;&gt;(\d+)$/) ){
@@ -1110,8 +1119,29 @@ function setSureTotalConter(count){
 	$(".sureTotal").html( count);
 }
 
+$(function(){
 
+	$("#retry_button").live("click",function(e){
+		socket = io.connect('http://nodejs.open2ch.net:80');
+		$(this).attr("disabled",true);
+
+		setTimeout(function(){
+			if(onConnect_nodejs == 0){
+				alert("接続できません。時間を空けてから再度ためしてみてください。");
+				$("#retry_button").removeAttr("disabled");
+			}
+		},1000);
+
+	});
+
+});
+
+
+
+var retry = 0;
+var onConnect_nodejs = 0;
 function nodejs_connect(){
+
 
 	"use strict";
 	socket = io.connect('http://nodejs.open2ch.net:80');
@@ -1119,11 +1149,52 @@ function nodejs_connect(){
 	socket.on('error', function(reason) {
 		socket.disconnect();
 		io.sockets = [];
+
+		//alert("error");
 		//startOldTypeUpdateChecker();
 		//$("body").append("<img src='http://hoge.open2ch.net/nodejs-status/error.png?"+reason+"' width=1 height=1>");
 	});
 
+
+	socket.on('disconnect',function(){
+		onConnect_nodejs = 0;
+		console.log("disconnect");
+		console.log(socket);
+/*
+		if(!$("#disconnect").is(":visible")){
+
+			$("body").append(
+					"<div id=disconnect align=center>" + 
+					"<font color=red>ページがオフラインになりました。</font><br>" + 
+					"<input id='retry_button' type=button value='自動新着通知を再開する'>"+
+					"</div>"
+			);
+
+			$("#disconnect").css({
+			"z-index" : "1000",
+			"border-bottom": "1px solid #97bf60",
+			"background": "#ffeeee",
+			"position": "fixed",
+			"width":"100%",
+			"top":"0px",
+			"left":"0px"
+			});
+		}
+*/
+	});
+
 	socket.on('connect',function(){
+		onConnect_nodejs = 1;
+
+		if($("#disconnect").is(":visible")){
+			$(this).fadeOut("fast",function(){ 
+				$("#disconnect").remove();
+			});
+		}
+		
+		console.log("connect");
+		console.log(socket);
+
 		socket.emit('set', bbs,key,local_resnum);
 	});
 
