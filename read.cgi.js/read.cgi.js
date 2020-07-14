@@ -1,5 +1,6 @@
 //var NODEJS = "http://nodejs.open2ch.net:8880";
-var NODEJS = "https://nodessl.open2ch.net:8443";
+var NODEJS = "https://nodessl.open2ch.net:2053";
+//'https://nodessl.open2ch.net:8443'
 
 var speech;
 var speechUtt;
@@ -1510,7 +1511,7 @@ function nodejs_connect(){
 
 
 	"use strict";
-	socket = io.connect('https://nodessl.open2ch.net:8443',{
+	socket = io.connect(NODEJS,{
 		'max reconnection attempts' : max_socket_reconnects
 		}
 	);
