@@ -2256,24 +2256,22 @@ function update_res(flag){
 
 			if(res.match(/success/)){
 				/* update時に最新情報を同時に取得 */
+
 				var html = (res.split(""))[1];
+
+
+
 				var already = {};
 
 				$(html).find("a").filter(function(){
 					if( m = $(this).html().match(/^&gt;&gt;(\d+)$/) ){
 						var resnum = m[1];
-					
-
 						if(!already[resnum]){
-
 							if( ! $("ares[num="+resnum+"]").find(".aresdiv").length ){
 									var ares = '<div class="aresdiv">'+
-									'<span class="aresspan">'+
-									'<font size=2>'+
-									'<a class="aresa" val="'+resnum+'" href="#" >' +
-									'<img class="aresicon" width=12 height=12 src="//open.open2ch.net/image/icon/ank.svg"><count></count>件</a></font>' +
-									'</span>' +
-									'</div>';
+									'<span class="aresspan"><font size=2><a class="aresa" val="'+resnum+'" href="#" >' +
+									'<img class="aresicon" width=12 height=12 src="//open.open2ch.net/image/icon/ank.svg">' + 
+									'<count></count>件</a></font></span></div>';
 									$("ares[num="+resnum+"]").append(ares);
 							}
 
@@ -2291,49 +2289,30 @@ function update_res(flag){
 							}
 
 							already[resnum]=1;
-
 						}
-
-
-
 					}
 				})
-
-
-/*
-<ares num="1">
-<div class="aresdiv">
-<span class="aresspan">
-<font size=2>
-<a val="1" href="#" >
-<img width=12 height=12 src="//open.open2ch.net/image/icon/ank.svg"> <count>$ank{1}{num}</count>件</a></font>
-</span>
-</div>
-</ares>
-*/
-
-
-
-	if( $("#use_autoaudio").prop("checked") ){
-		html = html.replace('class="audio"','class="audio new_audio"');
-	}
+	if( $("#use_autoaudio").prop("checked") ){ html = html.replace('class="audio"','class="audio new_audio"'); }
 
 	html = html.replace(/class="pic lazy oekaki"/g,'class="openpic hide"');
 	html = html.replace(/class="pic lazy imgur"/g,'class="imgurpic"');
 	html = html.replace(/class="iyoutube"/g,'class="youtubeiframe"');
 
+
 	if(pageMode == "sp"){
 		html = html.replace(/名無しさん＠おーぷん/g,'名無し');
-		html = html.replace(/<br><\/dd>/g,'</dd>');
-
-		var html = html.split("<sp />").map(function(e){
-			return "<section><li>" + e + "</li></section>";
-		}).join("\n");
 	}
 
-				html = "<dl class=hide>"+html+"</dl>";
+	var htmls = html.split("<sp />").map(function(e){
+		if(pageMode == "sp"){
+			var _html = "<li><dl class=hide><section>" + e + "</section></dl></li>";
+			$(".thread").append(_html);
+		} else { /* PC */
+			var _html = "<dl class=hide>" + e + "</dl>";
+			$(".thread").append(_html);
+		}
+	});
 
-				$(".thread").append(html);
 
 
 	if(html.match(/imgurpic/)){
@@ -2352,8 +2331,6 @@ function update_res(flag){
 
 		})
 	}
-
-
 
 	if(html.match(/openpic/)){
 		$(".openpic").after("<div class=grid><img src=https://image.open2ch.net/image/icon/svg/loading.v2.svg width=100 height=100></div>");
