@@ -1,5 +1,28 @@
 //新着レス関連
+function moveToBottom(target){
+	var speed = 400;
+	var position = target.offset().top - (window.innerHeight) + target.height();
+	$('body,html').animate({scrollTop:position}, speed, 'swing');
+}
+
+function moveToMiddle(target,_speed){
+	var speed = _speed ? _speed : 400;
+	var position = target.offset().top - (window.innerHeight/2);
+	$('body,html').animate({scrollTop:position}, speed, 'swing');
+}
+
+
 $(function(){
+
+	$("#gotoNewRes")
+	.css("color","lightblue")
+	.click(function(e){
+		e.preventDefault();
+		moveToMiddle($("#new_res_end"));
+	})
+
+
+
 
 	$("#get_newres_button").click(function(e){
 		e.preventDefault();
@@ -522,6 +545,18 @@ $(document).ready(function() {
 
 	});
 
+
+
+	$("#auto_scroll").change(function(){
+		setCookie("auto_scroll", $(this).is(':checked') ? "1" : "0");
+	});
+
+
+	$("#new_alert_hide").change(function(){
+		setCookie("new_alert_hide", $(this).is(':checked') ? "1" : "0");
+	});
+
+
 	$("#ajaxSubmit").change(function(){
 		setCookie("submitMode", $(this).is(':checked') ? "1" : "0");
 	});
@@ -909,11 +944,13 @@ function update_res(){
 		$("#get_newres_button").slideUp("fast");
 	}
 
-	setTimeout(function(){
-		$('#new_alert').slideUp("fast");
-	},500);
-
-	if($)
+	if($('#autoOpen').is(':checked')){
+		setTimeout(function(){
+			$('#new_alert').fadeOut("slow");
+		},2000);
+	} else {
+		$('#new_alert').fadeOut("fast");
+	}
 
 	$.ajax({
 		type: "GET",
@@ -957,12 +994,15 @@ function update_res(){
 
 				if(pageMode == "sp"){
 					$(".thread").append("<section><li>" + html + "</li></section>");
-					$(".thread").find("dl:hidden").slideDown("fast");
-
 				} else {
 					$(".thread").append(html);
-					$(".thread").find("dl:hidden").slideDown("slow");
 				}
+
+				$(".thread").find("dl:hidden").slideDown("slow",function(){
+					if($("#auto_scroll").is(":checked") && $("[name=MESSAGE]").is(":focus") == false){
+						moveToMiddle($("#new_res_end"),1000);
+					}
+				});
 
 				
 
@@ -992,7 +1032,10 @@ function call_update_alert(_server_updated,_server_resnum){
 
 		if( diff > 0 ){ // 更新アリ
 
-			$('#new_alert').slideDown('fast');
+			if(!$("#new_alert_hide").is(":checked")){
+				$('#new_alert').fadeIn('fast');
+			}
+
 
 
 			$('#now_max').html(diff);
