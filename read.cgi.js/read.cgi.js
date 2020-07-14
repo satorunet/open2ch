@@ -3321,7 +3321,10 @@ $(function(){
 
 	$(document).on("click",".iok",function(){
 		var id = $(this).parent().attr("vid");
+		    id = id.replace(/\./g,"");
 		ignores_array.unshift(id);
+
+		console.log(ignores_array);
 
 		if(ignores_array.length > IGNORE_MAX){
 			ignores_array.length = IGNORE_MAX;
