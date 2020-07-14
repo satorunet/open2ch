@@ -9,6 +9,262 @@ $(function(){
 })
 
 
+/* プレビューモード */
+
+
+function aaa_core(_this){
+
+		function updateSource(){
+			var text = new String($("[name=MESSAGE]").val());
+			    text = text.replace(/@aaa/i,"@AAA");
+
+			var n = new String(text).indexOf("@AAA");
+			var aa = text.substring(n,text.length);
+
+			var _speed = aa.match(/@aaa:([\d\.]+)/i);
+			var speed = 0.25;
+
+			if(_speed){
+				speed = _speed[1];
+			}
+
+			if(speed < 0.05){
+				speed = 0.05;
+			} else if(speed > 10){
+				speed = 10;
+			}
+
+			aa = aa.replace(/@aaa(?::[\d\.]+|)/gi,"");
+			aa = aa.replace(/^\n+|\n+$/,"");
+
+			var aaa = $(aa.split("@@@")).map(function(i,a){
+				a = a.replace(/^\n+/,"");
+				return a;
+			});
+
+			return [aa,aaa,speed]
+		}
+
+		var r = updateSource();
+
+		var aa = r[0];
+		var aaa = r[1];
+		var speed = r[2];
+
+		var max = aaa.length;
+		var count = 0;
+
+		var preview = $(
+			"<div key="+key+" class='aaa_div'>"+
+			"<div class='aaa_view aa'></div>"+
+			"<div class='aaa_thumb aaa aa'></div>" +
+			"</div>"
+		);
+
+		preview.find(".aaa_thumb").text(aaa[0]).css({"opacity":0});;
+		preview.find(".aaa_view").text(aaa[0]).css({"opacity":1});;
+
+		preview.bind("start",function(){
+
+			if($(_this).hasClass("stop_aaa")){
+				return;
+			}
+
+			$(_this).addClass("playing_aaa");
+
+			var timerID = setInterval(function(){
+						if(max>count){
+							count++
+						} else {
+							count = 0;
+						}
+				preview.find(".aaa_view").text(aaa[count]);
+			},(1000*speed));
+
+			$(_this).prop("timer",timerID);
+
+		}).trigger("start");
+
+ $(preview).on('inview', function(event, isInView){
+
+    if (isInView && !SETTING["aaa_view"] && !$(_this).hasClass("playing_aaa")){
+    	$(_this).trigger("start");
+    }
+
+    if (!isInView && $(_this).hasClass("playing_aaa")){
+    	$(_this).trigger("stop");
+    }
+  });		
+
+		preview.bind("stop",function(){
+			clearInterval($(_this).prop("timer"));
+			$(_this).removeClass("playing_aaa");
+		});
+
+		preview.bind("click",function(){
+			if($(_this).hasClass("playing_aaa")){
+				$(_this).addClass("stop_aaa"); //任意停止フラグ
+				$(_this).trigger("stop");
+			} else {
+				$(_this).removeClass("stop_aaa");
+				$(_this).trigger("start");
+			}
+		})
+
+		$(_this).contents().wrapAll("<div class=aaa_hide></div>");
+
+/*
+		$(_this).parents(".aaa_box").find(".aaa_hide")
+			.before(preview)
+			.hide();
+*/
+
+		$(".aaa_preview_window").find(".aaa_div").remove();
+
+
+		$(".aaa_preview_window").append(preview);
+
+		$(_this).parents(".aaa_box").append($(_this));
+
+		$(".aaa_box").attr("draggable","true");
+
+}
+
+
+$(function(){
+
+
+
+	$(document).on("click",".aaa_preview_bt",function(e){
+
+		console.log("unko");
+
+		console.log("!aa\n"+body);
+
+		e.preventDefault();
+
+	});
+
+	$("body").append(
+		"<style>" + 
+			".aaa_preview_window{cursor:pointer;user-select: none;position:fixed;text-align:left;display:inline-block;padding:5px;background:#F8F8F8;;box-shadow: 0 1px 1px rgba(0,0,0,0.2), 0 -2px 3px -1px #f5f5f5 inset; transition: .3s;}" + 
+			".preview_box{background:#eee}"+ 
+		"</style>"
+	);
+
+
+	$("body").bind("SUBMIT_SEND_PRE_START",function(){
+		$(".live_aaa_preview").prop("checked",false).trigger("change");
+
+	});
+
+	
+	$(document).on("click",".preview_close",function(e){
+		$(".live_aaa_preview").prop("checked",false).trigger("change");
+	
+	});
+
+
+	$(document).on("change",".live_aaa_preview",function(e){
+		if($(this).is(":checked")){
+
+			$(".aaa_preview_window").show();
+
+			handle_preview();
+			setPreviewPosition();
+
+		} else {
+			$(".aaa_preview_window").contents().remove();
+			$(".aaa_preview_window").append($("<div><input class=preview_close type=button value='×'></div><div class=aaa_box></div>")).hide();
+		}
+	})
+
+
+	function setPreviewPosition(){
+			if(isSmartPhone == 1){
+				$(".aaa_preview_window").css("top",$(".live_aaa_preview").position().top - $(window).scrollTop())
+				$(".aaa_preview_window").css("right","10px");
+			} else {
+				$(".aaa_preview_window").css("top",$(".live_aaa_preview").position().top - $(window).scrollTop() + $(".live_aaa_preview").height())
+				$(".aaa_preview_window").css("left",$(".aaa_preview_window").width() + 50)
+			}
+	}
+
+	$("[name=MESSAGE]").bind("change paste keydown keyup",function(){
+
+		if(
+				$(".aa").is(":checked") &&
+				$(this).val().match(/@AAA/i) && 
+				!$(this).hasClass("onAAAPreview")
+			){
+			$(this).addClass("onAAAPreview");
+
+			$(".form_menu").append(
+				"<div class='aaa_preview_div'><label><input checked class=live_aaa_preview type=checkbox value='on'>＠AAAぷれびゅー</label></div>"
+			);
+			$("body").append("<div class=aaa_preview_window draggable=true><div><input class=preview_close type=button value='×'></div><div class=aaa_box></div></div>");
+			$(".live_aaa_preview").trigger("change");
+		}
+
+		if($(".aa").is(":checked") && $(this).val().match(/@AAA/i) && $(".live_aaa_preview").is(":checked")){
+			$(".live_aaa_preview").trigger("change")
+		}
+
+		if( $(this).hasClass("onAAAPreview") && !$(this).val().match(/@AAA/i)){
+			$(this).removeClass("onAAAPreview");
+			$(".aaa_preview,.aaa_preview_div,.aaa_preview_window").remove();
+		}
+	});
+
+	$(document).on("dragend",".aaa_preview_window",function(e){
+
+		var toX = e.originalEvent.clientX - parseInt($(this).prop("dragX"));
+		var toY = e.originalEvent.clientY;
+
+		var ytLimit = 0;
+		var ybLimit = parseInt($(window).height() - $(".aaa_preview_window").height());
+		var xrLimit = parseInt($(window).width() - $(".aaa_preview_window").width());
+
+		//限界調整
+		if(toY < ytLimit ){ //上
+			toY = ytLimit;
+		} else if(toY > ybLimit ){ //下
+			toY = ybLimit;
+		}
+
+		if(toX < 0){ //左
+			toX = 0;
+		} else if(toX > xrLimit){ //右
+			toX = xrLimit;
+		}
+
+		$(".debug").html("x:" + toX + "/y:" + toY + ":wt:" + ytLimit + "/yb:" + ybLimit + "<br>xr:" + xrLimit);
+
+
+		$(".aaa_preview_window").css({
+			left: toX,
+			top: toY,
+			"transform":"",
+		})
+
+	});
+
+	$(document).on("dragstart touchstart",".aaa_preview_window",function(e){
+
+		$(this).prop({
+			"dragX":e.originalEvent.offsetX,
+			"dragY":e.originalEvent.offsetY,
+			})
+	});
+
+
+})
+
+function handle_preview(){
+	$(".aaa_box").text($("[name=MESSAGE]").val());
+	aaa_core($(".aaa_box"));
+}
+
 /* 長文コラボ機能 */
 $(function(){
 
@@ -495,7 +751,7 @@ $(function(){
 	if(SETTING["aa_mode"] == "off"){
 		return;
 	} else {
-		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v6.css?20200128_v1" type="text/css"  />');
+		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v6.css?20200128_xxxx" type="text/css"  />');
 	}
 
 	AA_filter($("body"))
@@ -504,7 +760,7 @@ $(function(){
 	$("body").append("<style>" + 
 	".aaa_div{display:inline-block;cursor:pointer}"+
 	".aaa{position:relative}" + 
-	".aaa_view{position:absolute;opacity:0}"+
+	".aaa_view{position:absolute}"+
 	".playing_aaa{;}" +
 	".over_aaa{background:#dddddd}" +
 	".aaa_hide{display:none;background:#ddd}"+
@@ -575,28 +831,30 @@ function AA_filter(_this){
 		var no_aa = text.substring(0,n);
 		var aa = text.substring(n,text.length);
 
-		var _speed = aa.match(/\@aaa:([\d\.]+)/);
+
+
+		var _speed = aa.match(/@aaa:([\d\.]+)/i);
 		var speed = 0.25;
 
 		if(_speed){
 			speed = _speed[1];
 		}
 
-		if(speed < 0.01){
-			speed = 0.01;
+		if(speed < 0.05){
+			speed = 0.05;
 		} else if(speed > 10){
 			speed = 10;
 		}
 
-		    aa = aa.replace(/@aaa(?::[\d\.]+|)/gi,"");
-		    aa = aa.replace(/^\n+|\n+$/,"");
+
+		aa = aa.replace(/@aaa(?::[\d\.]+|)/gi,"");
+		aa = aa.replace(/^\n+|\n+$/,"");
 
 
 		var aaa = $(aa.split("@@@")).map(function(i,a){
 			a = a.replace(/^\n+/,"");
 			return a;
 		});
-
 
 		var max = aaa.length;
 		var count = 0;
@@ -609,8 +867,10 @@ function AA_filter(_this){
 		);
 
 
-		preview.find(".aaa").text(aaa[0]);
-		preview.find(".aaa_view").text(aaa[0]);
+		preview.find(".aaa_thumb").text(aaa[0]).css({"opacity":0});;
+		preview.find(".aaa_view").text(aaa[0]).css({"opacity":1});;
+
+
 
 		preview.bind("start",function(){
 
@@ -620,8 +880,6 @@ function AA_filter(_this){
 
 			$(this).addClass("playing_aaa");
 
-			preview.find(".aaa_thumb").css("opacity",0);
-			preview.find(".aaa_view").css({"opacity":1});
 
 			var timerID = setInterval(function(_this){
 						if(max>count){
@@ -671,20 +929,21 @@ function AA_filter(_this){
 //		$(this).before(preview);
 
 
-		$(this).contents().wrap("<div class=aaa_hide></div>");
+		$(this).contents().wrapAll("<div class=aaa_hide></div>");
 
-		$(this).parents("li,dl").find(".aaa_hide")
+
+		$(this).parents("dl").find(".aaa_hide")
 			.before(preview)
 			.hide();
 
 		if(no_aa){
-			$(this).parents("li,dl").find(".aaa_div").before($("<div>"+no_aa+"</div>"))
+			$(this).parents("dl").find(".aaa_div").before($("<div>"+no_aa+"</div>"))
 		}
 
 
 		$(this).parents("dt").append($(this));
 
-		$(this).parents("li,dl").find("._aa")
+		$(this).parents("dl").find("._aa")
 			.text("@AAA");
 
 
@@ -934,7 +1193,7 @@ function setReverseMode(){
 			.after($(".yonda"))
 			.after("<hr class=reverseTemp>");
 
-		$(".yonda").wrap("<div class=reverseTemp align=center />");
+		$(".yonda").wrapAll("<div class=reverseTemp align=center />");
 	}
 
 	$(".thread").find(isSmartPhone == "1" ? "li" : "dl").each(function(){
@@ -4741,8 +5000,8 @@ function nodejs_connect(){
 
 		if($("#useAnka").is(":checked")){
 
-				$("[res="+_from+"]").parent().find(".body").contents().wrap("<span class=ankaFrom />");
-				$("[res="+_to+"]").parent().find(".body").contents().wrap("<span class=ankaTo />");
+				$("[res="+_from+"]").parent().find(".body").contents().wrapAll("<span class=ankaFrom />");
+				$("[res="+_to+"]").parent().find(".body").contents().wrapAll("<span class=ankaTo />");
 
 
 				console.log("visibke>>" + $(".ankaview_div").is(":visible"));
