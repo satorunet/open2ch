@@ -46,7 +46,10 @@ function speechLoop(){
 		if(isSmartPhone == 0){
 				var voices = speech.getVoices();
 				if(text.match(/^(?:[\u30A0-\u30FF]|[ｦ-ﾟ]|[0-9a-zA-Z０-９Ａ-Ｚａ-ｚ]|[>%=/\@;:\(\)\!\?,\.\-"']|[「」（）、。！？ー\s])+$/)){
-					voice = voices[5];
+				  voice = speechSynthesis.getVoices().find(function(voice){
+				    return voice.name === 'Google português do Brasil';
+				  });
+
 				} else {
 					voice = voices[0];
 				}	
