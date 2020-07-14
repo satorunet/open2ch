@@ -13,9 +13,10 @@ $(function(){
 		$("[name=MESSAGE]").bind("keyup change paste",function(){
 			var n = $(this).val().split("\n").length;
 			var to;
+			var min = isSmartPhone == 1 ? 3 : 4;
 
-			if(n < 4){
-				to = 4
+			if(n < min){
+				to = min
 			} else if(n > 20){
 				to = 20;
 			} else {
@@ -69,7 +70,7 @@ $(function(){
 	}
 })
 
-function resetReverseMode(){
+function resetReverseMode(){  //逆順戻す
 
 
 	$("#auto_scroll").prop({"checked":true,"disabled":false});
@@ -112,10 +113,16 @@ function setReverseMode(){
 		$(".form").css("padding-bottom","0px");
 		$(".formset").find("hr").remove();
 		$(".formset")
-			.append($("<div style='margin:5px;text-align:center;'><input class=yonda type=button value='ここまでよんだ'></div>"))
-			.append($(".history_res"));
+			.append($("<div style='margin:5px;text-align:right;'><input class=yonda type=button value='ここまでよんだ'></div>"))
+			.append($(".history_res"))
+			.append($("#new_alert_link"));
+
 	} else {
-		$(".formset").after($(".yonda")).after("<hr class=reverseTemp>");
+		$(".formset")
+			.after($("#new_alert_link"))
+			.after($(".yonda"))
+			.after("<hr class=reverseTemp>");
+
 		$(".yonda").wrap("<div class=reverseTemp align=center />");
 	}
 
@@ -2549,7 +2556,7 @@ function setFormKotei(flag){
 			$("#formdiv").show();
 		} else {
 
-			$(".formDivDefault").after("<p class=closeKoteiWindow_div><button class=closeKoteiWindow>別窓リセット</button></p>");
+//		$(".formDivDefault").after("<p class=closeKoteiWindow_div><button class=closeKoteiWindow>別窓リセット</button></p>");
 
 			$("#formdiv").prepend($(
 			"<div class=ddWindow style='border-radius:3px;font-size:0pt;background:#449;color:#007;padding:4px;cursor: move !important;'>"+
