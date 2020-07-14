@@ -29,10 +29,23 @@ $(function(){
 
 $(function(){
 
+		if(isSmartPhone !== 1){
+			$(document).on("mouseover",".uim",function(e){
+				$(this).after("<img class=uimo style='opacity:.9;position:absolute;width:150px' src="+$(this).attr("src") +">")
+				e.preventDefault();
+			});
+			$(document).on("mouseout",".uim",function(e){
+				$(".uimo").remove();
+			});
+		}
+
 		$("body").append(
 			"<style>" + 
-			".urlinfo{max-width:90%;font-size:10pt;color:#777;display:inline-block;padding:1px}" + 
-
+			".ufull{border:1px solid #ddd;padding:3px;background:#f5f5f5;border-radius:2px;margin:2px}"+
+			".urlinfo{max-width:"+(isSmartPhone ==1 ? "90%" : "600px")+";font-size:10pt;color:#777;display:inline-block;padding:1px}" + 
+			".uim{border-radius:3px;width:30px;height:30px;object-fit:cover;padding-right:2px}" + 
+			".ufullim{width:100px;height:100px;object-fit:cover;float:left;margin-right:5px;}" + 
+			".udetail{max-width:600px;margin-top:3px;user-select: none;-moz-user-select: none;-ms-user-select: none;line-height:12pt;font-size:"+(isSmartPhone==1?8:9)+"pt}"+
 			".ut{overflow: hidden;white-space: nowrap;text-overflow:ellipsis;}" + 
 			".utt{font-size:"+(isSmartPhone == 1 ? "7" : "9" )+"pt}" + 
 			".ns{user-select: none;-moz-user-select: none;-ms-user-select: none ; font-size:"+(isSmartPhone == 1 ? "9" : "11" )+"pt}" +
@@ -46,12 +59,6 @@ $(function(){
 		$(document).on("mouseout",".urlinfo",function(e){
 			$(this).find(".utt").css("text-decoration","none");
 		});
-
-/*
-		$(".url").each(function(){
-			url_info_handler($(this))
-		});
-*/
 
 		$(".url").on("inview",function(){
 			url_info_handler($(this))
@@ -72,7 +79,7 @@ function url_info_handler(_this){
 		}
 
 		var url = $(_this).text();
-		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v1/" + escape(url);
+		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v3/" + escape(url);
 
 		if(url.match(/(i\.img|imgur|png|jpg|mp4|gif)$/)){
 			return;
@@ -81,12 +88,37 @@ function url_info_handler(_this){
 		var xhr = $.get(json);
 		xhr.done(function(data){
 
-				$(_this).html(
-					"<div class=urlinfo>" + 
-					"<div class='ut ns'>"+data+"</div>" + 
-					"<div class='ut utt'><font color=blue>"+url+"</font></div>" + 
-					"</div>"
-				); 
+				var d = data.split("");
+				var text;
+
+				if(SETTING["url_view"] == "full"){
+
+					var details = d[2] ? d[2].split("") : [];
+					details.length = 80;
+					var detail = details.join("");
+
+					text = "<div><div class='urlinfo ufull'>" + 
+						(d[1] ? "<img class='lazy ns ufullim' src="+d[1]+">" : "")+ 
+						"<div class='ut ns'>" + (d[2] ? "<b>" : "") +d[0]+"</b></div>" + 
+						(d[2] ? "<div class='udetail'>"+detail+"</div>" : "") + 
+						"<div style='margin-top:10px' class='ut utt'><font color=blue>"+url+"</font></div>" + 
+						"</div></div>";
+					
+				} else {
+					text = "<div class=urlinfo>" + 
+						(d[1] && SETTING["url_view"] !== "text" ? "<div style='float:left'><img class='lazy uim ns' src="+d[1]+"></div>" : "")+ 
+						"<div class='ut ns'>" +
+
+						(SETTING["url_view"] == "text" ? "<font color=blue>" : "") +d[0]+"</font></div>" + 
+
+						((SETTING["url_view"] == "text" && d[0] !== "") ? "" : "<div class='ut utt'><font color=blue>"+url+"</font></div>") + 
+						"</div>";
+
+				}
+
+					$(_this).html(text);
+
+
 		});
 
 
@@ -2024,7 +2056,7 @@ function updateIgnore(){
 
 $(function(){
 	cachekey = "ignv3:"+bbs;
-	ignores_array = getStorage(cachekey) ? JSON.parse(getStorage(cachekey)) : new Array();
+	ignores_array = localStorage[cachekey] ? JSON.parse(getStorage(cachekey)) : new Array();
 
 	ignores_array.map(function(e){
 		ignores[e] = 1;
