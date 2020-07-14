@@ -291,6 +291,10 @@ $(function(){
 				$(".AnkaList").html("");
 			});
 			deleteAnk($(this).attr("val"),$(this).attr("time"));
+
+			$(".ankaFrom").removeClass("ankaFrom");
+			$(".ankaTo").removeClass("ankaTo");
+
 		})
 	});
 }());
@@ -3206,9 +3210,14 @@ function nodejs_connect(){
 
 		ankaLists.unshift(ank);
 
+
 		console.log("useAnka" + $("#useAnka").is(":checked"));
 
 		if($("#useAnka").is(":checked")){
+
+				$("[res="+_from+"]").next().addClass("ankaFrom");
+				$("[res="+_to+"]").next().addClass("ankaTo");
+
 
 				console.log("visibke>>" + $(".ankaview_div").is(":visible"));
 
