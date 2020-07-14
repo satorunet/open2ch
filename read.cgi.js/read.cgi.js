@@ -2392,6 +2392,7 @@ function nodejs_connect(){
 		socket.emit('set', bbs,key,local_resnum,getCookie("a"));
 	});
 
+
 	//u:updated
 	socket.on('u',function(_server_resnum){
 		call_update_alert(_server_resnum);
@@ -2408,6 +2409,7 @@ function nodejs_connect(){
 	});
 
 	//su:setCounterUpdate
+
 	socket.on('c',function(res){
 //		setSureTotalConter(count);
 		if(res["p"]){
@@ -2416,6 +2418,12 @@ function nodejs_connect(){
 		if(res["n"]){
 			setSureConter(res["n"]);
 		}
+
+		if(res["k"]){
+			updateKusa(res["k"]);
+		}
+
+
 	});
 
 	//ru:ratingUpdated
@@ -2424,10 +2432,18 @@ function nodejs_connect(){
 		updateRating(updated);
 	});
 
-
+	//sc:setKusa
+	socket.on('sk',function(count){
+		updateKusa(count);
+	});
 
 
 }
+
+function nodejs_pushKusa(){
+	socket.emit('sk', bbs,key,getCookie("a"));
+}
+
 
 function nodejs_set_resnum(_local_resnum){
 	//sr=SetResnum
