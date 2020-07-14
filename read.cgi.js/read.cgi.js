@@ -1,3 +1,62 @@
+/* */
+
+/*
+$(function(){
+	$("textarea").focus(function(){
+		if(!$("#formfix").is(":checked")){
+			$("#formdiv").css({
+				"bottom":"0",
+				"position":"fixed",
+				"backgroundColor":"#DDD",
+				"padding":"2px",
+				"border":"1pt dotted #999"
+			});
+			$(".social").hide();
+			$("#wCloseButtonDiv").show();
+		}
+	});
+
+
+	$("#wcloseButton").click(function(e){
+		e.preventDefault();
+
+		if(!$("#formfix").is(":checked")){
+
+			$("#formdiv").slideDown("slow",function(){
+				$("#wCloseButtonDiv").hide();
+				$("#formdiv").css({
+						"bottom":"",
+						"position":"",
+						"backgroundColor":"",
+						"padding":"",
+						"border":""
+				}).show();
+				$(".social").show();
+				$("#wCloseButtonDiv").hide();
+			});
+
+		}
+	});
+
+	$("#submit_button").click(function(){
+		if(!$("#formfix").is(":checked")){
+
+			$("#formdiv").slideDown("slow",function(){
+				$("#wCloseButtonDiv").hide();
+				$("#formdiv").css({
+						"bottom":"",
+						"position":"",
+						"backgroundColor":"",
+						"padding":"",
+						"border":""
+				}).show();
+				$(".social").show();
+				$("#wCloseButtonDiv").hide();
+			});
+		}
+	});
+})
+*/
 
 
 /* 入力中は自動更新を一時停止 */
@@ -18,13 +77,13 @@ $(function(){
 function moveToBottom(target){
 	var speed = 400;
 	var position = target.offset().top - (window.innerHeight) + target.height();
-	$('body,html').animate({scrollTop:position}, speed, 'swing');
+	$('body,html').stop(true,false).animate({scrollTop:position}, speed, 'swing');
 }
 
 function moveToMiddle(target,_speed){
 	var speed = _speed ? parseInt(_speed) : 400;
 	var position = target.offset().top - (window.innerHeight/2) + (target.height()/2);
-	$('body,html').animate({scrollTop:position}, speed, 'linear');
+	$('body,html').stop(true,false).animate({scrollTop:position}, speed, 'linear');
 }
 
 
@@ -1259,6 +1318,18 @@ function nodejs_connect(){
 	socket.on('sc',function(count){
 		setSureConter(count);
 	});
+
+	//su:setCounterUpdate
+	socket.on('c',function(res){
+//		setSureTotalConter(count);
+		if(res["p"]){
+			setSureTotalConter(res["p"]);
+		}
+		if(res["n"]){
+			setSureConter(res["n"]);
+		}
+	});
+
 
 
 }
