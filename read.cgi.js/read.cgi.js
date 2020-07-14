@@ -1,10 +1,68 @@
 var OEKAKI_EX;
 var OPT;
 
+/* NG機能 */
+//NG機能
+var NGWORDS = {};
+var NGREGEXP = null;
+var SETTING = {};
 
 $(function(){
-	$("body").append("<div class=header_alert style='z-index:10000;width:100%;position:fixed;top:0px;left:0px'><ngalert></ngalert></div>");
+	SETTING = gethashStorage("setting");
+	NGREGEXP = list2regexp(getListStorage("ng"));
+
+});
+
+
+/* url2info */
+
+$(function(){
+
+		$("body").append(
+			"<style>" + 
+			".urlinfo{border-radius:3px;max-width:90%;font-size:10pt;border:1px solid #ddd;color:black;display:inline-block;background:white;padding:1px}" + 
+			".ut{overflow: hidden;white-space: nowrap;text-overflow:ellipsis}" + 
+			".utt{font-size:9pt}" + 
+			".ns{user-select: none;-moz-user-select: none;-ms-user-select: none}" +
+			"</style>"
+		);
+
+/*
+		$(".url").each(function(){
+			url_info_handler($(this))
+		});
+*/
+
+		$(".url").on("inview",function(){
+			url_info_handler($(this))
+			$(this).removeClass(".url");
+		});
+
+
 })
+
+function url_info_handler(_this){
+
+		if(SETTING["url_view"] == "off"){
+			return;
+		}
+
+		var url = $(_this).text();
+		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v1/" + escape(url);
+
+		var xhr = $.get(json);
+		xhr.done(function(data){
+
+				$(_this).html(
+					"<div class=urlinfo>" + 
+					"<div class='ut ns'>"+data+"</div>" + 
+					"<div class='ut utt'><font color=blue>"+url+"</font></div>" + 
+					"</div>"
+				); 
+		});
+
+
+}
 
 
 $(function(){
@@ -25,17 +83,10 @@ var NODEJS = "http://nodessl.open2ch.net:8880"; //http
 var NODEJS = "https://nodessl.open2ch.net:2083"; //https-test
 */
 
-/* NG機能 */
-//NG機能
-var NGWORDS = {};
-var NGREGEXP = null;
-var SETTING = {};
 
 $(function(){
-	SETTING = gethashStorage("setting");
-	NGREGEXP = list2regexp(getListStorage("ng"));
-
-});
+	$("body").append("<div class=header_alert style='z-index:10000;width:100%;position:fixed;top:0px;left:0px'><ngalert></ngalert></div>");
+})
 
 
 $(function(){
@@ -148,23 +199,7 @@ $(function(){
 		var lon = position.coords.longitude;
 		var query = window.btoa(lat + "," + lon);
 		    query = query.replace(/==/,"");
-
-		//          var url = "https://maps.google.co.jp/maps?q="+query +"&output=embed&z=16";
-		  var url = "/lib/yahoomap/?q="+query + "&p=p";
-		  var google = "https://www.google.com/maps?q="+query;
-
-		//          var html = '<iframe frameborder=0 src='+url+' width="200" height="200"></iframe>';
-		  var html = '<div style="padding:5px;border:1pt dotted black;text-align:center;margin-top:3px">' + 
-		             '<div style="background:#333333;color:white;padding:3px">地図プレビュー</div>' + 
-		             '<div style="padding:10px">' + 
-		             '<input class=useMap type=button value="この地図を使う" code="#map('+query+')"> ' + 
-		             '<input class=mapClose type=button value="やめる">' + 
-		             '</div>' + 
-		             '<iframe scrolling=no frameborder=0 src="'+url+'" width="320" height="250"></iframe>' + 
-		             '</div>';
-
-		$("#map").html(html);
-		moveToMiddle($("#map"));
+		$(".map_iframe").get(0).contentWindow.set_pan(lat,lon);
 	}
 
 	function geo_err(id, error){
@@ -191,20 +226,82 @@ $(function(){
 		var url = "/lib/yahoomap/?q="+query + "&p=p";
 		var google = "https://www.google.com/maps?q="+query;
 		
-		var html = '<div class="mapEditer" style="background:white;position:fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);' + 
+		var html = '<div draggable=true  class="mapEditer" style="background:white;position:fixed;top:50%;left:50%;transform: translate(-50%, -50%);' + 
 		           'padding:5px;border:1pt dotted black;text-align:center;margin-top:3px">' + 
-		           '<div style="font-size:9pt;background:#000044;color:white;padding:3px">地図エディタ' + 
+		           '<div class="mapEditerBar" style="cursor:move;font-size:9pt;background:#000044;color:white;padding:3px">地図エディタ' + 
 		'<div style="font-size:8pt;display:inline-block;float:right" ><a href=# class=mapClose><font color=white>閉</font></a></div>' + 
 		           '</div>' + 
-		           '<div style="padding:10px">' + 
-		           '<input class=useMap type=button value="この地図を使う" code="#map('+query+')"> ' + 
+
+//	           '<div align=right><input type=text size="10"><input type="button" value="検索"></div>' + 
+
+		           '<div style="padding:5px">' + 
+		           '<input style="background:#FFBBBB" class=useMap type=button value="地図を投稿" code="#map('+query+')"> ' + 
 		           '<input class=mapClose type=button value="やめる">' + 
 		           '</div>' + 
-		           '<iframe scrolling=no frameborder=0 src="'+url+'" width="320" height="250"></iframe>' + 
+
+		           '<div align=right>'+
+
+/*							 '<label>落書きモード<input type=checkbox class=map_line value=1></label>' + */
+								 '<label>描く<input type=checkbox class=map_draw value=1></label>' + 
+
+							 '<input class="map_pin map_buttons" type=button value="ピン">' + 
+		           '<input class="map_clear" type=button value="消す">' + 
+		           '<input class="get_gps" style="margin-left:5px" type="image" title="現在地を取得" src="https://open.open2ch.net/image/icon/svg/gps.v2.svg">' + 
+		           '</div>' + 
+
+		           '<iframe class=map_iframe scrolling=no frameborder=0 src="'+url+'" width="320" height="320"></iframe>' + 
 		           '</div>';
 
 		$("#map").html(html);
+
+
+/*
+		$(".mapEditer").css({
+			top : parseInt($(".mapEditer").position().top),
+			left : parseInt($(".mapEditer").position().left),
+		})
+*/
+
+
+		console.log(parseInt($(".mapEditer").offset().top) + ":" + parseInt($(".mapEditer").offset().left));
+
 	}
+
+
+
+	$(document).on("change",".map_draw",function(){
+		var val = $(this).is(":checked");
+		$(".map_iframe").get(0).contentWindow.set_draw_mode(val);
+
+		$(".map_buttons").prop("disabled",val ? true : "");
+
+	});
+
+
+
+	$(document).on("click",".map_clear",function(){
+		if(confirm("線やピンを全削除します。よろしいですか？")){
+			$(".map_iframe").get(0).contentWindow.clear_all();
+		}
+	});
+
+
+	$(document).on("change",".map_line",function(){
+		$(".map_iframe").get(0).contentWindow.set_map_line($(this).is(":checked"));
+	});
+
+
+
+	$(document).on("click",".map_pin",function(){
+		$(".map_iframe").get(0).contentWindow.update_pin();
+	});
+
+
+	$(document).on("click",".get_gps",function(e){
+		get_geo();
+		e.preventDefault();
+	});
+
 
 
 	$(function(){
@@ -246,6 +343,49 @@ $(function(){
 			}
 		  e.preventDefault();
 		});
+
+		$(document).on("dragend",".mapEditer",function(e){
+
+			var toX = e.originalEvent.clientX - parseInt($(this).prop("dragX"));
+			var toY = e.originalEvent.clientY;
+
+			var ytLimit = 0;
+			var ybLimit = parseInt($(window).height() - $(".mapEditer").height());
+			var xrLimit = parseInt($(window).width() - $(".mapEditer").width());
+
+			//限界調整
+			if(toY < ytLimit ){ //上
+				toY = ytLimit;
+			} else if(toY > ybLimit ){ //下
+				toY = ybLimit;
+			}
+
+			if(toX < 0){ //左
+				toX = 0;
+			} else if(toX > xrLimit){ //右
+				toX = xrLimit;
+			}
+
+			$("body").append("<div class=debug style='background:white;position:fixed;bottom:0;left:0'></div>");
+			$(".debug").html("x:" + toX + "/y:" + toY + ":wt:" + ytLimit + "/yb:" + ybLimit + "<br>xr:" + xrLimit);
+
+
+			$(".mapEditer").css({
+				left: toX,
+				top: toY,
+				"transform":"",
+			})
+
+		});
+
+		$(document).on("dragstart",".mapEditer",function(e){
+
+			$(this).prop({
+				"dragX":e.originalEvent.offsetX,
+				"dragY":e.originalEvent.offsetY,
+				})
+		});
+
 	})
 }());
 
@@ -2943,6 +3083,12 @@ function update_res(flag){
 					ng_filter($(this));
 				});
 			}
+
+			/* URL処理 */
+
+			$(html_obj).find(".url").each(function(){
+				url_info_handler($(this))
+			});
 
 
 		$(".thread").append(html_obj);
