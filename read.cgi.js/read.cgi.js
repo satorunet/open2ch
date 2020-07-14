@@ -366,9 +366,10 @@ $(function(){
 			var $this = $(this);
 			var action = {"update":"更新", "new":"追加"};
 
-			$(".history_res").hide()
+
+			$(".history_res")
 				.html("<img src=//open.open2ch.net/image/loading.gif> 履歴を更新中")
-				.slideDown("fast");
+				.fadeIn("fast");
 
 				setTimeout(function(){
 					$.ajax({
@@ -378,12 +379,12 @@ $(function(){
 						cache  : false,
 						success: function(res){
 
-							var res = action[res] ? "履歴を" + action[res] + "したよ！(ﾟ∀ﾟ)ノ <a href=//open2ch.net/test/history.cgi>履歴を表示</a>" 
+							var res = action[res] ? "<a href=//open2ch.net/test/history.cgi>履歴</a>を" + action[res] + "したよ！(ﾟ∀ﾟ)ノ</a>" 
 																		: "エラー。なんかおかしいみたい。。(；∀；)";
 
 							$(".history_res").html( "<font color=red>" + res + "</font>");
 							setTimeout(function(){
-								$(".history_res").slideUp("fast",function(){ is_history_updating = 0 })
+								$(".history_res").fadeOut("fast",function(){ is_history_updating = 0 })
 
 //							$("#history_add").css({"color":"blue","text-decoration":"underline","cursor":"hand"});
 
