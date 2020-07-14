@@ -453,8 +453,7 @@ $(function(){
 		if(is_textarea_focus){
 			if(pretext == $("[name=MESSAGE]").val()){
 
-
-				if(counter >= MAX_HORYU_TIME){
+				if(counter >= MAX_HORYU_TIME || $("[name=MESSAGE]").val() == ""){
 					counter = 0;
 					is_textarea_focus = 0;
 					auto_horyu_off();
@@ -483,11 +482,8 @@ $(function(){
 		if(!event.ctrlKey){
 			counter = 0;
 			$("horyu").html(0);
-			if($("[name=MESSAGE]").val() && is_textarea_focus == 0){
+			if($("[name=MESSAGE]").val() && is_textarea_focus == 0 && !$("#noWait").is(":checked")){
 				is_textarea_focus = 1;
-
-				console.log("keydown event:" + $("[name=MESSAGE]").val());
-
 			}
 		}
 		
@@ -502,7 +498,8 @@ $(function(){
 	});
 })
 
-function auto_horyu_off(){
+function auto_horyu_off(flag){
+
 	is_textarea_focus = 0;
 	counter = 0;
 	pretext = "";
@@ -511,11 +508,15 @@ function auto_horyu_off(){
 		$(this).remove();
 	});
 
-	setTimeout(function(){
-		if($('#autoOpen').is(':checked') && is_update_que == 1){
-			update_res("now");
-		}
-	},1000);
+	if(flag == "quick"){
+		update_res("now");
+	} else {
+		setTimeout(function(){
+			if($('#autoOpen').is(':checked') && is_update_que == 1){
+				update_res("now");
+			}
+		},500);
+	}
 
 }
 
@@ -1481,6 +1482,10 @@ $(document).ready(function() {
 		setCookie("oekakiMode", $(this).is(':checked') ? "1" : "0");
 	});
 
+	$("#noWait").change(function(){
+		setCookie("noWait", $(this).is(':checked') ? "1" : "0");
+	});
+
 
 	$("#noSoundAlert").change(function(){
 		setCookie("noSoundAlert", $(this).is(':checked') ? "1" : "0");
@@ -1490,6 +1495,7 @@ $(document).ready(function() {
 		setCookie("alertRes", $(this).is(':checked') ? "1" : "0");
 	});
 	
+
 	$('#form1').submit(function() {
 
 
@@ -2196,7 +2202,7 @@ function call_update_alert(_server_resnum){
 
 				if(!$("#new_alert_pending").is(":visible")){
 					$("#new_alert").append("<div id='new_alert_pending' style='margin-top:3px;color:pink;font-size:8pt'>" + 
-						"※入力中の為、自動更新保留中 <horyu>0</horyu>/"+ MAX_HORYU_TIME +"秒</div>");
+						"※入力中の為、更新保留中 <horyu>0</horyu>/"+ MAX_HORYU_TIME +"秒</div>");
 				}
 
 				return;
