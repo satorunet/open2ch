@@ -7,6 +7,82 @@ var speech;
 var speechUtt;
 var pm = getUrlVars();
 
+
+//草機能
+$(function(){
+	$(".kusaButton").click(function(e){
+		e.preventDefault();
+		if(!$(this).hasClass("done")){
+			var count = parseInt($("kusa").html())+1;
+			updateKusa(count);
+			nodejs_pushKusa();
+			$(this).addClass("done").css({"background":"#ddd"});
+		}
+	});
+});
+
+
+var preKusa = 0;
+
+
+function updateKusa(count){
+	$("kusa").html(count);
+	var w =[];
+
+
+	function kusaMatome(n,emoji,text){
+		var limit = parseInt(count/n);
+		for(var i=0;i<limit;i++){
+			w.push("<span title='"+(i+1)*n+""+text+"'>"+emoji+"</span>");
+		}
+		count = count % n;
+	}
+
+
+	var list = [
+		[1000,"🍑","おけつ"],
+		[100,"🥒","きうり"],
+	];
+
+	$(list).each(function(i,a){
+		if(count >= a[0]){
+			kusaMatome(a[0],a[1],a[2]);
+		}
+	})
+
+	for(var i=0;i<count;i++){
+		w.push("w");
+	}
+
+	$("w").html(w.reverse().join(""));
+
+/*
+	if(preKusa > 0 && preKusa < count){
+
+		var diff = count - preKusa;
+
+		var kusa = $("<div style='opacity:.5;position:fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);user-select: none;-moz-user-select: none;-ms-user-select: none'>" + 
+								 "<div style='white-space: nowrap'><font style='font-size:80pt'>草+" + diff+ "</font></div>" + 
+								 "<div align=center><font style='font-size:40pt'>" + count + "</font></div>" + 
+								 "</div>"
+								);
+
+
+		kusa.hide();
+		$("body").append(kusa);
+
+		kusa.fadeIn("fast");
+		kusa.animate({count:0},{duration:1000,complete:function(){
+			$(this).fadeOut("fast",function(){$(this).remove()});
+		}});
+
+	}
+
+	preKusa = count;
+*/
+
+}
+
 //スレ主コマンド用
 $(function(){
 
