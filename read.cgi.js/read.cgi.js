@@ -10,7 +10,7 @@ var OPT;
 
 $(function(){
 	OPT = $("body").attr("dev") ? new Date().getTime() : "";
-	OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.js/o2oEXLite.v7.js?v5"+OPT;
+	OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.js/o2oEXLite.v8.js?v5"+OPT;
 });
 
 
@@ -35,12 +35,12 @@ $(function(){
 		if (!navigator.geolocation){
 			alert("navigator.geolocation の対応しているブラウザを使用してください。");
 		}else{
-			let option = {
+			var option = {
 			  enableHighAccuracy: true,
 			  maximumAge: 1,
 			  timeout: 10000
 			};
-		let current = 'current-position';
+		var current = 'current-position';
 			navigator.geolocation.getCurrentPosition(
 			  function(position){ geo_success(current, position); },
 			  function(error){ geo_err(current, error); },
@@ -51,17 +51,17 @@ $(function(){
 
 	function geo_success(id, position) {
 
-		let lat = position.coords.latitude;
-		let lon = position.coords.longitude;
-		let query = window.btoa(lat + "," + lon);
+		var lat = position.coords.latitude;
+		var lon = position.coords.longitude;
+		var query = window.btoa(lat + "," + lon);
 		    query = query.replace(/==/,"");
 
 		//          var url = "https://maps.google.co.jp/maps?q="+query +"&output=embed&z=16";
-		  let url = "/lib/yahoomap/?q="+query + "&p=p";
-		  let google = "https://www.google.com/maps?q="+query;
+		  var url = "/lib/yahoomap/?q="+query + "&p=p";
+		  var google = "https://www.google.com/maps?q="+query;
 
 		//          var html = '<iframe frameborder=0 src='+url+' width="200" height="200"></iframe>';
-		  let html = '<div style="padding:5px;border:1pt dotted black;text-align:center;margin-top:3px">' + 
+		  var html = '<div style="padding:5px;border:1pt dotted black;text-align:center;margin-top:3px">' + 
 		             '<div style="background:#333333;color:white;padding:3px">地図プレビュー</div>' + 
 		             '<div style="padding:10px">' + 
 		             '<input class=useMap type=button value="この地図を使う" code="#map('+query+')"> ' + 
@@ -75,7 +75,7 @@ $(function(){
 	}
 
 	function geo_err(id, error){
-		let e = "";
+		var e = "";
 		if (error.code == 1) { //1＝位置情報取得が許可されてない（ブラウザの設定）
 			e = "位置情報が許可されてません";
 		}
@@ -90,15 +90,15 @@ $(function(){
 
 	function show_map() {
 
-		let lat = "35.685175";
-		let lon = "139.7528";
-		let query = window.btoa(lat + "," + lon);
+		var lat = "35.685175";
+		var lon = "139.7528";
+		var query = window.btoa(lat + "," + lon);
 		    query = query.replace(/==/,"");
 
-		let url = "/lib/yahoomap/?q="+query + "&p=p";
-		let google = "https://www.google.com/maps?q="+query;
+		var url = "/lib/yahoomap/?q="+query + "&p=p";
+		var google = "https://www.google.com/maps?q="+query;
 		
-		let html = '<div class="mapEditer" style="background:white;position:fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);' + 
+		var html = '<div class="mapEditer" style="background:white;position:fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);' + 
 		           'padding:5px;border:1pt dotted black;text-align:center;margin-top:3px">' + 
 		           '<div style="font-size:9pt;background:#000044;color:white;padding:3px">地図エディタ' + 
 		'<div style="font-size:8pt;display:inline-block;float:right" ><a href=# class=mapClose><font color=white>閉</font></a></div>' + 
@@ -137,8 +137,8 @@ $(function(){
 		})
 
 		$(document).on("click",".useMap",function(){
-			let code = $(this).attr("code");
-			let texts = $("#MESSAGE").val() ? $("#MESSAGE").val().split("\n") : [];
+			var code = $(this).attr("code");
+			var texts = $("#MESSAGE").val() ? $("#MESSAGE").val().split("\n") : [];
 			    texts.push(code);
 			$("#MESSAGE").val(texts.join("\n"))
 				$(this).prop("disabled",true);
@@ -146,7 +146,7 @@ $(function(){
 
 		$(document).on("click",".mapClose",function(e){
 			if(!$(this).val().match(/#map\([^\)]+\)/)){
-				let text = $("#MESSAGE").val();
+				var text = $("#MESSAGE").val();
 				    text = text.replace(/#map\([^\)]+\)/g,"");
 				$("#MESSAGE").val(text);
 				$("#map").html("");
@@ -166,9 +166,9 @@ $(function(){
 	}
 
 	function kokomade_new_func(){
-		let last_res = storage[bbs + "/" + key];
-		let new_res = server_resnum - last_res;
-		let $news = $("<div class='attayo' style='cursor:pointer;border:1px solid #ddd;padding:10px;background:#fff;position:fixed;bottom:30;left:0;border-radius:0 0 10px 0'>" + 
+		var last_res = storage[bbs + "/" + key];
+		var new_res = server_resnum - last_res;
+		var $news = $("<div class='attayo' style='cursor:pointer;border:1px solid #ddd;padding:10px;background:#fff;position:fixed;bottom:30;left:0;border-radius:0 0 10px 0'>" + 
 			"前回から<b>"+new_res+"</b>件の新着レス！<font size=1 color=#999>（タップで新着から表示）</font>" + 
 			"</div>");
 		$("body").append($news);
@@ -184,15 +184,15 @@ $(function(){
 			});
 		});
 
-		let resnums = $("dt.mesg").filter(function(i,a){
+		var resnums = $("dt.mesg").filter(function(i,a){
 				return parseInt($(this).attr("res")) > last_res;
 			}).map(function(i,a){
 				return $(this).attr("res");
 		})
 
-		let sort = resnums.sort(compareFunc);
-		let from = sort[0];
-		let to = sort[resnums.length-1];
+		var sort = resnums.sort(compareFunc);
+		var from = sort[0];
+		var to = sort[resnums.length-1];
 
 		$("dt.mesg").filter(function(i,a){
 			return parseInt($(this).attr("res")) > last_res;
@@ -215,7 +215,7 @@ $(function(){
 
 		$("dt.mesg[res="+from+"]").on("inview",function(){
 			$("body").prop("IS_KOKOKARA_DONE",1);
-			let $kokokara = $("<div class=kokokara_new style='border:1px solid #eeeeee;padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
+			var $kokokara = $("<div class=kokokara_new style='border:1px solid #eeeeee;padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
 			"↓ここから新着</div>").hide();
 			$("dt.mesg[res="+from+"]").before( $kokokara );
 				$kokokara.fadeIn("fast");
@@ -234,17 +234,17 @@ $(function(){
 		});
 
 		storage = gethashStorage("hist");
-		let last_res = storage[bbs + "/" + key];
+		var last_res = storage[bbs + "/" + key];
 
 		if(storage[bbs + "/" + key]){
-			let new_res = server_resnum - last_res;
+			var new_res = server_resnum - last_res;
 			if(new_res > 0){
 				kokomade_new_func();
 			}
 		}
 	
 	$("body").bind("UPDATE_HISTORY",function(){
-			let bbskey = bbs +"/"+key;
+			var bbskey = bbs +"/"+key;
 			sethashStorage("hist",bbskey,server_resnum,50);
 		});
 	}
@@ -399,12 +399,12 @@ var oekaki = (function(){
 /* 移動処理 */ 
 		$("#oekakiCanvas").on("dragend",function(e){
 
-			let toX = e.originalEvent.clientX - parseInt($(this).prop("dragX"));
-			let toY = $(window).height() - e.originalEvent.clientY - $(this).height() + parseInt($(this).prop("dragY"));
+			var toX = e.originalEvent.clientX - parseInt($(this).prop("dragX"));
+			var toY = $(window).height() - e.originalEvent.clientY - $(this).height() + parseInt($(this).prop("dragY"));
 
-			let ytLimit = $(window).height() - $("#oekakiCanvas").height();
-			let ybLimit = $(window).height() -300;
-			let xrLimit = $(window).width() - $("#oekakiCanvas").width() + 300;
+			var ytLimit = $(window).height() - $("#oekakiCanvas").height();
+			var ybLimit = $(window).height() -300;
+			var xrLimit = $(window).width() - $("#oekakiCanvas").width() + 300;
 
 
 			//限界調整
@@ -1851,12 +1851,12 @@ var mouse;
 
 function mouseEventInit(){
 
-	let is_moving;
-	let clickOffsetTop;
-	let clickOffsetLeft;
+	var is_moving;
+	var clickOffsetTop;
+	var clickOffsetLeft;
 
-	let e = $("#formdiv").get(0);
-//	let e = $("#oekakiCanvas").get(0);
+	var e = $("#formdiv").get(0);
+//	var e = $("#oekakiCanvas").get(0);
 
 	if(is_mouseEventInit){
 		return;
@@ -1881,12 +1881,12 @@ function mouseEventInit(){
 
 		$("#MESSAGE").after("<div class=pata style='position:absolute;width:100%' align=center></div>")
 
-		let icons = ["anime_matanki01","anime_matanki02"];
+		var icons = ["anime_matanki01","anime_matanki02"];
 
-		for(let i=0;i<(1+Math.floor(Math.random()*12));i++){
+		for(var i=0;i<(1+Math.floor(Math.random()*12));i++){
 
-			let icon = icons[Math.floor(Math.random()*icons.length)];
-			let img = $("<img class='_pata' style='position:relative;top:-60' src=//image.open2ch.net/image/icon/2ch/"+icon+".gif>");
+			var icon = icons[Math.floor(Math.random()*icons.length)];
+			var img = $("<img class='_pata' style='position:relative;top:-60' src=//image.open2ch.net/image/icon/2ch/"+icon+".gif>");
 			img.hide();
 			$(".pata").append(img);
 			img.css("animation-duration", "1." + Math.floor(Math.random()*10) + "s");
@@ -1906,7 +1906,7 @@ function mouseEventInit(){
 		if(is_moving && $("#formfix").is(":checked") ){
 			$(e).css({"opacity":"1","box-shadow":""});
 			$(".pata").remove();
-			let posi = e.style.top + ":" + e.style.left;
+			var posi = e.style.top + ":" + e.style.left;
 			localStorage.formPosition = posi;
 			mouse = 'up';
 			$("body").css({
