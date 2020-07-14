@@ -1,6 +1,7 @@
 // レス取得機能
 $(function(){
 
+
 	$("ares a").click(function(e){
 		e.preventDefault();
 
@@ -28,19 +29,20 @@ $(function(){
 			data   :query,
 			cache  : true,
 			success: function(res){
-				$(parent).find("areshtml").html("<br>" + res );
+
+				$(parent).find("areshtml").html( res );
 				$(parent).find(".aresclose").show();
 
 				$(parent).find("areshtml").find("a").filter(function(){ 
-					if($(this).html().match(/^&gt;&gt;/)){
+					if($(this).html().match(/^&gt;&gt;\d+$/)){
 						var _resnum = ( $(this).html().match(/^&gt;&gt;(\d+)$/) )[1];
 						if(resnum == _resnum){
 							$(this).css({"background":"#FF6666","color":"white"});
 						}
-
 					} 
 				});
-				$(parent).find(".aresdata").slideDown("fast");
+//				$(parent).find(".aresdata").slideDown("fast");
+					$(parent).find(".aresdata").fadeIn("fast");
 			}
 		});
 
@@ -76,7 +78,7 @@ $(function(){
 
 	$("#clear_ignore").click(function(e){
 		e.preventDefault();
-		if(confirm("無視設定をクリアします。よろしいですか？")){
+		if(confirm("無視設定をクリアします。\nよろしいですか？")){
 			delStorage(cachekey);
 			ignores = new Object();
 			$(".mesg").fadeIn().removeAttr("ignored");
@@ -103,7 +105,7 @@ $(function(){
 
 		if(ignores[ID]){
 
-			var message = "ID:" + ID + " の無視設定を解除します。よろしいですか？";
+			var message = "ID:" + ID + " の無視設定を解除します。\nよろしいですか？";
 			if( confirm(message) ){ //解除
 				delete ignores[ID];
 				$(".id"+ID).slideDown().removeAttr("ignored");
@@ -117,7 +119,7 @@ $(function(){
 			}
 		} else { //無視
 
-			var message = "ID:" + ID + " を無視設定します。よろしいですか？";
+			var message = "ID:" + ID + " を無視設定します。\nよろしいですか？";
 			if( confirm(message) ){
 				ignores[ID] = 1;
 				setStorage(cachekey,JSON.stringify(ignores));
