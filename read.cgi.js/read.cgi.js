@@ -935,7 +935,12 @@ $(function(){
 
 	$("body").bind("UPDATE_NEWRES",function(event,res){
 
-
+		$("img.lazy").lazyload(
+			{	effect : "fadeIn",
+				effectspeed: 500,
+				threshold: 300
+			}
+		);
 
 	});
 
@@ -1684,7 +1689,7 @@ function update_res(flag){
 		html = html.replace('class="audio"','class="audio new_audio"');
 	}
 
-	html = html.replace('class="pic lazy"','class="openpic hide"');
+	html = html.replace('class="pic lazy oekaki"','class="openpic hide"');
 
 	if(pageMode == "sp"){
 		html = html.replace(/名無しさん＠おーぷん/g,'名無し');
