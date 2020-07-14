@@ -9,8 +9,97 @@ var speech;
 var speechUtt;
 var pm = getUrlVars();
 
+var storage = {};
+
 $(function(){
-	updateHistory();
+	storage = gethashStorage("hist");
+	var last_res = storage[bbs + "/" + key];
+
+	if(storage[bbs + "/" + key]){
+		var new_res = server_resnum - last_res;
+		if(new_res){
+			kokomade_new_func();
+		}
+	}
+})
+
+
+function kokomade_new_func(){
+
+	var last_res = storage[bbs + "/" + key];
+	var new_res = server_resnum - last_res;
+
+	var $news = $("<div class='attayo' style='cursor:pointer;border:1px solid #ddd;padding:10px;background:#fff;position:fixed;bottom:30;left:0;border-radius:0 0 10px 0'>" + 
+		"前回から<b>"+new_res+"</b>件の新着レス！<font size=1 color=#999>（タップで新着から表示）</font>" + 
+		"</div>");
+
+	$("body").append($news);
+
+	$news.click(function(){
+		moveToTop($(".new_kokokara"));
+		$(".attayo").stop().fadeOut("slow");
+	});
+
+	$news.animate({hoge:100},1000*10,function(){
+			$(this).fadeOut("slow",function(){
+			$(this).remove();
+		});
+	});
+
+	var resnums = $("dt.mesg").filter(function(i,a){
+		return parseInt($(this).attr("res")) > last_res;
+	}).map(function(i,a){
+		return $(this).attr("res");
+	})
+
+	var sort = resnums.sort();
+
+	var from = sort[0];
+	var to = sort[resnums.length-1];
+
+	$("dt.mesg[res="+from+"]").before( "<a class='new_kokokara'></a>" );
+	$("dt.mesg[res="+from+"]").on("inview",function(){
+
+		$("body").prop("IS_KOKOKARA_DONE",1);
+
+		var $kokokara = $("<div class=kokokara_new style='padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
+		"↓ここから新着</div>").hide();
+		$("dt.mesg[res="+from+"]").before( $kokokara );
+
+/*
+		if( new_res > 5 ){
+			var $kokomade = $("<div class=kokomade_new style='padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
+			"↑ここまで新着</div>").hide();
+			$("dt.mesg[res="+to+"]").parent().after( $kokomade );
+		}
+*/
+
+
+			$("dt.mesg").filter(function(i,a){
+				return parseInt($(this).attr("res")) > last_res;
+			}).map(function(i,a){
+				$(this).find(".num").css("color","red");
+			})
+			$kokokara.slideDown("fast");
+
+			$(this).unbind("inview");
+	});
+
+	$("dt.mesg[res="+to+"]").on("inview",function(){
+
+			$(".attayo").stop().fadeOut("slow");
+
+			$(this).animate({hoge:100},1000*5,function(){
+				$(".num").css("color","");
+				$news.fadeOut("fast");
+				$(".kokokara_new,.kokomade_new").slideUp("fast");
+			});
+	});
+
+}
+
+$(function(){
+	 updateHistory();
 })
 
 function updateHistory(){
@@ -517,6 +606,11 @@ $(function(){
 		
 		updateHistory();
 
+		$("nn").animate({count:0},{duration:1000*10,complete:function(){
+			$(this).contents().unwrap();
+		}});
+
+
 
 		if( 
 				(isSmartPhone == 0 && $("#use_yomi").prop("checked")) ||
@@ -851,6 +945,12 @@ function moveToBottom(target){
 function moveToMiddle(target,_speed){
 	var speed = _speed ? parseInt(_speed) : 400;
 	var position = target.offset().top - (window.innerHeight/2) + (target.height()/2);
+	$('body,html').stop(true,false).animate({scrollTop:position}, speed, 'linear');
+}
+
+function moveToTop(target,_speed){
+	var speed = _speed ? parseInt(_speed) : 400;
+	var position = target.offset().top - 50;
 	$('body,html').stop(true,false).animate({scrollTop:position}, speed, 'linear');
 }
 
@@ -2341,8 +2441,6 @@ function update_res(flag){
 				/* update時に最新情報を同時に取得 */
 
 				var html = (res.split(""))[1];
-
-
 
 				var already = {};
 
