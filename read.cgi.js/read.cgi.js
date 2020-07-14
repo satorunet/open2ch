@@ -78,7 +78,68 @@ $(function(){
 })
 */
 
-// 投票チェックボックス機能
+/* 履歴 */
+
+var is_history_updating = 0;
+
+$(function(){
+	$("#history_add").click(function(e){
+
+			e.preventDefault();
+
+			if( is_history_updating ){
+				return false;
+			}
+
+			is_history_updating =1;
+
+//		$(this).css({"color":"black","text-decoration":"none","cursor":"default"});
+
+			var $this = $(this);
+			var action = {"update":"更新", "new":"追加"};
+
+			$(".history_res").hide()
+				.html("<img src=//open.open2ch.net/image/loading.gif> 履歴を更新中")
+				.slideDown("fast");
+
+				setTimeout(function(){
+					$.ajax({
+						type: "POST",
+						url    : "/ajax/add_history.cgi",
+						data   :  $("#form1").serialize(),
+						cache  : false,
+						success: function(res){
+
+							var res = action[res] ? "履歴を" + action[res] + "したよ！(ﾟ∀ﾟ)ノ <a href=//open2ch.net/test/history.cgi>履歴を表示</a>" 
+																		: "エラー。なんかおかしいみたい。。(；∀；)";
+
+							$(".history_res").html( "<font color=red>" + res + "</font>");
+							setTimeout(function(){
+								$(".history_res").slideUp("fast",function(){ is_history_updating = 0 })
+
+//							$("#history_add").css({"color":"blue","text-decoration":"underline","cursor":"hand"});
+
+							},5000);
+
+/*
+							$(".history_res").html( "<font color=red>" + res + "</font>");
+							setTimeout(function(){
+								$(".history_res").slideUp("fast",function(){ is_history_updating = 0 })
+								$("#history_add").css({"color":"white","cursor":"hand"});
+							},5000);
+*/
+
+
+						}
+					});
+				},300);
+	});
+});
+
+
+
+/* 投票チェックボックス機能 */
+
 $(function(){
 	setTimeout(function(){
 		console.log( ">>" + $("[name=mail]").val() );
@@ -100,7 +161,8 @@ $(function(){
 
 
 
-//新着レス関連
+/* 新着レス関連 */
+
 function moveToBottom(target){
 	var speed = 400;
 	var position = target.offset().top - (window.innerHeight) + target.height();
@@ -119,7 +181,7 @@ $(function(){
 	$("body").append("<div id='ninja_popup'><p></p></div>");
 	var my_tooltip = $("#ninja_popup");
 
-	//アラート自体をおせるように。
+	/* アラート自体をおせるように。*/
 	$("#new_alert")
 	.bind("click",function(e){
 		e.preventDefault();
