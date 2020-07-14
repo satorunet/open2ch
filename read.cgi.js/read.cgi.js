@@ -106,7 +106,7 @@ function oekaki_load(callback){
 			$.getScript("https://open.open2ch.net/lib/oekaki/sketch.v9.js?20200201_v1",function(){
 				$.getScript("https://open.open2ch.net/lib/hukuwarai/huku.v2.js?20200201_v1",function(){
 					$.getScript("https://open.open2ch.net/lib/oekaki/spectrum/spectrum.v2.js?20200201_v1",function(){
-						$.getScript("https://open.open2ch.net/lib/oekaki/js/oekaki.v1.js?20200201_v2",function(){
+						$.getScript("https://open.open2ch.net/lib/oekaki/js/oekaki.v1.js?20200201_v4",function(){
 							OEKAKI.init_oekaki();
 							OEKAKI_INIT = 1;
 							callback();
@@ -117,6 +117,19 @@ function oekaki_load(callback){
 		});
 	} else {
 		callback();
+	}
+}
+
+/* 旧gitImageとの繋ぎこみ用 */
+function initOekaki(ctx, img){
+	if(OEKAKI_INIT){
+		OEKAKI.setImage(ctx, img);
+
+
+	} else {
+		oekaki_load(function(){
+			OEKAKI.setImage(ctx, img);
+		});
 	}
 }
 
@@ -3580,7 +3593,7 @@ function setFormKotei(flag){
 //		$(".formDivDefault").after("<p class=closeKoteiWindow_div><button class=closeKoteiWindow>別窓リセット</button></p>");
 
 			$("#formdiv").prepend($(
-			"<div class=ddWindow style='max-width:450px;border-radius:3px;font-size:0pt;background:#449;color:#007;padding:4px;cursor: move !important;'>"+
+			"<div class=ddWindow style='width:98%;border-radius:3px;font-size:0pt;background:#449;color:#007;padding:4px;cursor: move !important;'>"+
 			"<div style='width:95%;text-align:center;display: inline-block;'>&nbsp;</div>"+
 			"<div style='display: inline-block;'><img class=closeKoteiWindow src=//open.open2ch.net/image/icon/svg/batu_white_v2.svg width=10 height=10 style='cursor:pointer;paddnig:3px'></div>" + 
 			"</div>"
