@@ -468,7 +468,7 @@ var oekaki = (function(){
 		/* お絵描き履歴：戻る*/
 		var back_actions = [];
 
-		$("#backButton").click(function(){
+		$("#backButton").click(function(e){
 			if( $('#sketch').sketch().actions.length ){
 				back_actions.push( $('#sketch').sketch().actions.pop() );
 				$('#sketch').sketch().redraw();
@@ -477,10 +477,11 @@ var oekaki = (function(){
 			} else {
 				alert("no history");
 			}
+			e.preventDefault();
 		});
 
 		/* お絵描き履歴：進む*/
-		$("#prevButton").click(function(){
+		$("#prevButton").click(function(e){
 			if( back_actions.length ){
 				$('#sketch').sketch().actions.push( back_actions.pop() );
 				$('#sketch').sketch().redraw();
@@ -496,6 +497,7 @@ var oekaki = (function(){
 			if( !back_actions.length ){
 				$("#prevButton").prop("disabled","true");
 			}
+			e.preventDefault();
 		});
 
 
@@ -570,6 +572,11 @@ var oekaki = (function(){
 			horyu_counter = 0;
 			$("horyu").html(horyu_counter);
 		});
+
+		sketch.bind("updatePainting", function(){
+			horyu_counter = -1;
+		});
+
 
 		sketch.bind("stopPainting", function(){
 			is_oekaki_done = 1;
@@ -1451,6 +1458,8 @@ $(function(){
 
 
 	setInterval(function(){
+
+		MAX_HORYU_TIME = is_oekaki_focus ? 10 : 3;
 
 		if(is_textarea_focus == 1){
 			if(pretext == $("[name=MESSAGE]").val()){
@@ -2947,7 +2956,7 @@ function call_update_alert(_server_resnum){
 
 				if(!$("#new_alert_pending").is(":visible")){
 					$("#new_alert").append("<div id='new_alert_pending' style='margin-top:3px;color:pink;font-size:8pt'>" + 
-						"※"+mode+"の為、保留中 <horyu>0</horyu>/"+ MAX_HORYU_TIME +"秒</div>");
+						"※"+mode+" 保留 <horyu>0</horyu>/"+ MAX_HORYU_TIME +"秒</div>");
 				}
 
 				return;
