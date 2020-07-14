@@ -1064,7 +1064,7 @@ function update_res(flag){
 // nodeJS版
 function call_update_alert(_server_resnum){
 
-	console.log("node-call: server_rewsnum :" + _server_resnum);
+//	console.log("node-call: server_rewsnum :" + _server_resnum);
 
 	server_resnum = _server_resnum;
 		var diff = server_resnum - local_resnum;
@@ -1122,7 +1122,7 @@ function setSureTotalConter(count){
 $(function(){
 
 	$("#retry_button").live("click",function(e){
-		socket = io.connect('http://nodejs.open2ch.net:80');
+		socket.socket.reconnect();
 		$(this).attr("disabled",true);
 
 		setTimeout(function(){
@@ -1130,25 +1130,37 @@ $(function(){
 				alert("接続できません。時間を空けてから再度ためしてみてください。");
 				$("#retry_button").removeAttr("disabled");
 			}
-		},1000);
+		},3000);
 
 	});
 
 });
 
 
-
 var retry = 0;
 var onConnect_nodejs = 0;
+var max_socket_reconnects = 6;
+
 function nodejs_connect(){
 
 
 	"use strict";
-	socket = io.connect('http://nodejs.open2ch.net:80');
+	socket = io.connect('http://nodejs.open2ch.net:80',{
+		'max reconnection attempts' : max_socket_reconnects
+		}
+	);
+
+	socket.on("reconnecting", function(delay, attempt) {
+	  if (attempt === max_socket_reconnects) {
+	    setTimeout(function(){ socket.socket.reconnect(); }, 5000);
+	    return console.log("Failed to reconnect. Lets try that again in 5 seconds.");
+	  }
+	});
 
 	socket.on('error', function(reason) {
 		socket.disconnect();
 		io.sockets = [];
+		console.log("error! cannot connect.");
 
 		//alert("error");
 		//startOldTypeUpdateChecker();
@@ -1158,42 +1170,68 @@ function nodejs_connect(){
 
 	socket.on('disconnect',function(){
 		onConnect_nodejs = 0;
+
 		console.log("disconnect");
-		console.log(socket);
-/*
-		if(!$("#disconnect").is(":visible")){
+//		console.log(socket);
 
-			$("body").append(
-					"<div id=disconnect align=center>" + 
-					"<font color=red>ページがオフラインになりました。</font><br>" + 
-					"<input id='retry_button' type=button value='自動新着通知を再開する'>"+
-					"</div>"
-			);
+		setTimeout(function(){
+			if($("#disconnect").is(":visible") == 0 && onConnect_nodejs == 0){
 
-			$("#disconnect").css({
-			"z-index" : "1000",
-			"border-bottom": "1px solid #97bf60",
-			"background": "#ffeeee",
-			"position": "fixed",
-			"width":"100%",
-			"top":"0px",
-			"left":"0px"
-			});
-		}
-*/
+				$("body").append(
+						"<div id='disconnect' class='hide' align=center>" + 
+						"<font color=red>オフラインになりました。自動更新停止中..</font>&nbsp;<input id='retry_button' type=button value='再接続'>" + 
+						"</div>"
+				);
+				$("#disconnect").css({
+				"z-index" : "1000",
+				"border-bottom": "1px solid #eecccc",
+				"fontSize":"9pt",
+				"padding":"5px",
+				"background": "#ffeeee",
+				"position": "fixed",
+				"width":"100%",
+				"top":"0px",
+				"left":"0px"
+				}).slideDown("fast");
+			}
+		},1000);
+
+
 	});
 
 	socket.on('connect',function(){
 		onConnect_nodejs = 1;
 
-		if($("#disconnect").is(":visible")){
-			$(this).fadeOut("fast",function(){ 
-				$("#disconnect").remove();
+		if($("#disconnect").is(":visible") == 1){
+
+			$("#disconnect").remove();
+
+			$("body").append(
+				"<div id='connected' align=center>" + 
+				"<font color=green>再接続成功。自動更新を再開したよ！</font>" + 
+				"</div>"
+			);
+
+			$("#connected").css({
+			"z-index" : "1000",
+			"border-bottom": "1px solid #cceecc",
+			"fontSize":"9pt",
+			"padding":"5px",
+			"background": "#eeffee",
+			"position": "fixed",
+			"width":"100%",
+			"top":"0px",
+			"left":"0px"
 			});
+
+			setTimeout(function(){
+				$("#connected").slideUp("fast",function(){$(this).remove()});
+			},2000);
+
 		}
 		
 		console.log("connect");
-		console.log(socket);
+//		console.log(socket);
 
 		socket.emit('set', bbs,key,local_resnum);
 	});
@@ -1303,7 +1341,7 @@ function loadTwitterUserInfo(obj,callback){
 			url:'/ajax/twitter/get_info.cgi',
 			success: function(data){
 
-				console.log(data);
+//		console.log(data);
 
 				var url = "http://twitter.com/" + data.screen_name;
 				setCookie("twfunc",1);
