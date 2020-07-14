@@ -1422,16 +1422,7 @@ function setKoraboLink(){
 }
 
 function setPaletColor(color){
-
-
-	if(isSmartPhone == 1){
-		var _color = rgb2color(color);
-		$("#colorPicker").val(_color);
-		$(".nowColor").css("color",_color);
-
-	} else {
-		$("#colorPicker").spectrum("set", color);
-	}
+	$("#colorPicker").spectrum("set", color);
 }
 
 function rgb2color(rgb){
@@ -1499,56 +1490,52 @@ function oekakiInit(){
 
 	// 色選択
 
+	$("#colorPicker").spectrum({
+		showAlpha: true,
+		showPalette: true,
+		change: function(color) {
+			changeColorPicker()
+		}
+	});
+
+	//スマホは発動しないので直指定
 	if(isSmartPhone == 1){
-		$("#colorPicker").bind("change",function(color){
-
-			$('#sketch').sketch("color",color2rgb($(this).val()));
-			$(".nowColor").css("color",$(this).val());
-
-
-		});
-	} else {
-		$("#colorPicker").spectrum({
-			showAlpha: true,
-			showPalette: true,
-			change: function(color) {
-
-				$('#sketch').sketch("color",color.toRgbString());
-
-			}
+		$("#colorPicker").bind("change",function(e){
+			changeColorPicker()
 		});
 	}
+
+	function changeColorPicker(){
+		var color = $("#colorPicker").val();
+		$('#sketch').sketch("color",color2rgb(color));
+		$(".nowColor").css("color",color);
+	}
+	
 
 	// 背景色
 	$('#sketch').css("background","#FFF");
 	$('#sketch').prop("bgcolor","#FFF");
 	$('#sketch_honban').hide();
 
+	$("#bgcolorPicker").spectrum({
+		showAlpha: true,
+		color: "#fff",
+		showPalette: true,
+		change: function(color) {
+			setBGColor();
+		}
+	});
+
 	if(isSmartPhone == 1){
-		$("#bgcolorPicker").bind("change",function(color){
-
-			$('#sketch').sketch().setBgcolor($(this).val());
-			$('#sketch').prop("bgcolor",$(this).val());
-			$('#sketch').css("background",$(this).val());
-
+		$("#bgcolorPicker").bind("change",function(e){
+			setBGColor()
 		});
-	} else {
-		$("#bgcolorPicker").spectrum({
-			showAlpha: true,
-			color: "#fff",
-			showPalette: true,
-			change: function(color) {
-	//				$('#sketch').sketch("color",color.toHexString());
-	//			alert("hoe");
+	}
 
-//キャンバスはcss背景のみ
-					$('#sketch').css("background",color.toRgbString());
-					$('#sketch').prop("bgcolor",color.toRgbString());
-
-
-
-			}
-		});
+	function setBGColor(){
+		var color = $("#bgcolorPicker").val();
+		$('#sketch').css("background",color);
+		$('#sketch').prop("bgcolor",color);
 	}
 
 
