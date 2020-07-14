@@ -12,145 +12,263 @@ var pm = getUrlVars();
 var storage = {};
 
 $(function(){
-
-	$(document).on("inview","nn",function(){
-		if(!$(this).prop("on")){
-			$(this).prop("on",1).animate({count:0},{duration:1000*5,complete:function(){
-				$(this).contents().unwrap();
-			}});
-		}
+	$("button").click(function(e){
+		e.preventDefault();
 	});
+});
 
-	storage = gethashStorage("hist");
-	var last_res = storage[bbs + "/" + key];
+//地図機能
+(function() {
 
-	if(storage[bbs + "/" + key]){
-		var new_res = server_resnum - last_res;
-		if(new_res > 0){
-			kokomade_new_func();
+	function get_geo(){
+		if (!navigator.geolocation){
+			alert("navigator.geolocation の対応しているブラウザを使用してください。");
+		}else{
+			let option = {
+			  enableHighAccuracy: true,
+			  maximumAge: 1,
+			  timeout: 10000
+			};
+		let current = 'current-position';
+			navigator.geolocation.getCurrentPosition(
+			  function(position){ geo_success(current, position); },
+			  function(error){ geo_err(current, error); },
+			  option
+			);
 		}
 	}
-})
 
+	function geo_success(id, position) {
 
-function compareFunc(a, b) {
-  return a - b;
-}
+		let lat = position.coords.latitude;
+		let lon = position.coords.longitude;
+		let query = window.btoa(lat + "," + lon);
+		    query = query.replace(/==/,"");
 
-function kokomade_new_func(){
+		//          var url = "https://maps.google.co.jp/maps?q="+query +"&output=embed&z=16";
+		  let url = "/lib/yahoomap/?q="+query + "&p=p";
+		  let google = "https://www.google.com/maps?q="+query;
 
-	var last_res = storage[bbs + "/" + key];
-	var new_res = server_resnum - last_res;
+		//          var html = '<iframe frameborder=0 src='+url+' width="200" height="200"></iframe>';
+		  let html = '<div style="padding:5px;border:1pt dotted black;text-align:center;margin-top:3px">' + 
+		             '<div style="background:#333333;color:white;padding:3px">地図プレビュー</div>' + 
+		             '<div style="padding:10px">' + 
+		             '<input class=useMap type=button value="この地図を使う" code="#map('+query+')"> ' + 
+		             '<input class=mapClose type=button value="やめる">' + 
+		             '</div>' + 
+		             '<iframe scrolling=no frameborder=0 src="'+url+'" width="320" height="250"></iframe>' + 
+		             '</div>';
 
-	var $news = $("<div class='attayo' style='cursor:pointer;border:1px solid #ddd;padding:10px;background:#fff;position:fixed;bottom:30;left:0;border-radius:0 0 10px 0'>" + 
-		"前回から<b>"+new_res+"</b>件の新着レス！<font size=1 color=#999>（タップで新着から表示）</font>" + 
-		"</div>");
+		$("#map").html(html);
+		moveToMiddle($("#map"));
+	}
 
-	$("body").append($news);
-
-	$news.click(function(){
-		moveToTop($(".new_kokokara"));
-		$(".attayo").stop().fadeOut("slow");
-	});
-
-	$news.animate({hoge:1},1000*10,function(){
-			$(this).fadeOut("slow",function(){
-			$(this).remove();
-		});
-	});
-
-	var resnums = $("dt.mesg").filter(function(i,a){
-		return parseInt($(this).attr("res")) > last_res;
-	}).map(function(i,a){
-		return $(this).attr("res");
-	})
-
-	var sort = resnums.sort(compareFunc);
-
-	var from = sort[0];
-	var to = sort[resnums.length-1];
-
-	$("dt.mesg").filter(function(i,a){
-		return parseInt($(this).attr("res")) > last_res;
-	}).map(function(i,a){
-			$(this).find(".num").css("color","red");
-	})
-
-
-	$("dt.mesg[res="+from+"]").before( "<a class='new_kokokara'></a>" );
-
-	$(".mesg[res="+to+"]").on("inview",function(){
-			$(".attayo").stop().fadeOut("slow");
-			$(this).animate({count:0},{duration:1000*5,complete:function(){
-				$news.fadeOut("fast");
-				$(".num").css("color","");
-				$(".kokokara_new,.kokomade_new").slideUp("fast");
-			}});
-			$(this).unbind("inview");
-	});
-
-
-	$("dt.mesg[res="+from+"]").on("inview",function(){
-		$("body").prop("IS_KOKOKARA_DONE",1);
-
-		var $kokokara = $("<div class=kokokara_new style='border:1px solid #eeeeee;padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
-		"↓ここから新着</div>").hide();
-		$("dt.mesg[res="+from+"]").before( $kokokara );
-
-			$kokokara.fadeIn("fast");
-
-			$(this).unbind("inview");
-	});
-
-
-}
-
-$(function(){
-	 updateHistory();
-})
-
-function updateHistory(){
-	var bbskey = bbs +"/"+key;
-	sethashStorage("hist",bbskey,server_resnum,50);
-}
-
-
-/*
-$(function(){
-	$(".hanabi").click(function(){
-		startHanabi();
-	})
-})
-*/
-
-/* del-ank */
-function deleteAnk(val,time){
-	var param = {q:val,t:time};
-	$.ajax({
-		data : param,
-		type:'POST',
-		url : "/ajax/history/del_ank.cgi",
-		success:function(res){
-			;
+	function geo_err(id, error){
+		let e = "";
+		if (error.code == 1) { //1＝位置情報取得が許可されてない（ブラウザの設定）
+			e = "位置情報が許可されてません";
 		}
-	})
-}
+		if (error.code == 2) { //2＝現在地を特定できない
+			e = "現在位置を特定できません";
+		}
+		if (error.code == 3) { //3＝位置情報を取得する前にタイムアウトになった場合
+			e = "位置情報を取得する前にタイムアウトになりました";
+		}
+			alert("GPSエラー：" + e);
+	}
 
-$(function(){
+	function show_map() {
+
+		let lat = "35.685175";
+		let lon = "139.7528";
+		let query = window.btoa(lat + "," + lon);
+		    query = query.replace(/==/,"");
+
+		let url = "/lib/yahoomap/?q="+query + "&p=p";
+		let google = "https://www.google.com/maps?q="+query;
+		
+		let html = '<div class="mapEditer" style="background:white;position:fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);' + 
+		           'padding:5px;border:1pt dotted black;text-align:center;margin-top:3px">' + 
+		           '<div style="font-size:9pt;background:#000044;color:white;padding:3px">地図エディタ' + 
+		'<div style="font-size:8pt;display:inline-block;float:right" ><a href=# class=mapClose><font color=white>閉</font></a></div>' + 
+		           '</div>' + 
+		           '<div style="padding:10px">' + 
+		           '<input class=useMap type=button value="この地図を使う" code="#map('+query+')"> ' + 
+		           '<input class=mapClose type=button value="やめる">' + 
+		           '</div>' + 
+		           '<iframe scrolling=no frameborder=0 src="'+url+'" width="320" height="250"></iframe>' + 
+		           '</div>';
+
+		$("#map").html(html);
+	}
 
 
+	$(function(){
+		$("#map_bt").click(function(){
+			if($(".mapEditer").is(":visible")){
+				$("#map").html("");
+			} else {
+				show_map();
+			}
+		})
 
 
-
-	$(".delank").click(function(e){
-		e.preventDefault();
-		$(this).parents(".ankaview").slideUp("fast",function(){
-			$("AnkaNum").text("0");
-			$(".AnkaList").html("");
+		$("#gps").click(function(){
+			if(confirm("位置情報を取得します。よいですか？\n※プレビューで確認してね。\n")){
+				get_geo();
+			}
 		});
-		deleteAnk($(this).attr("val"),$(this).attr("time"));
+
+		$("#MESSAGE").change(function(){
+			if(!$(this).val().match("#map([\d\.]+,[\d\.]+)")){
+				$("#map").html("");
+			}
+		})
+
+		$(document).on("click",".useMap",function(){
+			let code = $(this).attr("code");
+			let texts = $("#MESSAGE").val() ? $("#MESSAGE").val().split("\n") : [];
+			    texts.push(code);
+			$("#MESSAGE").val(texts.join("\n"))
+				$(this).prop("disabled",true);
+		});
+
+		$(document).on("click",".mapClose",function(e){
+			if(!$(this).val().match(/#map\([^\)]+\)/)){
+				let text = $("#MESSAGE").val();
+				    text = text.replace(/#map\([^\)]+\)/g,"");
+				$("#MESSAGE").val(text);
+				$("#map").html("");
+			}
+		  e.preventDefault();
+		});
 	})
-});
+}());
+
+
+
+// 「ここから新しい投稿」機能
+(function(){
+
+	function compareFunc(a, b) {
+		return a - b;
+	}
+
+	function kokomade_new_func(){
+		let last_res = storage[bbs + "/" + key];
+		let new_res = server_resnum - last_res;
+		let $news = $("<div class='attayo' style='cursor:pointer;border:1px solid #ddd;padding:10px;background:#fff;position:fixed;bottom:30;left:0;border-radius:0 0 10px 0'>" + 
+			"前回から<b>"+new_res+"</b>件の新着レス！<font size=1 color=#999>（タップで新着から表示）</font>" + 
+			"</div>");
+		$("body").append($news);
+
+		$news.click(function(){
+			moveToTop($(".new_kokokara"));
+			$(".attayo").stop().fadeOut("slow");
+		});
+
+		$news.animate({hoge:1},1000*10,function(){
+				$(this).fadeOut("slow",function(){
+				$(this).remove();
+			});
+		});
+
+		let resnums = $("dt.mesg").filter(function(i,a){
+				return parseInt($(this).attr("res")) > last_res;
+			}).map(function(i,a){
+				return $(this).attr("res");
+		})
+
+		let sort = resnums.sort(compareFunc);
+		let from = sort[0];
+		let to = sort[resnums.length-1];
+
+		$("dt.mesg").filter(function(i,a){
+			return parseInt($(this).attr("res")) > last_res;
+		}).map(function(i,a){
+				$(this).find(".num").css("color","red");
+		})
+
+		$("dt.mesg[res="+from+"]").before( "<a class='new_kokokara'></a>" );
+
+		$(".mesg[res="+to+"]").on("inview",function(){
+				$(".attayo").stop().fadeOut("slow");
+				$(this).animate({count:0},{duration:1000*5,complete:function(){
+					$news.fadeOut("fast");
+					$(".num").css("color","");
+					$(".kokokara_new,.kokomade_new").slideUp("fast");
+				}});
+				$(this).unbind("inview");
+				$("body").trigger("UPDATE_HISTORY");
+		});
+
+		$("dt.mesg[res="+from+"]").on("inview",function(){
+			$("body").prop("IS_KOKOKARA_DONE",1);
+			let $kokokara = $("<div class=kokokara_new style='border:1px solid #eeeeee;padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
+			"↓ここから新着</div>").hide();
+			$("dt.mesg[res="+from+"]").before( $kokokara );
+				$kokokara.fadeIn("fast");
+				$(this).unbind("inview");
+		});
+	}
+
+	function setup(){
+
+		$(document).on("inview","nn",function(){
+			if(!$(this).prop("on")){
+				$(this).prop("on",1).animate({count:0},{duration:1000*5,complete:function(){
+					$(this).contents().unwrap();
+				}});
+			}
+		});
+
+		storage = gethashStorage("hist");
+		let last_res = storage[bbs + "/" + key];
+
+		if(storage[bbs + "/" + key]){
+			let new_res = server_resnum - last_res;
+			if(new_res > 0){
+				kokomade_new_func();
+			}
+		}
+	
+	$("body").bind("UPDATE_HISTORY",function(){
+			let bbskey = bbs +"/"+key;
+			sethashStorage("hist",bbskey,server_resnum,50);
+		});
+	}
+
+	$(function(){
+		setup();
+	})
+
+}());
+
+/* 安価通知を消す */
+(function(){
+	function deleteAnk(val,time){
+		var param = {q:val,t:time};
+		$.ajax({
+			data : param,
+			type:'POST',
+			url : "/ajax/history/del_ank.cgi",
+			success:function(res){
+				;
+			}
+		})
+	}
+
+	$(function(){
+		$(".delank").click(function(e){
+			e.preventDefault();
+			$(this).parents(".ankaview").slideUp("fast",function(){
+				$("AnkaNum").text("0");
+				$(".AnkaList").html("");
+			});
+			deleteAnk($(this).attr("val"),$(this).attr("time"));
+		})
+	});
+}());
 
 
 /*バルス*/
@@ -168,23 +286,506 @@ $(function(){
 });
 
 /*お絵描きツール*/
+var isOekakiDone = 1;
+var oekaki = (function(){
 
-$(function(){
-	$(".dis").hide();
-	$("#oekaki_plugin").change(function(){
+	var _this = this;
+
+	$(function(){
+		$(".dis").hide();
+		$("#oekaki_plugin").change(function(){
+			update_dis();
+		})
 		update_dis();
 	})
-	update_dis();
+
+	function setKoraboLink(){
+
+		$(document).on("mouseover", ".opic", function(){ 
+			$(this).css("cursor","pointer") 
+		});
+
+		$(document).on("click", ".opic", function(){
+			if(confirm("この画像とコラボするとね？？\n(他の人が描いた絵をベースに追記できる機能でござる☆)")){
+
+				$("#parent_pid").val($(this).attr("pid"));
+
+				/* 画像をローカル画像に差し替える(編集可能化) */
+
+				var local_image_url = $(this).attr("src").replace("https://.+open2ch.net","");
+
+				var _this = this;
+
+				if($("#oekakiCanvas").is(":visible")){
+					$('body').scrollTo('#sketch',{},function(){
+						$('#sketch').sketch().setBaseImageURL( local_image_url );
+					});
+				} else {
+					$('body').scrollTo('#oekakiCanvas',{},function(){
+						$("#oekakiMode").attr("checked","true");
+						$("#oekakiCanvas").show();
+						$('#sketch').sketch().setBaseImageURL( local_image_url );
+					});
+				}
+
+				/* サイズを一致させる */
+
+				var size = $(this).width() + "x" + $(this).height();
+				$("#canvasSize").val(size).trigger("change");
+
+			}
+		})
+	}
+
+	function setPaletColor(color){
+		$("#colorPicker").spectrum("set", color);
+	}
+
+	function rgb2color(rgb){
+		var hex_rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/); 
+		function hex(x) {return ("0" + parseInt(x).toString(16)).slice(-2);}
+		if (hex_rgb) {
+			return "#" + hex(hex_rgb[1]) + hex(hex_rgb[2]) + hex(hex_rgb[3]);
+		} else {
+			return rgb;
+		}
+	}
+
+	function color2rgb(color){
+		color = color.replace(/^#/, '');
+		var r = parseInt(color.substr(0, 2), 16);
+		var g = parseInt(color.substr(2, 2), 16);
+		var b = parseInt(color.substr(4, 2), 16);
+		var code = ([r,g,b]).join(",");
+		return "rgb("+code+")";
+	}
 
 
-	$(".toolBt").bind("touchstart mousedown",function(){
-		$(".toolBt").removeClass("selectedTool");
-		$(this).addClass("selectedTool");
-		$(this).find("input").trigger("click");
-	})
+	this.isOekakiDone = 0;
 
 
-})
+	this.init_oekaki = function(){
+
+		$(".opic").css({cursor:"pointer"});
+		setKoraboLink();
+		var doc = document;
+		var body = doc.body;
+		/* ツール：戻る*/
+		var back_actions = [];
+
+		$("#backButton").click(function(){
+
+			if( $('#sketch').sketch().actions.length ){
+				back_actions.push( $('#sketch').sketch().actions.pop() );
+				$("#prevButton").prop("disabled","");
+				$('#sketch').sketch().redraw();
+			} else {
+				alert("no history");
+			}
+		});
+
+
+
+		if(getCookie("oekakiMode") == 1){
+			$("#oekakiCanvas").css("visibility","visible");
+		}
+
+		//別窓機能
+		if(getCookie("oekaki_window")){
+			$("#oekakiCanvas").addClass("oekaki_betumado");
+			$("#oekaki_window").prop("checked",true);
+		}
+
+		$("#oekaki_window").click(function(){
+			if($("#oekakiCanvas").hasClass("oekaki_betumado")){
+				$("#oekakiCanvas").removeClass("oekaki_betumado")
+			} else {
+				$("#oekakiCanvas").addClass("oekaki_betumado")
+			}
+			setCookie("oekaki_window",$(this).is(":checked") ? 1 : 0);
+		});
+
+
+		$("#prevButton").click(function(){
+
+			if( back_actions.length ){
+				$('#sketch').sketch().actions.push( back_actions.pop() );
+				$('#sketch').sketch().redraw();
+			} else {
+				alert("no history");
+			}
+
+			if( !back_actions.length ){
+				$("#prevButton").prop("disabled","true");
+			}
+
+			funcFilUpload();
+			funcDragAndDrop();
+
+		});
+
+		/* キーで戻る*/
+
+		$(document).keydown(function(e){
+			if( e.which === 90 && e.ctrlKey ){
+				$('#sketch').sketch().actions.pop();
+				$('#sketch').sketch().redraw();
+			}
+		}); 
+
+
+		/*お絵かきモード*/
+		var sketch = $('#sketch').sketch();
+
+		sketch.bind("startPainting", function(){
+			is_oekaki_focus = 1;
+			is_oekaki_done = 0;
+			horyu_counter = 0;
+			$("horyu").html(horyu_counter);
+		});
+
+		sketch.bind("stopPainting", function(){
+			is_oekaki_done = 1;
+			horyu_counter = 0;
+		});
+
+
+		sketch.bind("mousedown", function(){
+			_this.isOekakiDone = 1;
+			
+			back_actions = [];
+			$("#prevButton").prop("disabled","true");
+			
+		});
+
+		/*スマホ用*/
+
+		sketch.get(0).addEventListener("touchend", function(){
+			_this.isOekakiDone = 1;
+		});
+
+		$("#colorPicker").spectrum({
+			palette: [
+			["#000000","#1d2b53","#7e2553","#008751",],
+			["#ab5236","#5f574f","#c2c3c7","#fff1e8"],
+			["#ff004d","#ffa300","#ffec27","#00e436"],
+			["#29adff","#83769c","#ff77a8","#ffccaa"],
+			["#FFFFFF"]],
+			showAlpha: true,
+			showPalette: true,
+			change: function(color) {
+				changeColorPicker()
+			}
+		});
+
+		/* スマホは発動しないので直指定 */
+		if(isSmartPhone == 1){
+			$("#colorPicker").bind("change",function(e){
+				changeColorPicker()
+			});
+		}
+
+		function changeColorPicker(){
+			var color = $("#colorPicker").next().find(".sp-preview-inner").css("background-color");
+			$('#sketch').sketch("color",color);
+		}
+		
+
+		$('#sketch').css("background","#FFF");
+		$('#sketch').prop("bgcolor","#FFF");
+		$('#sketch_honban').hide();
+
+		$("#bgcolorPicker").spectrum({
+			color: "#FFFFFF",
+			showPalette: true,
+			move:setBGColor,
+			change:setBGColor
+		});
+
+		function setBGColor(){
+			var color = $("#bgcolorPicker").next().find(".sp-preview-inner").css("background-color");
+
+			$('#sketch').css("background",color);
+			$('#sketch').prop("bgcolor",color);
+
+		}
+
+		if(isSmartPhone == 1){
+			$("#bgcolorPicker").bind("change",function(e){
+				setBGColor()
+			});
+			$("#bgcolorPicker").spectrum("set", "#FFF");
+		}
+
+
+		/* ツール関連 */
+
+		$("#psize").change(function(){
+			$('#sketch').sketch("size",$(this).val());
+		});
+
+		$("#kesu").click(function(){
+			$("[data-tool=eraser]").click();
+		});
+
+		$("#spoit").click(function(){
+			$("[data-tool=spoit]").click();
+		});
+
+		$("#fill").click(function(){
+			$("[data-tool=fill]").click();
+		});
+
+
+
+
+		$("#saveButton").click(function(){
+			if(_this.isOekakiDone){
+				var link = document.createElement('a');
+				link.download = ["open2ch",new Date().getTime()].join("-") + ".png";
+				link.href = $('#sketch_honban').get(0).toDataURL("image/png");
+				link.click();
+			} else {
+				alert("まだ何も描かれていないようだ。。");
+			}
+		});
+
+
+		/* ツール：クリアボタン */
+
+		$("#clearButton").click(function(){
+			if(confirm("お絵かきをクリアします。よろしいですか？")){
+				$('#sketch').sketch().clear();
+				_this.isOekakiDone = 0;
+			}
+		});
+
+		$("#kaku").click(function(){
+			$("[data-tool=marker]").click();
+		});
+
+		if(getCookie("oekakiMode") == 1){
+			openOekaki();
+		}
+
+		$("#closeOekaki").click(function(e){
+			closeOekaki(1);
+			e.preventDefault();
+		})
+
+		function openOekaki(is_cookie){
+			$("#oekakiCanvas").fadeIn("fast").css("visibility","visible");
+			if(is_cookie){
+				setCookie("oekakiMode",1);
+			}
+		}
+
+		function closeOekaki(is_cookie){
+			$("#oekakiCanvas").fadeOut("fast").css("visibility","hidden");
+			if(is_cookie){
+				setCookie("oekakiMode",0);
+			}
+		}
+
+		$("#oekakiMode").click(function(){
+			if( $("#oekakiCanvas").is(":visible") ){
+				closeOekaki(1);
+			} else {
+				openOekaki(1);
+			}
+		})
+
+		$("#oekakiMode").change(function(){
+			if($(this).prop("checked") && $("#oekaki_plugin").prop("checked") ){
+				loadOekakiEx();
+			}
+		});
+
+
+		/* サイズ変更 */
+		$("#canvasSize").change(function(){
+			var size = $(this).val().split("x");
+
+			var ctx = $("#sketch").get(0).getContext('2d');
+			var ctx2 = $("#sketch_honban").get(0).getContext('2d');
+
+			$(ctx.canvas).animate({ 
+				width : size[0],
+				height : size[1],
+			}, "fast",function(){
+				ctx.canvas.width = size[0];
+				ctx.canvas.height = size[1];
+				ctx2.canvas.width = size[0];
+				ctx2.canvas.height = size[1];
+				$("#sketch").sketch().redraw();
+			});
+		});
+
+		$(".toolBt").bind("touchstart mousedown",function(){
+			$(".toolBt").removeClass("selectedTool");
+			$(this).addClass("selectedTool");
+			$(this).find("input").trigger("click");
+		})
+	}
+
+	this.redrawHonban = function(){
+		var ctx = $('#sketch_honban').get(0).getContext('2d');
+		ctx.fillStyle = $("#sketch").prop("bgcolor");
+		ctx.fillRect(0,0,$(this).width(),$(this).height());
+		ctx.drawImage($('#sketch').get(0),0,0);
+	}
+
+/*お絵描き画像うｐ関連*/
+	/* Drag-And-Drop */
+	function funcDragAndDrop(){
+		var droppable = $("#sketch");
+		var cancelEvent = function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			return false;
+		}
+		var handleDroppedFile = function(event) {
+			cancelEvent(event);
+			var file = event.originalEvent.dataTransfer.files[0];
+			$("#sketch").css("border","");
+			setFile(file);
+			return false;
+		}
+
+		var handleDragOver = function(event){
+			cancelEvent(event);
+			$("#sketch").css("border","2pt dashed #444");
+			return false;
+		}
+		droppable.bind("dragover", handleDragOver);
+		droppable.bind("dragenter", cancelEvent);
+		droppable.bind("drop", handleDroppedFile);
+	}
+
+	/* File-Select*/
+	function funcFilUpload(){
+		$('#upImage').click(function() {
+			$('input[name=photo]').trigger('click');
+		});
+		$('input[name=photo]').change(function(e) {
+			var file = e.target.files[0];
+			setFile(file);
+		});
+	}
+
+	function setFile(file){
+		var img = new Image();
+		var ctx = $("#sketch").get(0).getContext('2d');
+		var fileReader = new FileReader();
+		fileReader.onload = function(event) {
+			$(img).attr('src', event.target.result);
+		}
+		fileReader.readAsDataURL(file);
+		img.onload = function() {
+			fitImage(ctx, img);
+			$('#sketch').sketch().setBaseImageURL($("#sketch").get(0).toDataURL());
+
+			_this.isOekakiDone = 1;
+		};
+	}
+
+	function fitImage(ctx, img) {
+	 var r;
+	 if (img.width / ctx.canvas.width > img.height / ctx.canvas.height) 
+	  r = ctx.canvas.width / img.width
+	 else 
+	  r = ctx.canvas.height / img.height;
+	 if (r > 1) r = 1;
+	 putImage(ctx, img, 0.5, 0.5, r);
+	}
+
+	function putImage(ctx, img, rx, ry, ratio) {
+	 var w = img.width * ratio;
+	 var h = img.height * ratio;
+	 var x = (ctx.canvas.width - w) * clamp(rx, 0, 1);
+	 var y = (ctx.canvas.height - h) * clamp(ry, 0, 1);
+	 ctx.drawImage(img, x, y, w, h);
+	}
+
+	function clamp(num, min, max) {
+	 if (min < num) {
+	  if (num < max) {
+	   return num;
+	  }
+	  return max;
+	 }
+	 return min;
+	}
+
+
+/* <お絵かき高機能モード */
+
+		function loadOekakiEx(){
+	/*	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js"; */
+			var url = "//open.open2ch.net/lib/oekakiex/oekakiex.v5.js?v20191218_v11";
+
+			$(".dis").show();
+			$(".toolBt").hide();
+
+
+			$.ajaxSetup({cache: true});
+			$.getScript(url);
+		}
+
+
+	$(function(){
+		$("#oekaki_plugin").click(function(){
+			loadOekakiEx();
+		});
+		$("#oekaki_plugin").change(
+			function(){
+				setCookie("oekaki_ex",$(this).prop("checked") ? "1" : "0");
+
+				if(!$(this).prop("checked")){
+					alert("ページを再読み込みすると、高機能モードが解除されます。");
+				}
+		});
+
+		if(getCookie("oekaki_ex") == 1){
+
+			$("#oekaki_plugin").prop("checked",true);
+			if(getCookie("oekakiMode")){
+				loadOekakiEx();
+			}
+		}
+	});
+
+		//整合性調整
+		$("body").bind("OEKAKI_EX_INIT",function(){
+				$('#sketch').sketch().bgcolor = "#FFFFFF";
+				$("#prevButton").hide();
+				$("#clearButton").val("消");
+				$("#goBtn").val("進む");
+				$("#psize").css("margin-right","5px");
+				$("#psize").after($("#goBtn,#backButton"));
+				$("#canvasSize2").trigger("change");
+		});
+
+	$(document).on("change","#scaleSelect",function(){
+		if($(this).val() > 1){
+			$("#_canvas").css("text-align","");
+		} else {
+			$("#_canvas").css("text-align","center");
+		}
+	});
+
+
+
+
+	return this;
+
+
+
+}());
+
+
+
+
 
 function update_dis(){
 	if($("#oekaki_plugin").is(":checked")){
@@ -336,99 +937,14 @@ $(function(){
 });
 
 
-/*お絵描き画像うｐ関連*/
 
-$(function(){
-	funcFilUpload();
-	funcDragAndDrop();
-})
-
-/* Drag-And-Drop */
-function funcDragAndDrop(){
-	var droppable = $("#sketch");
-	var cancelEvent = function(event) {
-		event.preventDefault();
-		event.stopPropagation();
-		return false;
-	}
-	var handleDroppedFile = function(event) {
-		cancelEvent(event);
-		var file = event.originalEvent.dataTransfer.files[0];
-		$("#sketch").css("border","");
-		setFile(file);
-		return false;
-	}
-
-	var handleDragOver = function(event){
-		cancelEvent(event);
-		$("#sketch").css("border","2pt dashed #444");
-		return false;
-	}
-	droppable.bind("dragover", handleDragOver);
-	droppable.bind("dragenter", cancelEvent);
-	droppable.bind("drop", handleDroppedFile);
-}
-
-/* File-Select*/
-function funcFilUpload(){
-	$('#upImage').click(function() {
-		$('input[name=photo]').trigger('click');
-	});
-	$('input[name=photo]').change(function(e) {
-		var file = e.target.files[0];
-		setFile(file);
-	});
-}
-
-function setFile(file){
-	var img = new Image();
-	var ctx = $("#sketch").get(0).getContext('2d');
-	var fileReader = new FileReader();
-	fileReader.onload = function(event) {
-		$(img).attr('src', event.target.result);
-	}
-	fileReader.readAsDataURL(file);
-	img.onload = function() {
-		fitImage(ctx, img);
-		$('#sketch').sketch().setBaseImageURL($("#sketch").get(0).toDataURL());
-
-		isOekakiDone = 1;
-	};
-}
-
-function fitImage(ctx, img) {
- var r;
- if (img.width / ctx.canvas.width > img.height / ctx.canvas.height) 
-  r = ctx.canvas.width / img.width
- else 
-  r = ctx.canvas.height / img.height;
- if (r > 1) r = 1;
- putImage(ctx, img, 0.5, 0.5, r);
-}
-
-function putImage(ctx, img, rx, ry, ratio) {
- var w = img.width * ratio;
- var h = img.height * ratio;
- var x = (ctx.canvas.width - w) * clamp(rx, 0, 1);
- var y = (ctx.canvas.height - h) * clamp(ry, 0, 1);
- ctx.drawImage(img, x, y, w, h);
-}
-
-function clamp(num, min, max) {
- if (min < num) {
-  if (num < max) {
-   return num;
-  }
-  return max;
- }
- return min;
-}
 
 /*設定ボタン関連*/
 
 $(function(){
 
 	$(".settingButton_pc").click(function(){
+
 		if($(".options-1").is(":visible")){
 			$(".options-1,.options-2").slideUp("fast");
 			$($(this).find("img")).attr("src","//open.open2ch.net/image/icon/setting_on.gif");
@@ -613,8 +1129,7 @@ $(function(){
 
 		$("body").bind("UPDATE_NEWRES",function(event,res){
 
-			updateHistory();
-
+			$("body").trigger("UPDATE_HISTORY");
 
 		if( 
 				(isSmartPhone == 0 && $("#use_yomi").prop("checked")) ||
@@ -763,7 +1278,6 @@ var is_oekaki_done = 0;
 
 var pretext;
 var MAX_HORYU_TIME = 3;
-
 var horyu_counter = 0;
 
 $(function(){
@@ -794,10 +1308,7 @@ $(function(){
 
 		if(is_oekaki_done == 1){
 
-			console.log("oekaki::" + horyu_counter);
-
 			if(horyu_counter >= MAX_HORYU_TIME ){
-
 				is_oekaki_focus = 0;
 				horyu_counter = 0;
 				is_oekaki_done = 0;
@@ -919,7 +1430,6 @@ $(function(){
 
 $(function(){
 	setTimeout(function(){
-		console.log( ">>" + $("[name=mail]").val() );
 		if ( new String($("[name=mail]").val()).match(/投票/) ){
 			$(".ratingBt").prop("checked",true);
 		}
@@ -1170,8 +1680,6 @@ $(function(){
 $(function(){
 	$("body").append("<style>.bottomDiv{position:fixed}</style>");
 
-
-
 	$("textarea").keydown(function(e){
 		if(event.ctrlKey){
 			if(e.keyCode === 13 && $(this).val()){
@@ -1199,18 +1707,18 @@ var mouse;
 
 function mouseEventInit(){
 
-	var is_moving;
+	let is_moving;
+	let clickOffsetTop;
+	let clickOffsetLeft;
 
-	var clickOffsetTop;
-	var clickOffsetLeft;
-	var e = $("#formdiv").get(0);
+	let e = $("#formdiv").get(0);
+//	let e = $("#oekakiCanvas").get(0);
 
 	if(is_mouseEventInit){
 		return;
 	}
 
 	is_mouseEventInit = 1;
-
 
 	$(document).on("click",".closeKoteiWindow",function(){
 		$("#formfix").prop("checked",false);
@@ -1220,46 +1728,41 @@ function mouseEventInit(){
 
 
 	$(document).on("mousedown",".ddWindow",function(evt){
-		if($("#formfix").is(":checked") ){
-			is_moving = 1;
-			$("body").css({
-				"-moz-user-select": "none",
-				"-webkit-user-select": "none",
-				"-ms-user-select": "none"
-			});
+		is_moving = 1;
+		$("body").css({
+			"-moz-user-select": "none",
+			"-webkit-user-select": "none",
+			"-ms-user-select": "none"
+		});
 
-			$("#MESSAGE").after("<div class=pata style='position:absolute;width:100%' align=center></div>")
+		$("#MESSAGE").after("<div class=pata style='position:absolute;width:100%' align=center></div>")
 
-			var icons = ["anime_matanki01","anime_matanki02"];
+		let icons = ["anime_matanki01","anime_matanki02"];
 
-			for(var i=0;i<(1+Math.floor(Math.random()*12));i++){
+		for(let i=0;i<(1+Math.floor(Math.random()*12));i++){
 
-				var icon = icons[Math.floor(Math.random()*icons.length)];
-
-				var img = $("<img class='_pata' style='position:relative;top:-60' src=//image.open2ch.net/image/icon/2ch/"+icon+".gif>");
-				img.hide();
-				$(".pata").append(img);
-				img.css("animation-duration", "1." + Math.floor(Math.random()*10) + "s");
-				img.fadeIn("fast");
-
-			}
-
-			mouse = 'down';
-			$("#formdiv").css({"opacity":".8","box-shadow":"2px 2px 4px gray"});
-
-			evt = (evt) || window.event;
-
-			clickOffsetTop = evt.clientY - e.offsetTop;
-			clickOffsetLeft = evt.clientX - e.offsetLeft;
+			let icon = icons[Math.floor(Math.random()*icons.length)];
+			let img = $("<img class='_pata' style='position:relative;top:-60' src=//image.open2ch.net/image/icon/2ch/"+icon+".gif>");
+			img.hide();
+			$(".pata").append(img);
+			img.css("animation-duration", "1." + Math.floor(Math.random()*10) + "s");
+			img.fadeIn("fast");
 
 		}
+
+		mouse = 'down';
+		$(e).css({"opacity":".8","box-shadow":"2px 2px 4px gray"});
+
+		evt = (evt) || window.event;
+		clickOffsetTop = evt.clientY - e.offsetTop;
+		clickOffsetLeft = evt.clientX - e.offsetLeft;
 	});
 
 	$(document).mouseup(function(){
 		if(is_moving && $("#formfix").is(":checked") ){
-			$("#formdiv").css({"opacity":"1","box-shadow":""});
+			$(e).css({"opacity":"1","box-shadow":""});
 			$(".pata").remove();
-			var posi = e.style.top + ":" + e.style.left;
+			let posi = e.style.top + ":" + e.style.left;
 			localStorage.formPosition = posi;
 			mouse = 'up';
 			$("body").css({
@@ -1276,12 +1779,12 @@ function mouseEventInit(){
 			evt = (evt) || window.event;
 			if(mouse == 'down'){
 				if( (evt.clientY - clickOffsetTop > 0)  && 
-						(evt.clientY - clickOffsetTop) + $("#formdiv").outerHeight() < window.innerHeight + 100
+						(evt.clientY - clickOffsetTop) + $(e).outerHeight() < window.innerHeight + 100
 					){
 					e.style.top = evt.clientY - clickOffsetTop + 'px';
 				}
 				if( (evt.clientX - clickOffsetLeft > -30) &&
-						((evt.clientX - clickOffsetLeft)+$("#formdiv").outerWidth() < window.innerWidth + 30)
+						((evt.clientX - clickOffsetLeft)+$(e).outerWidth() < window.innerWidth + 30)
 				){
 					e.style.left = evt.clientX - clickOffsetLeft + 'px';
 				}
@@ -1289,8 +1792,9 @@ function mouseEventInit(){
 		}
 	});
 
-
 }
+
+var koteiTimer;
 
 function setFormKotei(flag){
 
@@ -1316,10 +1820,10 @@ function setFormKotei(flag){
 				"bottom":0,
 				"width":"100%"
 			});
-			$("#formdiv").slideDown("fast");
+			$("#formdiv").show();
 		} else {
 
-			$(".formDivDefault").after("<p class=closeKoteiWindow_div><button class=closeKoteiWindow>位置固定リセット</button></p>");
+			$(".formDivDefault").after("<p class=closeKoteiWindow_div><button class=closeKoteiWindow>別窓リセット</button></p>");
 
 			$("#formdiv").prepend($(
 			"<div class=ddWindow style='border-radius:3px;font-size:0pt;background:#449;color:#007;padding:4px;cursor: move !important;'>"+
@@ -1328,8 +1832,14 @@ function setFormKotei(flag){
 			"</div>"
 			))
 
-			setTimeout(function(){
+			if(koteiTimer){
+				clearTimeout(koteiTimer);
+				koteiTimer = null;
+			}
+
+			koteiTimer = setTimeout(function(){
 				$(document).on("mouseleave","#formdiv",function(){
+
 					$("#formdiv").stop(true).animate({"hoge":1},{duration:3000,complete:function(){
 						if($('[name="MESSAGE"]').text() == ""){
 							$(this).animate({"opacity":".3"},"fast");
@@ -1339,32 +1849,20 @@ function setFormKotei(flag){
 
 				$("#formdiv").trigger("mouseleave");
 
-
 				$(document).on("mouseover","#formdiv",function(){
-						if(mouse !== 'down'){
-							$(this).stop(true).animate({"opacity":"1"},"fast");
-						}
+					if(mouse !== 'down'){
+						$(this).stop(true).css({"opacity":"1"});
+					}
 				});
-
 
 				$('[name="MESSAGE"]').focus(function(){
-						$("#formdiv").stop(true).animate({"opacity":"1"},"fast");
+						$("#formdiv").stop(true).css({"opacity":"1"});
 				})
-
-/*
-				$('[name="MESSAGE"]').blur(function(){
-					$("#formdiv").stop(true).animate({"hoge":1},{duration:3000,complete:function(){
-						$(this).animate({"opacity":".3"},"fast");
-					}});
-				})
-*/
 
 				$(document).on("keydown","#formdiv",function(){
-					$("#formdiv").stop(true).animate({"opacity":"1"},"fast");
+					$("#formdiv").stop(true).css({"opacity":"1"});
 				});
 			},1000);
-
-			console.log(window.innerHeight)
 
 			$("#formdiv").css({
 				"position":"fixed",
@@ -1378,7 +1876,7 @@ function setFormKotei(flag){
 				$("#formdiv").css({top:p[0],left:p[1]});
 			}
 
-			$("#formdiv").slideDown("fast");
+			$("#formdiv").show();
 			$("body").append($("#formdiv"));
 
 
@@ -1388,12 +1886,18 @@ function setFormKotei(flag){
 
 	} else {
 
+		if(koteiTimer){
+			clearTimeout(koteiTimer);
+			koteiTimer = null;
+		}
+
 		localStorage.removeItem('formPosition');
 		
+		$("#formdiv").css({opacity:"1"});
+		$(document).off("mouseleave mouseover keydown","#formdiv");
+
 		$(".ddWindow").remove();
 
-
-		$("#formdiv").fadeOut("fast");
 
 		$("#formdiv").css({
 				"top":"",
@@ -1411,7 +1915,7 @@ function setFormKotei(flag){
 			$(".formDivDefault").append($("#formdiv"));
 		}
 
-		$("#formdiv").fadeIn("fast");
+		$("#formdiv").show();
 	}
 }
 
@@ -1420,64 +1924,9 @@ function setFormKotei(flag){
 /* </フォーム固定> */
 
 
-/* <お絵かき高機能モード */
-
-$(function(){
-	$("#oekaki_plugin").click(function(){
-		loadOekakiEx();
-	});
-	$("#oekaki_plugin").change(
-		function(){
-			setCookie("oekaki_ex",$(this).prop("checked") ? "1" : "0");
-
-			if(!$(this).prop("checked")){
-				alert("ページを再読み込みすると、高機能モードが解除されます。");
-			}
-	});
-	$("#oekakiMode").change(function(){
-		if($(this).prop("checked") && $("#oekaki_plugin").prop("checked") ){
-			loadOekakiEx();
-		}
-	});
-	if(getCookie("oekaki_ex") == 1){
-		$("#oekaki_plugin").prop("checked",true);
-		if($("#oekakiMode").prop("checked")){
-			loadOekakiEx();
-		}
-	}
-});
-/* </お絵かき高機能モード> */
-
-	function loadOekakiEx(){
-/*	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js"; */
-		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v3.js?v20191218_v3";
-
-		$(".dis").show();
-		$(".toolBt").hide();
-
-
-		$.ajaxSetup({cache: true});
-		$.getScript(url);
-	}
-
-	$("body").bind("OEKAKI_EX_INIT",function(){
-
-			$('#sketch').sketch().bgcolor = "#FFFFFF";
-			$("#prevButton").hide();
-			$("#clearButton").val("消");
-			$("#goBtn").val("進む");
-			$("#psize").css("margin-right","5px");
-			$("#psize").after($("#goBtn,#backButton"));
-			$("#canvasSize2").trigger("change");
-
-	});
-
 var hour = new Date().getHours();
-
 var sec = 1000*10;
-
 var defTitle;
-
 var selectedID = {};
 
 $(function(){
@@ -1764,7 +2213,7 @@ $(document).ready(function() {
 	/* WebSocketに未対応のブラウザは更新チェックしない。*/
 
 
-	oekakiInit();
+	oekaki.init_oekaki();
 	matomeInit();
 	menuInit();
 
@@ -1819,10 +2268,6 @@ $(document).ready(function() {
 		setCookie("submitMode", $(this).is(':checked') ? "1" : "0");
 	});
 
-	$("#oekakiMode").change(function(){
-		setCookie("oekakiMode", $(this).is(':checked') ? "1" : "0");
-	});
-
 	$("#noWait").change(function(){
 		setCookie("noWait", $(this).is(':checked') ? "1" : "0");
 	});
@@ -1873,13 +2318,13 @@ $(document).ready(function() {
 
 /* お絵描きデータ生成 */
 
-		if( isOekakiDone == 1 && 
-		    $("#oekakiMode").is(':checked') && 
+		if( (oekaki.isOekakiDone == 1) && 
+		    $("#oekakiCanvas").is(":visible") && 
 		    ($('#sketch').sketch().actions.length || $('#sketch').sketch().baseImageURL) && 
 		    $("[name=oekakiData]").val() == ""){
 
 
-		redrawHonban();
+		oekaki.redrawHonban();
 
 		$("#submit_button,#resSubmit").prop("disabled",true);
 
@@ -1953,297 +2398,6 @@ function matomeInit(){
 			}
 	});
 
-}
-
-function setKoraboLink(){
-
-	$(document).on("mouseover", ".opic", function(){ 
-		$(this).css("cursor","pointer") 
-	});
-
-	$(document).on("click", ".opic", function(){
-		if(confirm("この画像とコラボするとね？？\n(他の人が描いた絵をベースに追記できる機能でござる☆)")){
-
-			$("#parent_pid").val($(this).attr("pid"));
-
-			/* 画像をローカル画像に差し替える(編集可能化) */
-
-			var local_image_url = $(this).attr("src").replace("https://.+open2ch.net","");
-
-			var _this = this;
-
-			if($("#oekakiMode").is(':checked')){
-				$('body').scrollTo('#sketch',{},function(){
-					$('#sketch').sketch().setBaseImageURL( local_image_url );
-				});
-			} else {
-				$('body').scrollTo('#oekakiCanvas',{},function(){
-					$("#oekakiMode").attr("checked","true");
-					$("#oekakiCanvas").show();
-					$('#sketch').sketch().setBaseImageURL( local_image_url );
-				});
-			}
-
-			/* サイズを一致させる */
-
-			var size = $(this).width() + "x" + $(this).height();
-			$("#canvasSize").val(size).trigger("change");
-
-		}
-	})
-}
-
-function setPaletColor(color){
-	$("#colorPicker").spectrum("set", color);
-}
-
-function rgb2color(rgb){
-	var hex_rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/); 
-	function hex(x) {return ("0" + parseInt(x).toString(16)).slice(-2);}
-	if (hex_rgb) {
-		return "#" + hex(hex_rgb[1]) + hex(hex_rgb[2]) + hex(hex_rgb[3]);
-	} else {
-		return rgb;
-	}
-}
-
-function color2rgb(color){
-	color = color.replace(/^#/, '');
-	var r = parseInt(color.substr(0, 2), 16);
-	var g = parseInt(color.substr(2, 2), 16);
-	var b = parseInt(color.substr(4, 2), 16);
-	var code = ([r,g,b]).join(",");
-	return "rgb("+code+")";
-}
-
-
-var isOekakiDone = 0;
-
-function oekakiInit(){
-
-	$(".opic").css({cursor:"pointer"});
-
-	setKoraboLink();
-
-    var doc = document;
-    var body = doc.body;
-
-
-
-	/* ツール：戻る*/
-
-	var back_actions = [];
-
-	$("#backButton").click(function(){
-
-		if( $('#sketch').sketch().actions.length ){
-			back_actions.push( $('#sketch').sketch().actions.pop() );
-			$("#prevButton").prop("disabled","");
-			$('#sketch').sketch().redraw();
-		} else {
-			alert("no history");
-		}
-	});
-
-	$("#prevButton").click(function(){
-
-		if( back_actions.length ){
-			$('#sketch').sketch().actions.push( back_actions.pop() );
-			$('#sketch').sketch().redraw();
-		} else {
-			alert("no history");
-		}
-
-		if( !back_actions.length ){
-			$("#prevButton").prop("disabled","true");
-		}
-
-
-	});
-
-
-	/* キーで戻る*/
-
-	$(document).keydown(function(e){
-		if( e.which === 90 && e.ctrlKey ){
-			$('#sketch').sketch().actions.pop();
-			$('#sketch').sketch().redraw();
-		}
-	}); 
-
-
-	/*お絵かきモード*/
-
-	var sketch = $('#sketch').sketch();
-
-	sketch.bind("startPainting", function(){
-		is_oekaki_focus = 1;
-		is_oekaki_done = 0;
-		horyu_counter = 0;
-		$("horyu").html(horyu_counter);
-	});
-
-	sketch.bind("stopPainting", function(){
-		is_oekaki_done = 1;
-		horyu_counter = 0;
-	});
-
-
-	sketch.bind("mousedown", function(){
-		isOekakiDone = 1;
-		
-		back_actions = [];
-		$("#prevButton").prop("disabled","true");
-		
-	});
-
-	/*スマホ用*/
-
-	sketch.get(0).addEventListener("touchend", function(){
-		isOekakiDone = 1;
-	});
-
-	$("#colorPicker").spectrum({
-		palette: [
-		["#000000","#1d2b53","#7e2553","#008751",],
-		["#ab5236","#5f574f","#c2c3c7","#fff1e8"],
-		["#ff004d","#ffa300","#ffec27","#00e436"],
-		["#29adff","#83769c","#ff77a8","#ffccaa"],
-		["#FFFFFF"]],
-		showAlpha: true,
-		showPalette: true,
-		change: function(color) {
-			changeColorPicker()
-		}
-	});
-
-	/* スマホは発動しないので直指定 */
-	if(isSmartPhone == 1){
-		$("#colorPicker").bind("change",function(e){
-			changeColorPicker()
-		});
-	}
-
-	function changeColorPicker(){
-		var color = $("#colorPicker").next().find(".sp-preview-inner").css("background-color");
-		$('#sketch').sketch("color",color);
-	}
-	
-
-	$('#sketch').css("background","#FFF");
-	$('#sketch').prop("bgcolor","#FFF");
-	$('#sketch_honban').hide();
-
-	$("#bgcolorPicker").spectrum({
-		color: "#FFFFFF",
-		showPalette: true,
-		move:setBGColor,
-		change:setBGColor
-	});
-
-	function setBGColor(){
-		var color = $("#bgcolorPicker").next().find(".sp-preview-inner").css("background-color");
-
-		$('#sketch').css("background",color);
-		$('#sketch').prop("bgcolor",color);
-
-	}
-
-	if(isSmartPhone == 1){
-		$("#bgcolorPicker").bind("change",function(e){
-			setBGColor()
-		});
-		$("#bgcolorPicker").spectrum("set", "#FFF");
-	}
-
-
-	/* ツール関連 */
-
-	$("#psize").change(function(){
-		$('#sketch').sketch("size",$(this).val());
-	});
-
-	$("#kesu").click(function(){
-		$("[data-tool=eraser]").click();
-	});
-
-	$("#spoit").click(function(){
-		$("[data-tool=spoit]").click();
-	});
-
-	$("#fill").click(function(){
-		$("[data-tool=fill]").click();
-	});
-
-
-
-
-	$("#saveButton").click(function(){
-		if(isOekakiDone){
-			var link = document.createElement('a');
-			link.download = ["open2ch",new Date().getTime()].join("-") + ".png";
-			link.href = $('#sketch_honban').get(0).toDataURL("image/png");
-			link.click();
-		} else {
-			alert("まだ何も描かれていないようだ。。");
-		}
-	});
-
-
-
-	/* ツール：クリアボタン */
-
-	$("#clearButton").click(function(){
-		if(confirm("お絵かきをクリアします。よろしいですか？")){
-			$('#sketch').sketch().clear();
-			isOekakiDone = 0;
-		}
-	});
-
-	$("#kaku").click(function(){
-		$("[data-tool=marker]").click();
-	});
-
-	$("#oekakiMode").click(function(){
-		if($(this).attr("checked")){
-			$("#oekakiCanvas").slideDown("fast");
-		} else {
-			$("#oekakiCanvas").slideUp("fast");
-		}
-	})
-
-
-	/* サイズ変更 */
-
-	$("#canvasSize").change(function(){
-		var size = $(this).val().split("x");
-
-		var ctx = $("#sketch").get(0).getContext('2d');
-		var ctx2 = $("#sketch_honban").get(0).getContext('2d');
-
-		$(ctx.canvas).animate({ 
-			width : size[0],
-			height : size[1],
-		}, "fast",function(){
-			ctx.canvas.width = size[0];
-			ctx.canvas.height = size[1];
-
-			ctx2.canvas.width = size[0];
-			ctx2.canvas.height = size[1];
-
-
-
-			$("#sketch").sketch().redraw();
-		});
-	});
-
-}
-
-function redrawHonban(){
-	var ctx = $('#sketch_honban').get(0).getContext('2d');
-	ctx.fillStyle = $("#sketch").prop("bgcolor");
-	ctx.fillRect(0,0,$(this).width(),$(this).height());
-	ctx.drawImage($('#sketch').get(0),0,0);
 }
 
 
@@ -2333,8 +2487,8 @@ function submit_form(){
 		twid     : ($("#twid").is(':checked') ? 1 : 0),
 		twsync   : ($("#twsync").is(':checked') ? 1 : 0),
 
-		oekakiMode : ($("#oekakiMode").is(':checked') ? 1 : 0),
-		oekakiData : ($("#oekakiMode").is(':checked') ? $("[name=oekakiData]").val() : "")
+		oekakiMode : ($("#oekakiCanvas").is(":visible") ? 1 : 0),
+		oekakiData : ($("#oekakiCanvas").is(":visible") ? $("[name=oekakiData]").val() : "")
 	};
 
 
@@ -2379,7 +2533,7 @@ function submit_form(){
 					$('#sketch').sketch().clear();
 
 					/* honbanを更新するため呼び出し */
-					redrawHonban();
+					oekaki.redrawHonban();
 				}
 
 /*
@@ -2618,7 +2772,9 @@ function call_update_alert(_server_resnum){
 
 /* 延期機能 */
 
-			if( !$('#formfix').is(':checked') &&( is_textarea_focus == 1 || is_oekaki_focus == 1) ){
+			if( !$('#formfix').is(':checked') && 
+					!$("#noWait").is(":checked") &&
+					( is_textarea_focus == 1 || is_oekaki_focus == 1) ){
 
 				 var mode = is_textarea_focus ? "入力中" : "お絵描き中";
 
@@ -2785,8 +2941,6 @@ function nodejs_connect(){
 	socket.on('disconnect',function(){
 		onConnect_nodejs = 0;
 
-		console.log("disconnect");
-
 		setTimeout(function(){
 			if($("#disconnect").is(":visible") == 0 && onConnect_nodejs == 0){
 				$("body").append(
@@ -2829,8 +2983,6 @@ function nodejs_connect(){
 
 		}
 		
-		console.log("connect");
-
 		socket.emit('set', bbs,key,local_resnum,getCookie("a"));
 	});
 
@@ -2869,7 +3021,6 @@ function nodejs_connect(){
 
 		var ankaListHTML = $(".AnkaList").html();
 		var ankaLists = ankaListHTML ? ankaListHTML.split("、") : [];
-
 		var url = "/test/read.cgi/" + bbs + "/" + key + "/" + _from;
 		var ank = '<span><a class="_ank closeOther vw ankbold" href="'+url+'" url="'+url+'">'+_from+'</a></span>';
 
@@ -2894,6 +3045,7 @@ function nodejs_connect(){
 				$(".AnkaList").html(ankaLists.join("、"));;
 				$(".ankaview").slideDown("fast")
 
+
 			} else {
 				$(".ankaShake").fadeOut(500,function(){
 					$("AnkaNum").text(parseInt($("AnkaNum").text())+1);
@@ -2902,6 +3054,9 @@ function nodejs_connect(){
 
 				});
 			}
+
+				console.log(ankaLists);
+
 		} else {
 			$("AnkaNum").text(parseInt($("AnkaNum").text())+1);
 			$(".AnkaList").html(ankaLists.join("、"));;
