@@ -10,35 +10,32 @@ $(function(){
 
 /* 絶対名無しモード */
 $(function(){
-
 	if(SETTING["nanasi_mode"] == "on"){
 		$(".name").each(function(){
 			nanasi_filter($(this));
 		});
 	}
-
 	$(document).on("click","prename",function(e){
-
 		if($(this).find("pp").is(":visible")){
 			$(this).find("pp").remove();
 		} else {
 			$(this).append("<pp style='opacity:.8'>"+$(this).attr("text")+"</pp>");
 		}
-
 		e.preventDefault();
 		e.stopPropagation();
 	});
-
 });
 
-
 function nanasi_filter(_this){
-
 	var pre = $(_this).text();
+	var cap;
 	var text = '<b>名無し</b><prename text="'+pre+'">＠</prename>';
+	if(pre.match(/▲|▼/)){
+		cap = pre.match(/((?:▲|▼).+)/);
+		text += cap[0];
+	}
 	$(_this).html(text);
 }
-
 
 
 /* NG機能 */
@@ -54,10 +51,21 @@ $(function(){
 
 /* url2info */
 $(function(){
-	$("body").bind("ANK_OPEN",function(e,mado){
-		$(mado).find(".url").each(function(){
-			url_info_handler($(this))
-		});
+	$("body").bind("ANK_OPEN ARES_OPEN",function(e,mado){
+
+		if(SETTING["url_view"] !== "off"){
+			$(mado).find(".url").each(function(){
+				url_info_handler($(this))
+			});
+		}
+
+		if(SETTING["nanasi_mode"] == "on"){
+			$(mado).find(".name").each(function(){
+				nanasi_filter($(this));
+			});
+		}
+
+
 	});
 
 })
@@ -231,7 +239,7 @@ function ng_filter(_this){
 
 		$("ngalert").html( $ng_alert );
 
-		if(SETTING["ng_action"].match(/hide/)){
+		if(SETTING && "ng_action" in SETTING && SETTING["ng_action"].match(/hide/)){
 
 			$(body).parent().addClass("ng_hide");
 
@@ -2043,7 +2051,12 @@ $(function(){
 			cache  : true,
 			success: function(res){
 
-				$(parent).find("areshtml").html( res );
+				var html = $(res);
+
+				$("body").trigger("ARES_OPEN",html);
+
+
+				$(parent).find("areshtml").html( html );
 				$(parent).find(".aresclose").show();
 
 				$(parent).find("areshtml").find("a").filter(function(){ 
@@ -3188,7 +3201,6 @@ function update_res(flag){
 					nanasi_filter($(this));
 				});
 			}
-
 
 			/* URL処理 */
 
