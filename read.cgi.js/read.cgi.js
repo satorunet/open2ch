@@ -37,7 +37,9 @@ $(function(){
 
 		var message_inview = 0;
 
-		$("[name=MESSAGE]").bind("inview",function(e,flag,visiblePartX,visiblePartY){
+		$(".res_end_line").bind("inview",function(e,flag){
+
+
 			message_inview = flag ==true ? 1 : 0;
 
 			if(message_inview){
@@ -47,13 +49,12 @@ $(function(){
 
 
 		$("body").bind("UPDATE_BEFORE",function(event,res){
-			_height["before"] = $("[name=MESSAGE]").offset().top;
+			_height["before"] = $(".res_end_line").offset().top;
 		});
 
 		$("body").bind("UPDATE_NEWRES",function(event,res){
 
-			_height["after"] = $("[name=MESSAGE]").offset().top;
-
+			_height["after"] = $(".res_end_line").offset().top;
 
 			var diff = _height["after"] - _height["before"];
 
@@ -65,7 +66,9 @@ $(function(){
 				return;
 			}
 
-			if(isScrolling == 0 && message_inview == 1 && !$(".mado").is(":visible") ){
+//		console.log("mado-visible:" + ($(".mado,.ankw").length));
+	
+			if(isScrolling == 0 && message_inview == 1 && !($(".ignore_check_over,.mado,.ankw").is(":visible")) ){
 
 				$(window).scrollTop( $(window).scrollTop() + diff );
 			}
@@ -1774,8 +1777,6 @@ $(function(){
 
 function rating_filter(mado){
 
-	console.log(mado.html());
-
 
 	$(mado).find(".ank_main").each(function(){
 
@@ -1784,7 +1785,6 @@ function rating_filter(mado){
 		var total = 0;
 		var keys = ratings[resnum] || {};
 
-		console.log(base);
 
 		$(Object.keys(keys)).each(function(i,e){
 			var val = keys[e];
