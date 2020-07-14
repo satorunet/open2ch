@@ -26,12 +26,16 @@ $(function(){
 
 	if(storage[bbs + "/" + key]){
 		var new_res = server_resnum - last_res;
-		if(new_res){
+		if(new_res > 0){
 			kokomade_new_func();
 		}
 	}
 })
 
+
+function compareFunc(a, b) {
+  return a - b;
+}
 
 function kokomade_new_func(){
 
@@ -61,7 +65,7 @@ function kokomade_new_func(){
 		return $(this).attr("res");
 	})
 
-	var sort = resnums.sort((a, b) => a - b);
+	var sort = resnums.sort(compareFunc);
 
 	var from = sort[0];
 	var to = sort[resnums.length-1];
