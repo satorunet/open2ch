@@ -7,7 +7,7 @@ function moveToBottom(target){
 
 function moveToMiddle(target,_speed){
 	var speed = _speed ? _speed : 400;
-	var position = target.offset().top - (window.innerHeight/2);
+	var position = target.offset().top - (window.innerHeight/2) + (target.height()/2);
 	$('body,html').animate({scrollTop:position}, speed, 'swing');
 }
 
@@ -1000,7 +1000,7 @@ function update_res(){
 
 				$(".thread").find("dl:hidden").slideDown("slow",function(){
 					if($("#auto_scroll").is(":checked") && $("[name=MESSAGE]").is(":focus") == false){
-						moveToMiddle($("#new_res_end"),1000);
+						moveToMiddle($(".thread dl:last"),1000);
 					}
 				});
 
