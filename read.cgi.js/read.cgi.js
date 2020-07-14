@@ -1453,13 +1453,21 @@ function update_res(flag){
 		html = html.replace('class="audio"','class="audio new_audio"');
 	}
 
+
+	if(pageMode == "sp"){
+		html = html.replace(/名無しさん＠おーぷん/g,'名無し');
+		html = html.replace(/<\/dt><br>/g,'</dt>');
+
+
+		var html = html.split("<s />").map(function(e){
+			return "<section><li>" + e + "</li></section>";
+		}).join("\n");
+
+	}
+
 				html = "<dl class=hide>"+html+"</dl>";
 
-				if(pageMode == "sp"){
-					$(".thread").append("<section><li>" + html + "</li></section>");
-				} else {
-					$(".thread").append(html);
-				}
+				$(".thread").append(html);
 
 				$(".thread").find("dl:hidden").slideDown("fast",function(){
 					if(
