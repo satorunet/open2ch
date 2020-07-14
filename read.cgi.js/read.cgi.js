@@ -1539,28 +1539,14 @@ function nodejs_connect(){
 
 		setTimeout(function(){
 			if($("#disconnect").is(":visible") == 0 && onConnect_nodejs == 0){
-
 				$("body").append(
-						"<div id='disconnect' class='hide' align=center>" + 
-						"<font color=red>オフラインになりました。自動更新停止中..</font>&nbsp;<input id='retry_button' type=button value='再接続'>" + 
-						"</div>"
+					"<div id='disconnect' align=center></div>"
 				);
-				$("#disconnect").css({
-				"z-index" : "1000",
-				"border-bottom": "1px solid #eecccc",
-				"fontSize":"9pt",
-				"padding":"5px",
-				"background": "#ffeeee",
-				"position": "fixed",
-				"width":"100%",
-				"top":"0px",
-				"left":"0px"
-				}).slideDown("fast");
+				socket.socket.reconnect();
 			}
 		},1000);
-
-
 	});
+
 
 	socket.on('connect',function(){
 		onConnect_nodejs = 1;
