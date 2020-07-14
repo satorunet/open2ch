@@ -41,6 +41,9 @@ $(function(){
 
 		var json = JSON.parse(AA_LIST[key]);
 		var aa = LZString.decompressFromUTF16(json.data);
+		    aa = aa.replace(/&lt;/g,"<");
+		    aa = aa.replace(/&gt;/g,">");
+		    aa = aa.replace(/&amp;/g,"&");
 
 		$("[name=MESSAGE]").val(aa).trigger("change");
 
@@ -56,9 +59,10 @@ $(function(){
 		var aa = $(this).parent().html();
 		aa = aa.replace(/\r\n|\n/g,"\n");
 		aa = aa.replace(/<br>/g,"\n");
-		aa = aa.replace(/<[^>]+>/g,"\n");
+		aa = aa.replace(/<[^>]+>/g,"");
 		aa = aa.replace(/\!AA\n/g,"\n");
 		aa = aa.replace(/^\n+|\n+$/g,"");
+
 
 		if(!aa){
 			alert("空のようだ。")
