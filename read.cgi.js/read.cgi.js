@@ -2692,7 +2692,11 @@ function nodejs_connect(){
 		var url = "/test/read.cgi/" + bbs + "/" + key + "/" + _from;
 		var ank = '<span><a class="_ank closeOther vw ankbold" href="'+url+'" url="'+url+'">'+_from+'</a></span>';
 
-		ankaLists.push(ank);
+		if(ankaLists.length > 20){
+			ankaLists.length = 20;
+		}
+
+		ankaLists.unshift(ank);
 
 		if($("#useAnka").is(":checked")){
 
