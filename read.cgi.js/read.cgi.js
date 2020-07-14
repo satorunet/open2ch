@@ -380,6 +380,22 @@ var oekaki = (function(){
 
 	this.init_oekaki = function(){
 
+	/* お絵描き起動アイコン */
+	$(document).on("click","#icon_oekaki",function(e){
+		$("#oekakiMode").trigger("click");
+	});
+
+	$(document).on("mouseover","#icon_oekaki",function(e){
+		$(this).css("border","1px solid #ccccff");
+		$(this).find("svg").css("fill","#4b4bFF");
+	});
+
+	$(document).on("mouseout","#icon_oekaki",function(e){
+		$(this).css("border","1px solid #ccc");
+		$(this).find("svg").css("fill","#4b4b4b");
+	});
+
+
 /* 移動処理 */ 
 		$("#oekakiCanvas").on("dragend",function(e){
 
@@ -502,12 +518,13 @@ var oekaki = (function(){
 		function set_OekakiBetumado(){
 			$("#oekakiCanvas").addClass("oekaki_betumado").attr("draggable",true);
 			$(".oekaki_bar").css("cursor","move");
-			$("body").append($("#oekakiCanvas"));
+			$("#icon_oekaki").css("visibility","visible");
 		}
 
 		function reset_OekakiBetumado(){
 			$("#oekakiCanvas").removeClass("oekaki_betumado").attr("draggable",false)
 			$(".oekaki_bar").css("cursor","");
+			$("#icon_oekaki").css("visibility","hidden");
 		}
 
 		$("#oekaki_window").click(function(){
@@ -682,6 +699,11 @@ var oekaki = (function(){
 			if(is_cookie){
 				setCookie("oekakiMode",1);
 			}
+
+			if($("#icon_oekaki").is(":visible")){
+				$("#icon_oekaki").fadeOut();
+			}
+
 		}
 
 		function closeOekaki(is_cookie){
@@ -689,6 +711,11 @@ var oekaki = (function(){
 			if(is_cookie){
 				setCookie("oekakiMode",0);
 			}
+
+			if(getCookie("oekaki_window") == 1 && !$("#icon_oekaki").is(":visible")){
+				$("#icon_oekaki").fadeIn();
+			}
+
 		}
 
 		$("#oekakiMode").click(function(){
