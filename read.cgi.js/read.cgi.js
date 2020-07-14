@@ -2851,7 +2851,6 @@ function nodejs_connect(){
 	/*au:ankaUpdate*/
 	socket.on('au',function(_from,_to){
 
-
 		var ankaListHTML = $(".AnkaList").html();
 		var ankaLists = ankaListHTML ? ankaListHTML.split("、") : [];
 
@@ -2864,9 +2863,13 @@ function nodejs_connect(){
 
 		ankaLists.unshift(ank);
 
-		if($("#useAnka").is(":checked") == "on"){
+		console.log("useAnka" + $("#useAnka").is(":checked"));
 
-			if($(".ankaview_div").is(":visible") == false || $(".ankaview").is(":visible") == false){
+		if($("#useAnka").is(":checked")){
+
+				console.log("visibke>>" + $(".ankaview_div").is(":visible"));
+
+			if(	$(".ankaview_div").is(":visible") == false || $(".ankaview").is(":visible") == false){
 
 				$(".ankaview").hide();
 				$(".ankaview_div").show();
