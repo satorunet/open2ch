@@ -6,6 +6,32 @@ var IS_BOT = ua.match(/bot|bing/) ? 1 : 0;
 var SETTING = {};
 $(function(){
 	SETTING = gethashStorage("setting");
+})
+
+$(function(){
+	$(".clean_mode").change(function(){
+		sethashStorage("setting","clean_mode",$(this).is(":checked") ? 1 : 0,100);
+
+		if($(this).is(":checked")){
+
+			//$(".OPTIONS").hide();
+
+			$("clean_mode_after").append($(this).parents("label"));
+
+
+		} else {
+
+			$(".OPTIONS").show();
+			$("clean_mode_before").append($(this).parents("label"));
+		}
+
+
+	})
+
+	if(SETTING["clean_mode"] == 1){
+		$(".clean_mode").prop("checked",true).trigger("change");
+	}
+
 
 
 })
@@ -1966,33 +1992,58 @@ $(function(){
 		var url = "/lib/yahoomap/?q="+query + "&p=p";
 		var google = "https://www.google.com/maps?q="+query;
 		
-		var html = '<div draggable=true  class="mapEditer" style="background:white;position:fixed;top:50%;left:50%;transform: translate(-50%, -50%);' + 
-		           'padding:5px;border:1pt dotted black;text-align:center;margin-top:3px">' + 
-		           '<div class="mapEditerBar" style="cursor:move;font-size:9pt;background:#000044;color:white;padding:3px">地図エディタ' + 
+		var html = '<div class="mapEditer" style="width:420px;background:white;position:fixed;top:20%;left:50%;' + 
+		           'padding:5px;border:1pt solid #F2F2F2;text-align:center;margin-top:3px">' + 
+		           '<div draggable=true class="mapEditerBar" style="cursor:move;font-size:9pt;background:#000044;color:white;padding:3px">地図エディタ（2019年10月迄）' + 
 		'<div style="font-size:8pt;display:inline-block;float:right" ><a href=# class=mapClose><font color=white>閉</font></a></div>' + 
 		           '</div>' + 
 
 //	           '<div align=right><input type=text size="10"><input type="button" value="検索"></div>' + 
 
-		           '<div style="padding:5px">' + 
-		           '<input style="background:#FFBBBB" class=useMap type=button value="地図を投稿" code="#map('+query+')"> ' + 
-		           '<input class=mapClose type=button value="やめる">' + 
-		           '</div>' + 
 
-		           '<div align=right>'+
+		           '<div>' + 
 
-/*							 '<label>落書きモード<input type=checkbox class=map_line value=1></label>' + */
-								 '<label>描く<input type=checkbox class=map_draw value=1></label>' + 
+//		           '<div style="display:inline-block;vertical-align:middle"><input class="get_gps" style="margin-left:5px" type="image" title="現在地を取得" src="https://open.open2ch.net/image/icon/svg/gps.v2.svg">&nbsp;&nbsp;</div>'+
+
+
+
+		           '<div style="display:inline-block;background:#FAFAFA;padding:5px">' + 
+
+								 '<label style="padding:3px">描く<input type=checkbox class=map_draw value=1></label>' + 
 
 							 '<input class="map_pin map_buttons" type=button value="ピン">' + 
-		           '<input class="map_clear" type=button value="消す">' + 
-		           '<input class="get_gps" style="margin-left:5px" type="image" title="現在地を取得" src="https://open.open2ch.net/image/icon/svg/gps.v2.svg">' + 
+							 '<input class="map_label map_buttons" type=button value="ラベル">' + 
+
+			           '<input class=get_gps type=button value="現在地">' + 
+//		           '<input class=searchButton type=button value="検索">' + 
+
+
+/*							 '<label>落書きモード<input type=checkbox class=map_line value=1></label>' + */
+
+		           '<input class="map_clear" type=button value="全消">' + 
+		           '<input class="map_debug" type=button value="debug">' + 
+
 		           '</div>' + 
 
-		           '<iframe class=map_iframe scrolling=no frameborder=0 src="'+url+'" width="320" height="320"></iframe>' + 
+		           '</div>' + 
+
+		           '<iframe class=map_iframe scrolling=no frameborder=0 src="'+url+'" width="420" height="320"></iframe>' + 
+
+		           '<div style="padding:5px" align=center>' + 
+		           '<input style="background:#FFBBBB" class=useMap type=button value="地図を投稿" code="#map('+query+')"> ' + 
+		           '<input class=mapClose type=button value="やめる">' + 
+		           "<div style='float:right;display:inline-block'><label>検索<input class=searchButton checked type=checkbox></label></div>" + 
+
+		           '</div>' + 
+
+
 		           '</div>';
 
 		$("#map").html(html);
+
+
+
+	console.log($(".mapEditer").offset());
 
 
 /*
@@ -2024,6 +2075,13 @@ $(function(){
 
 
 
+
+
+	$(document).on("click",".searchButton",function(){
+		$(".map_iframe").get(0).contentWindow.search_click();
+	});
+
+
 	$(document).on("click",".map_clear",function(){
 		if(confirm("線やピンを全削除します。よろしいですか？")){
 			$(".map_iframe").get(0).contentWindow.clear_all();
@@ -2038,8 +2096,13 @@ $(function(){
 
 
 	$(document).on("click",".map_pin",function(){
-		$(".map_iframe").get(0).contentWindow.update_pin();
+		$(".map_iframe").get(0).contentWindow.update_item("pin");
 	});
+
+	$(document).on("click",".map_label",function(){
+		$(".map_iframe").get(0).contentWindow.update_item("label");
+	});
+
 
 
 	$(document).on("click",".get_gps",function(e){
@@ -2059,10 +2122,10 @@ $(function(){
 		})
 
 
-		$("#gps").click(function(){
-			if(confirm("位置情報を取得します。よいですか？\n※プレビューで確認してね。\n")){
-				get_geo();
-			}
+		$(document).on("click",".map_debug",function(){
+
+				console.log($(".map_iframe").get(0).contentWindow.dumpData());
+
 		});
 
 		$("#MESSAGE").change(function(){
@@ -2072,10 +2135,57 @@ $(function(){
 		})
 
 		$(document).on("click",".useMap",function(){
-			var code = $(this).attr("code");
+
+		var res = $(".map_iframe").get(0).contentWindow.dumpData();
+
+		if(res.info.size > 0 ){ //位置情報のみ
+
+
+			var json = JSON.stringify(res);
+			var data = LZString.compressToUTF16(json);
+			var param = {
+				version : "v1",
+				data : data,
+			};
+			$.ajax({
+				data : param,
+				type:'POST',
+				url : "https://cache02.open2ch.net/map/save_map.cgi",
+				success:function(res){
+
+					if(res.match(/success/)){
+
+						var json = JSON.parse(res);
+						var code = "[map:v1:"+json.key+"]";
+						var texts = $("#MESSAGE").val() ? $("#MESSAGE").val().split("\n") : [];
+						    texts.push(code);
+						$("#MESSAGE").val(texts.join("\n"))
+						$("#map").html("");
+
+
+					} else {
+						alert("なんか失敗した。。今はアップできないようだ・・・");
+					}
+				}
+			})
+
+		} else {
+
+			var info = res.info;
+			var latlng = info.lat + ":" + info.lon;
+			var zoom = info.zoom;
+
+			var code = "[map:"+latlng+":"+zoom+"]";
+
 			var texts = $("#MESSAGE").val() ? $("#MESSAGE").val().split("\n") : [];
 			    texts.push(code);
 			$("#MESSAGE").val(texts.join("\n"))
+			$("#map").html("");
+
+		} 
+
+
+
 				$(this).prop("disabled",true);
 		});
 
