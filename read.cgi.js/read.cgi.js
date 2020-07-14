@@ -1,5 +1,8 @@
 //var NODEJS = "http://nodessl.open2ch.net:8880"; //http
+
 var NODEJS = "https://nodessl.open2ch.net:8443"; //https
+//var NODEJS = "https://nodessl.open2ch.net:2083"; //https-test
+
 var speech;
 var speechUtt;
 var pm = getUrlVars();
@@ -1362,7 +1365,7 @@ $(document).ready(function() {
 	tuhoInit();
 
 	defTitle = document.title;
-	if ("WebSocket" in window) {
+	if ("WebSocket" in window && is_update_disable == 0) {
 		isNodeJS = 1;
 		nodejs_connect();
 	}
@@ -2262,7 +2265,7 @@ function nodejs_connect(){
 		console.log("connect");
 //		console.log(socket);
 
-		socket.emit('set', bbs,key,local_resnum);
+		socket.emit('set', bbs,key,local_resnum,getCookie("a"));
 	});
 
 	//u:updated
