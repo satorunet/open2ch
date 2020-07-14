@@ -1,6 +1,7 @@
 
 /* 入力中は自動更新を一時停止 */
 var is_update_que = 0;
+/*
 $(function(){
 	$("[name=MESSAGE]").blur(function(){
 		setTimeout(function(){
@@ -10,6 +11,7 @@ $(function(){
 		},1500);
 	});
 })
+*/
 
 //新着レス関連
 function moveToBottom(target){
@@ -1019,12 +1021,7 @@ function update_res(flag){
 						 $("#auto_scroll").is(":checked")
 						){
 
-						if( 
-								$("#formfix").is(":checked") == true ||
-								$("[name=MESSAGE]").is(":focus") == false
-						 ){
-							moveToMiddle($(".thread dl:last"),500);
-						}
+						moveToMiddle($(".thread dl:last"),500);
 
 					}
 				});
@@ -1076,16 +1073,7 @@ function call_update_alert(_server_updated,_server_resnum){
 //				setTimeout(function(){update_res()},1000)
 //				update_res();
 
-					if(
-						$('#autoOpen').is(':checked') && 
-						$("[name=MESSAGE]").is(":focus") == true && 
-						!(isSmartPhone == 0 && $("#formfix").is(":checked")) //PCで位置固定の場合はキューにいれない。
-					){
-						is_update_que = 1;
-					} else {
-						update_res();
-					}
-
+					update_res();
 
 			} else {
 
