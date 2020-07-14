@@ -2443,12 +2443,85 @@ var socket;
 var sockID;
 
 function setSureConter(count){
-	$(".sureNinzu").html( count);
-	$(".lbox").fadeIn("fast");
+	var preNinzu = parseInt($(".sureNinzu").prop("count"));
+	var diff = count - preNinzu;
+
+	if( preNinzu > 0){
+		if(diff !== 0){
+			var diff_div = $("<div>"+(diff > 0 ? "+" : "") + diff+"</div>");
+
+			var is_up = diff > 0 ? 1 : 0;
+
+			$(".lbox_face").attr("src","https://open.open2ch.net/image/icon/svg/kao_" + (is_up ? "happy" : "sad") + ".svg")
+										 .stop().animate({n:1},{duration:5000,complete:function(){
+												$(this).attr("src","https://open.open2ch.net/image/icon/svg/face.svg");
+											}});
+			
+
+			$(diff_div).css({"opacity":".8","position":"absolute","top":"-2px","right":"10px","color": (is_up ? "red" : "blue")});
+
+			$(diff_div).addClass("ldiff").hide();
+			$(".ninzuDiff").append(diff_div);
+			$(diff_div).fadeIn("fast",function(){
+				$(this).animate({hoge:1},{duration:2000,complete:function(){
+					$(this).fadeOut("fast",function(){ $(this).remove()});
+				}})
+			});
+			
+
+
+
+
+		}
+	}
+
+	$(".sureNinzu").prop("count",count)
+
+	if(diff !== 0){
+		$(".sureNinzu").fadeOut("fast",function(){ $(this).html(count).fadeIn("fast")})
+	} else {
+		$(".sureNinzu").html(count);
+	}
+
+
+	if(!$(".lbox").is(":visible")){
+		$(".lbox").fadeIn("fast");
+	}
 }
 
 function setSureTotalConter(count){
-	$(".sureTotal").html( count);
+
+	var preCount = parseInt($(".sureTotal").prop("count"));
+	var diff = count - preCount;
+
+	if( preCount > 0){
+		if(diff !== 0){
+			var diff_div = $("<div>"+(diff > 0 ? "+" : "") + diff+"</div>");
+			$(diff_div).css({"position":"absolute","top":"-2px","right":"6px","color": (diff > 0? "red" : "blue")});
+
+			$(diff_div).addClass("ldiff").hide();
+			$(".pvDiff").append(diff_div);
+			diff_div.fadeIn("fast",function(){
+				$(this).animate({hoge:1},{duration:2000,complete:function(){
+					$(this).fadeOut("fast",function(){ $(this).remove()});
+				}})
+			});
+
+
+		}
+	}
+
+	$(".sureTotal").prop("count",count)
+
+
+	if(diff){
+		$(".sureTotal").prop("count",count).fadeOut("fast",function(){
+			$(this).html(count).fadeIn("fast");
+		})
+	} else {
+		$(".sureTotal").html(count);
+	}
+
 }
 
 $(function(){
