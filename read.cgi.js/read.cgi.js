@@ -352,7 +352,7 @@ var oekaki = (function(){
 		})
 	}
 
-	function setPaletColor(color){
+	_this.setPaletColor = function(color){
 		$("#colorPicker").spectrum("set", color);
 	}
 
@@ -555,13 +555,18 @@ var oekaki = (function(){
 			is_oekaki_done = 0;
 			horyu_counter = 0;
 			$("horyu").html(horyu_counter);
-			$("#backButton").prop("disabled",false);
 		});
 
 		sketch.bind("stopPainting", function(){
 			is_oekaki_done = 1;
 			horyu_counter = 0;
 		});
+
+		sketch.bind("updateActions", function(){
+			$("#backButton").prop("disabled",false);
+		});
+
+		
 
 
 		sketch.bind("mousedown", function(){
@@ -649,6 +654,10 @@ var oekaki = (function(){
 
 		$("#fill").click(function(){
 			$("[data-tool=fill]").click();
+		});
+
+		$("#nenga").click(function(){
+			$("[data-tool=nenga]").click();
 		});
 
 
