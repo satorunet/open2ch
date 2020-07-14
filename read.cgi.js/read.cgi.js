@@ -1759,6 +1759,26 @@ $(function(){
 		ng_list.push("@AAA");
 	}
 
+	$(ng_list).each(function(i,e){
+		if(e == ":画像"){
+			ng_list.push("imgur.com");
+			ng_list.push("img.open2ch.net");
+		} else if(e == ":投票"){
+			ng_list.push("ank_main");
+		} else if(e == ":動画"){
+			ng_list.push("youtube.com");
+			ng_list.push("youtu.be");
+			ng_list.push("nico:");
+			ng_list.push("video.twimg.com");
+		} else if(e == ":url"){
+			ng_list.push("http");
+			ng_list.push("https");
+			ng_list.push("ttp");
+		}
+	})
+	
+	console.log(ng_list);
+
 
 	if(ng_list){
 		NGREGEXP = list2regexp(ng_list);
@@ -1853,6 +1873,11 @@ $(function(){
 		AA_filter($(mado))
 
 		rating_filter($(mado));
+
+			$(mado).find(".body").each(function(){
+				ng_filter($(this));
+			});
+
 
 
 	});
@@ -2125,7 +2150,6 @@ var NG_COUNT = 0;
 
 function ng_filter(_this){
 
-//	var body = $(_this).find(".body");
 	var body = $(_this);
 
 	if(!NGREGEXP){
@@ -2148,13 +2172,8 @@ function ng_filter(_this){
 		$("ngalert").html( $ng_alert );
 
 		if(SETTING && "ng_action" in SETTING && SETTING["ng_action"].match(/hide/)){
-
 			$(body).parents("li,dl").addClass("ng_hide");
-
-
-
 		} else {
-
 			$(body).html($(body).html().replace(NGREGEXP,"<ng>$1</ng>"));
 			$(body).before(
 				"<div class=ng>&nbsp;<img src=/image/icon/svg/hana.svg height=12>&nbsp;NG&nbsp;" + 
@@ -2163,10 +2182,7 @@ function ng_filter(_this){
 			$(body).addClass("ng_hide");
 		}
 	}
-
 }
-
-
 
 //SK簡単入力機能
 $(function(){
