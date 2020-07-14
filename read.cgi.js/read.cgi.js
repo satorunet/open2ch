@@ -1,8 +1,8 @@
 /*
 var NODEJS = "http://nodessl.open2ch.net:8880"; //http
 var NODEJS = "https://nodessl.open2ch.net:2083"; //https-test
-*/
 
+*/
 var NODEJS = "https://nodessl.open2ch.net:8443";
 
 var speech;
@@ -27,7 +27,10 @@ function deleteAnk(val,time){
 $(function(){
 	$(".delank").click(function(e){
 		e.preventDefault();
-		$(this).parents(".ankaview").slideUp("fast");
+		$(this).parents(".ankaview").slideUp("fast",function(){
+			$("AnkaNum").text("0");
+			$(".AnkaList").html("");
+		});
 		deleteAnk($(this).attr("val"),$(this).attr("time"));
 	})
 });
@@ -133,6 +136,7 @@ function updateKusa(count){
 
 
 	var list = [
+		[10000,"💩","うこん"],
 		[1000,"🍑","おけつ"],
 		[100,"🥒","きうり"],
 	];
@@ -2561,7 +2565,6 @@ function nodejs_connect(){
 	});
 
 	/*su:setCounterUpdate*/
-
 	socket.on('c',function(res){
 		if(res["p"]){
 			setSureTotalConter(res["p"]);
@@ -2573,9 +2576,49 @@ function nodejs_connect(){
 		if(res["k"]){
 			updateKusa(res["k"]);
 		}
+	});
+
+	/*au:ankaUpdate*/
+	socket.on('au',function(_from,_to){
+
+
+		var ankaListHTML = $(".AnkaList").html();
+		var ankaLists = ankaListHTML ? ankaListHTML.split("、") : [];
+
+		var url = "/test/read.cgi/" + bbs + "/" + key + "/" + _from;
+		var ank = '<span><a class="_ank closeOther vw" href="'+url+'" url="'+url+'">'+_from+'</a></span>';
+
+		ankaLists.push("<b>"+ank+"</b>");
+
+
+		if($(".ankaview_div").is(":visible") == false || $(".ankaview").is(":visible") == false){
+
+			$(".ankaview").hide();
+			$(".ankaview_div").show();
+
+			$("AnkaNum").text(parseInt($("AnkaNum").text())+1);
+			$(".AnkaList").html(ankaLists.join("、"));;
+			$(".ankaview").slideDown("fast")
+
+		} else {
+			$(".ankaShake").fadeOut(500,function(){
+				$("AnkaNum").text(parseInt($("AnkaNum").text())+1);
+				$(".AnkaList").html(ankaLists.join("、"));;
+				$(this).fadeIn("fast");
+
+			});
+		}
+
+		if(!$('#noSoundAlert').is(':checked')){
+			if(isSmartPhone == "0"){
+				soundManager.play('anka');
+			}
+		}
+
 
 
 	});
+
 
 	/*ru:ratingUpdated*/
 	socket.on('ru',function(updated){
@@ -2591,7 +2634,7 @@ function nodejs_connect(){
 }
 
 function nodejs_pushKusa(){
-	socket.emit('sk', bbs,key,getCookie("a"));
+	socket.emit('sk', bbs,key);
 }
 
 
