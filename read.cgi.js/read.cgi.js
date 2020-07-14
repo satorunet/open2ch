@@ -8,6 +8,7 @@ $(function(){
 	SETTING = gethashStorage("setting");
 })
 
+
 /* 絶対名無しモード */
 $(function(){
 	if(SETTING["nanasi_mode"] == "on"){
@@ -2046,14 +2047,31 @@ $(function(){
 
 		$.ajax({
 			type: "GET",
-			url    : "/ajax/get_ares.v1.cgi/" + bbs + "/" + key + "/",
+			url    : "/ajax/get_ares.v2.cgi/" + bbs + "/" + key + "/",
 			data   :query,
 			cache  : true,
 			success: function(res){
 
 				var html = $(res);
 
+
+
 				$("body").trigger("ARES_OPEN",html);
+
+
+				/* 無視設定の投稿を消す */
+				html.find("dt").each(function(i,a){
+
+					alert(i);
+	
+					var id = $(this).attr("val");
+
+					alert(id);
+
+					if( ignores[id] ){
+						alert($(this).html());
+					}
+				})
 
 
 				$(parent).find("areshtml").html( html );
@@ -2104,8 +2122,11 @@ function updateIgnore(){
 }
 
 $(function(){
-	cachekey = "ignv3:"+bbs;
-	ignores_array = localStorage[cachekey] ? JSON.parse(getStorage(cachekey)) : new Array();
+	cachekey = "ignv4:"+bbs;
+
+	//ignores_array = localStorage[cachekey] ? JSON.parse(getStorage(cachekey)) : new Array();
+	ignores_array = getListStorage(cachekey);
+
 
 	ignores_array.map(function(e){
 		ignores[e] = 1;
@@ -2142,7 +2163,6 @@ $(function(){
 		var _ID = ID.replace(/\./g,"");
 
 		if(ignores[ID]){
-
 			var message = "ID:" + ID + " の無視設定を解除します。\nよろしいですか？";
 
 			if( confirm(message) ){ /* 解除 */
@@ -2152,25 +2172,27 @@ $(function(){
 				$(".id"+_ID).slideDown().removeAttr("ignored");
 				updateIgnore();
 				if( ignores_array.length ){
-					setStorage(cachekey,JSON.stringify(ignores_array))
+//				setStorage(cachekey,JSON.stringify(ignores_array))
+					delListStorage(cachekey,_ID,IGNORE_MAX);
 				} else {
 					delStorage(cachekey)
 				}
-
 			}
 		} else { /*無視*/
 
 			var message = "ID:" + ID + " を無視設定します。\nよろしいですか？";
 			if( confirm(message) ){
+
 				ignores[_ID] = 1;
 				ignores_array.unshift(_ID);
-
 
 				if(ignores_array.length > IGNORE_MAX){
 					ignores_array.length = IGNORE_MAX;
 				}
 
-				setStorage(cachekey,JSON.stringify(ignores_array));
+				//setStorage(cachekey,JSON.stringify(ignores_array));
+				setListStorage(cachekey,_ID,IGNORE_MAX);
+
 				updateIgnore();
 			}
 		}
@@ -3133,6 +3155,10 @@ function update_res(flag){
 				$(html).find("a").filter(function(){
 					if( m = $(this).html().match(/^&gt;&gt;(\d+)$/) ){
 						var resnum = m[1];
+
+						
+
+
 						if(!already[resnum]){
 							if( ! $("ares[num="+resnum+"]").find(".aresdiv").length ){
 									var ares = '<div class="aresdiv">'+
