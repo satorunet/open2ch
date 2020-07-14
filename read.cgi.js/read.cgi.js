@@ -1587,8 +1587,8 @@ $(document).ready(function() {
 		setCookie("noWait", $(this).is(':checked') ? "1" : "0");
 	});
 
-	$("#noBGVideo").change(function(){
-		setCookie("noBGVideo", $(this).is(':checked') ? "1" : "0");
+	$("#useBGVideo").change(function(){
+		setCookie("useBGVideo", $(this).is(':checked') ? "1" : "0");
 	});
 
 
