@@ -8,13 +8,71 @@ $(function(){
 	SETTING = gethashStorage("setting");
 })
 
+/* 省略表示 */
+$(function(){
+	$(".syoicon").click(function(e){
+		if($(".syo").is(":visible")){
+			$(".syo").hide()
+		} else {
+			$(".syo").show()
+		}
+		e.preventDefault();
+	})
+})
+
+
+/* Dev */
+$(function(){
+	$(".closeDev").click(function(e){
+		if($(".devContent").is(":visible")){
+			$(".devContent").hide()
+		} else {
+			$(".devContent").show()
+		}
+		setCookie("devView",$(".devContent").is(":visible") ? "on" : "off");
+		e.preventDefault();
+	})
+	if(getCookie("devView") == "off"){
+		$(".devContent").hide();
+	}
+})
+
+
 /* AAモード */
 $(function(){
+
+	$("[name=MESSAGE]").prop("_cols",$("[name=MESSAGE]").attr("cols"));
+	$("[name=MESSAGE]").prop("_width",$("[name=MESSAGE]").css("width"));
+
+
+	$(".aa").change(function(){
+		setCookie("aa",$(this).is(":checked") ? "on" : "off");
+		
+		if($(this).is(":checked")){
+			$("[name=MESSAGE]")
+				.attr("placeholder","AA入力モード。ここにAAを入力してね。")
+				.addClass("aa")
+				.css("width","100%")
+				.attr("cols",500);
+			
+		} else {
+			$("[name=MESSAGE]").removeClass("aa")
+			                   .attr("placeholder","")
+			                   .css("width",$("[name=MESSAGE]").prop("_width"))
+			                   .attr("cols",$("[name=MESSAGE]").prop("_cols"));
+		}
+
+	});
+
+	if(getCookie("aa") == "on"){
+		$(".aa").attr("checked",true).trigger("change");
+	}
+
 
 	if(SETTING["aa_mode"] == "off"){
 		return;
 	} else {
-		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v1.css?v2" type="text/css"  />');
+		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v1.css?vbvxxxxbvb" type="text/css"  />');
 	}
 
 	AA_filter($("body"))
@@ -27,12 +85,28 @@ function AA_filter(_this){
 	}
 
 	$(_this).find(".body").each(function(){
-		if($(this).find(".body")){
-			if($(this).text().match("!AA")){
-				$(this).addClass("AA")
-			}
+			if($(this).text().match(/\!AA/i)){
 
-		}
+				var target;
+
+				if($(this).find(".talk").length > 0){
+					target = $(this).find(".says");
+				}	else {
+					target = $(this);
+				}
+
+				$(target).addClass("AA");
+
+				var body = $(target).html();
+				    body = body.replace(/\!AA/gi,"<font class='_aa'>!AA</font>");
+
+				$(target).html(body);
+
+				$(this).find(".hash,k,n").each(function(){
+					$(this).contents().remove("b").unwrap();
+				});
+
+			}
 	})
 }
 
@@ -327,6 +401,8 @@ $(function(){
 				nanasi_filter($(this));
 			});
 		}
+
+		AA_filter($(mado))
 
 
 	});
@@ -3267,6 +3343,14 @@ function submit_form(){
 */
 
 	$("#status").html("投稿中...");
+
+	if(
+			$('#MESSAGE').val() && 
+			$(".aa").is(":checked") && 
+			!$('#MESSAGE').val().match(/\!aa/i)
+		){
+			$('#MESSAGE').val("!AA\n" + $('#MESSAGE').val());
+	}
 
 
 	var query = {
