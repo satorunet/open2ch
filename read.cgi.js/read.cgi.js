@@ -17,12 +17,21 @@ $(function(){
 
 
 /* url2info */
+$(function(){
+	$("body").bind("ANK_OPEN",function(e,mado){
+		$(mado).find(".url").each(function(){
+			url_info_handler($(this))
+		});
+	});
+
+})
+
 
 $(function(){
 
 		$("body").append(
 			"<style>" + 
-			".urlinfo{border-radius:3px;max-width:90%;font-size:10pt;border:1px solid #ddd;color:black;display:inline-block;background:" + (isSmartPhone == 1 ? "#f9f9f9" : "white") + ";padding:1px}" + 
+			".urlinfo{max-width:90%;font-size:10pt;color:#777;display:inline-block;padding:1px}" + 
 
 			".ut{overflow: hidden;white-space: nowrap;text-overflow:ellipsis;}" + 
 			".utt{font-size:"+(isSmartPhone == 1 ? "7" : "9" )+"pt}" + 
@@ -31,11 +40,11 @@ $(function(){
 		);
 
 		$(document).on("mouseover",".urlinfo",function(e){
-			$(this).css("background","#F5F5FF");
+			$(this).find(".utt").css("text-decoration","underline");
 		});
 
 		$(document).on("mouseout",".urlinfo",function(e){
-			$(this).css("background","#fff");
+			$(this).find(".utt").css("text-decoration","none");
 		});
 
 /*
@@ -65,7 +74,7 @@ function url_info_handler(_this){
 		var url = $(_this).text();
 		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v1/" + escape(url);
 
-		if(url.match(/(png|jpg|mp4|gif)$/)){
+		if(url.match(/(i\.img|imgur|png|jpg|mp4|gif)$/)){
 			return;
 		}
 
@@ -143,16 +152,18 @@ function ng_filter(_this){
 
 	if($(body).parent().html().match(NGREGEXP)){
 
-		var $ng_alert = $("<div style='opacity:.9;text-align:center;display:inline-block;padding:5px;background:black;color:white'>" + 
-		+ (++NG_COUNT) + "件NGの為、無視しました。</div>");
-		$ng_alert.animate({count:0},{duration:1000*5,complete:function(){
-			$(this).remove();
-			NG_COUNT = 0
-		}})
+		if(SETTING["ng_action"] !== "hide_strong"){
+			var $ng_alert = $("<div style='opacity:.9;text-align:center;display:inline-block;padding:5px;background:black;color:white'>" + 
+			+ (++NG_COUNT) + "件NGの為、無視しました。</div>");
+			$ng_alert.animate({count:0},{duration:1000*5,complete:function(){
+				$(this).remove();
+				NG_COUNT = 0
+			}})
+		}
 
 		$("ngalert").html( $ng_alert );
 
-		if(SETTING["ng_action"] == "hide"){
+		if(SETTING["ng_action"].match(/hide/)){
 
 			$(body).parent().addClass("ng_hide");
 
