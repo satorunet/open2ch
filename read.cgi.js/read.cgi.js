@@ -12,6 +12,7 @@ var pm = getUrlVars();
 var storage = {};
 
 $(function(){
+
 	storage = gethashStorage("hist");
 	var last_res = storage[bbs + "/" + key];
 
@@ -40,7 +41,7 @@ function kokomade_new_func(){
 		$(".attayo").stop().fadeOut("slow");
 	});
 
-	$news.animate({hoge:100},1000*10,function(){
+	$news.animate({hoge:1},1000*10,function(){
 			$(this).fadeOut("slow",function(){
 			$(this).remove();
 		});
@@ -104,7 +105,7 @@ $(function(){
 
 function updateHistory(){
 	var bbskey = bbs +"/"+key;
-	sethashStorage("hist",bbskey,server_resnum,30);
+	sethashStorage("hist",bbskey,server_resnum,50);
 }
 
 
@@ -1446,35 +1447,27 @@ $(function(){
 
 	function loadOekakiEx(){
 /*	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js"; */
-		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v2.js?v5";
+		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v3.js?v20191218_v3";
 
 		$(".dis").show();
 		$(".toolBt").hide();
 
 
 		$.ajaxSetup({cache: true});
-		$.getScript(url,function(){
-
-
-/*整合性調整*/
-
-			$('#sketch').sketch().bgcolor = "#FFFFFF";
-
-			$("#prevButton").hide();
-			$("#clearButton").val("消");
-
-			setTimeout(function(){
-				$("#goBtn").val("進む");
-
-			$("#psize").css("margin-right","5px");
-			$("#psize").after($("#goBtn,#backButton"));
-
-			},500)
-
-
-		});
+		$.getScript(url);
 	}
 
+	$("body").bind("OEKAKI_EX_INIT",function(){
+
+			$('#sketch').sketch().bgcolor = "#FFFFFF";
+			$("#prevButton").hide();
+			$("#clearButton").val("消");
+			$("#goBtn").val("進む");
+			$("#psize").css("margin-right","5px");
+			$("#psize").after($("#goBtn,#backButton"));
+			$("#canvasSize2").trigger("change");
+
+	});
 
 var hour = new Date().getHours();
 
