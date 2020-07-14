@@ -6,6 +6,70 @@ var IS_BOT = ua.match(/bot|bing/) ? 1 : 0;
 var SETTING = {};
 $(function(){
 	SETTING = gethashStorage("setting");
+
+})
+
+
+//自動位置補正機能
+$(function(){
+
+	var isScrolling = 0 ;
+	var timeoutId ;
+
+	if(SETTING["nouse_autoscroll"] !== "off"){
+
+		console.log("auto_scroll");
+
+		window.addEventListener( "scroll", function () {
+			isScrolling = 1 ;
+			clearTimeout( timeoutId ) ;
+			timeoutId = setTimeout( function () {
+				isScrolling = 0 ;
+				console.log("scroll end");
+			}, 500 ) ;
+		} ) ;
+
+		var _height = {before:0,after:0};
+
+		var message_inview = 0;
+
+		$("[name=MESSAGE]").bind("inview",function(e,flag,visiblePartX,visiblePartY){
+			message_inview = flag ==true ? 1 : 0;
+
+			if(message_inview){
+				console.log("inview!");
+			}
+		})
+
+
+		$("body").bind("UPDATE_BEFORE",function(event,res){
+			_height["before"] = $("[name=MESSAGE]").offset().top;
+		});
+
+		$("body").bind("UPDATE_NEWRES",function(event,res){
+
+			_height["after"] = $("[name=MESSAGE]").offset().top;
+
+
+			var diff = _height["after"] - _height["before"];
+
+			if( 
+					$("#reverse_mode").is(":checked") || 
+					$("#formfix").is(":checked") ||
+					$("#auto_scroll").is(":checked")
+			){
+				return;
+			}
+
+			if(isScrolling == 0 && message_inview == 1){
+
+				$(window).scrollTop( $(window).scrollTop() + diff );
+			}
+
+		});
+
+	}
+
 })
 
 $(function(){
@@ -4435,6 +4499,9 @@ function update_res(flag){
 
 			if(res.match(/success/)){
 				/* update時に最新情報を同時に取得 */
+
+				$("body").trigger("UPDATE_BEFORE");
+
 
 				var html = (res.split(""))[1];
 
