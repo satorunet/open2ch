@@ -22,7 +22,7 @@ function doValus(){
 			$('html').addClass(all_shake);
 			$(".valus").css('background','#FFCCCC');
 			var s = document.createElement('script');
-			s.setAttribute('src','//open.open2ch.net/lib/bomb/bomb.v2.js?v181124_v2' + $.now());
+			s.setAttribute('src','//open.open2ch.net/lib/bomb/bomb.v2.js?v181124_v2');
 			document.body.appendChild(s);
 
 		},2500);
@@ -1337,7 +1337,7 @@ function nodejs_connect(){
 
 
 	"use strict";
-	socket = io.connect(NODEJS,{
+	socket = io.connect('https://nodessl.open2ch.net:8443',{
 		'max reconnection attempts' : max_socket_reconnects
 		}
 	);
