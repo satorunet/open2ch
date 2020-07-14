@@ -11,39 +11,91 @@ $(function(){
 /* 逆順モード */
 $(function(){
 
+	$("[name=reverse_mode]").click(function(){
+
+		var val = ($(this).is(":checked") ? "on" : "");
+		sethashStorage("setting","reverse_mode",val,100);
+
+		SETTING["reverse_mode"] = val;
+
+		if($(this).is(":checked")){
+			setReverseMode();
+
+			$('body,html').stop(true,false).animate({scrollTop:0}, 500, 'linear');
+
+
+		} else {
+			resetReverseMode();
+
+
+			if(isSmartPhone == "1"){
+				$('body').scrollTo($("#new_res"));
+			} else {
+				$('body').scrollTo($('[name=reverse_mode]'));
+			}
+
+
+		}
+	});
+
+
 	$(document).on("click",".yonda",function(){
 		$("#history_add").click();
 	});
 
 	if(SETTING["reverse_mode"] == "on"){
-
-		$("#auto_scroll").prop({"checked":false,"disabled":true});
-		$("[for=auto_scroll]").prop("disabled",true).css("color","#AAA");
-
-
-		if(isSmartPhone == "1"){
-			$(".form").css("padding-bottom","0px");
-			$(".formset").find("hr").remove();
-			$("textarea").css("height","70px");
-
-
-			$(".formset")
-				.append($("<div style='margin:5px;text-align:center;'><input class=yonda type=button value='ここまでよんだ'></div>"))
-				.append($(".history_res"));
-
-		} else {
-			$(".thread").before($(".threadNavOuter"));
-		}
-
-
-		$(".thread").before($(".formset"));
-
-		$(".thread").find(isSmartPhone == "1" ? "li" : "dl").each(function(){
-			$(".thread").prepend($(this));
-		});
+		$("[name=reverse_mode]").attr("checked",true);
+		setReverseMode();
 	}
 })
 
+function resetReverseMode(){
+	$("#auto_scroll").prop({"checked":true,"disabled":false});
+	$("[for=auto_scroll]").prop("disabled",false).css("color","#000");
+
+
+	if(isSmartPhone == "1"){
+		$(".form").css("padding-bottom","10px");
+		$(".yonda").remove();
+	
+		$(".preform").after($(".formset"));
+		$("#threadFunction").before($(".history_res"));
+
+	} else {
+
+		$(".thread").after($(".formset"));
+		$(".thread").after($(".threadNavOuter"));
+	}
+
+
+
+	$(".thread").find(isSmartPhone == "1" ? "li" : "dl").each(function(){
+		$(".thread").prepend($(this));
+	});
+
+
+
+}
+
+function setReverseMode(){
+	$("#auto_scroll").prop({"checked":false,"disabled":true});
+	$("[for=auto_scroll]").prop("disabled",true).css("color","#AAA");
+
+	if(isSmartPhone == "1"){
+		$(".form").css("padding-bottom","0px");
+		$(".formset").find("hr").remove();
+		$("textarea").css("height","70px");
+		$(".formset")
+			.append($("<div style='margin:5px;text-align:center;'><input class=yonda type=button value='ここまでよんだ'></div>"))
+			.append($(".history_res"));
+	} else {
+		$(".thread").before($(".threadNavOuter"));
+	}
+	$(".thread").before($(".formset"));
+	$(".thread").find(isSmartPhone == "1" ? "li" : "dl").each(function(){
+		$(".thread").prepend($(this));
+	});
+}
 
 /* アイコン非表示 */
 $(function(){
