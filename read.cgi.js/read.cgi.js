@@ -740,7 +740,12 @@ function url_info_handler(_this){
 					$(this).find(".url:last").removeClass("url").on("inview",function(){
 						var _this = $(this);
 						url2info_request($(this),function(text){
-							$(_this).html(text);
+
+			if(text.match(/ダイナモ/)){
+				;
+			} else {
+				$(_this).html(text);
+			}
 						});
 					});
 			}
@@ -762,6 +767,7 @@ function url2info_request(_this,callback){
 
 		var xhr = $.get(json);
 		xhr.done(function(data){
+
 			var d = data.split("");
 			var text;
 			var details = d[2] ? d[2].split("") : [];
@@ -2086,18 +2092,18 @@ $(function(){
 
 		if($(".options").is(":visible")){
 			$(".options").slideUp("fast");
-			$(this).text("▲");
+			$(this).text("▼開");
 			setStorage("offSetting",1);
 		} else {
 			$(".options").slideDown("fast");
-			$(this).text("▼");
+			$(this).text("▲閉");
 			setStorage("offSetting",0);
 		}
 	});
 
 	if( getStorage("offSetting") == 1 ){
 		$(".options").hide();
-		$(".settingButton").text("▲");
+		$(".settingButton").text("▼開");
 	}
 
 
@@ -3844,17 +3850,18 @@ function update_res(flag){
 		
 
 		var _html;
+
+
+		var ignore = ignores_hash[id] ? ("ignored=1 uid="+id) : "";
+
 		if(pageMode == "sp"){
-			_html = "<li val="+resnum+"><dl class=hide><section>" + e + "</section></dl></li>";
+			_html = "<li "+ignore+" val="+resnum+" class=hide><dl><section>" + e + "</section></dl></li>";
 		} else { /* PC */
-			_html = "<dl val="+resnum+" class=hide>" + e + "</dl>";
+			_html = "<dl "+ignore+" val="+resnum+" class=hide>" + e + "</dl>";
 		}
 
 		var html_obj = $(_html);
 
-		if(ignores_hash[id]){
-			html_obj.attr("ignored",1)
-		}
 
 			/* NG処理 */
 			if(NGREGEXP){
@@ -3924,7 +3931,7 @@ function update_res(flag){
 		},(isSmartPhone ? 5000 : 3000) );
 	}
 
-	$(".thread").find("dl:hidden").not("[ignored=1],.ng_hide").slideDown("fast",function(){
+	$(".thread").find(".hide").not("[ignored=1],.ng_hide").slideDown("fast",function(){
 		if( $("#auto_scroll").is(":checked") ){
 			moveToMiddle($(".thread dl:last"),500);
 		}
@@ -3936,7 +3943,7 @@ function update_res(flag){
 				;;
 			}
 
-		updateIgnore();
+		//updateIgnore();
 
 /* 音声置換処理(PC用) */
 
