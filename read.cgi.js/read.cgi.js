@@ -9,7 +9,7 @@ $(function(){
 
 $(function(){
 	OPT = $("body").attr("dev") ? new Date().getTime() : "";
-	OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.js/o2oEXLite.v6.js?v5"+OPT;
+	OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.js/o2oEXLite.v7.js?v5"+OPT;
 //OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.org.js?v5"+OPT;
 });
 
@@ -768,6 +768,7 @@ var oekaki = (function(){
 
 
 		$("#submitOekaki").click(function(){
+
 			$("#submit_button,.input_button").trigger("click");
 		});
 
@@ -1019,6 +1020,10 @@ var oekaki = (function(){
 				$("#psize").css("margin-right","5px");
 				$("#psize").after($("#goBtn,#backButton"));
 				$("#canvasSize2").trigger("change");
+
+				$('#psize').val(2).trigger("change");
+
+
 		});
 
 	$("#_canvas").css({"overflow":"auto","max-width":"200px"});
@@ -2712,12 +2717,14 @@ function reuse_request(){
 var submit_flag = 0;
 function submit_form(){
 
+	is_oekaki_focus = 0;	
+
 	$("body").trigger("SUBMIT_SEND_PRE_START");
 
 
 
 
-	$("#submit_button,#resSubmit").prop("disabled",true);
+	$("#submitOekaki,#submit_button,#resSubmit").prop("disabled",true);
 	$("#loading_bar").slideDown('fast');
 
 /*
@@ -2773,7 +2780,7 @@ function submit_form(){
 		cache  : false,
 		error  : function(res){
 			alert("投稿失敗！\n今はサーバがおかしいみたい。。少し待ってから投稿してみよう！");
-			$("#submit_button,#resSubmit").prop("disabled",false);
+			$("#submitOekaki,#submit_button,#resSubmit").prop("disabled",false);
 			$("#loading_bar").slideUp('fast');
 		},
 
@@ -2808,13 +2815,13 @@ function submit_form(){
 				submit_flag = 1;
 
 				setTimeout(function(){
-					$("#submit_button,#resSubmit").prop("disabled",false);
+					$("#submitOekaki,#submit_button,#resSubmit").prop("disabled",false);
 					$("#loading_bar").slideUp('fast');
 				},1000);
 
 			} else {
 				alert("投稿失敗。。\n"+res);
-				$("#submit_button,#resSubmit").prop("disabled",false);
+				$("#submitOekaki,#submit_button,#resSubmit").prop("disabled",false);
 				$("#loading_bar").slideUp('fast');
 			}
 		}
