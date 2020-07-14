@@ -798,7 +798,7 @@ function submit_form(){
 
 function update_res(){
 
-	var query = "u=" + local_updated;
+	var query = "u=" + local_updated + "&s=" + server_updated;
 
 	$.ajax({
 		type: "GET",
