@@ -2611,6 +2611,12 @@ function moveToTop(target,_speed){
 	$('body,html').stop(true,false).animate({scrollTop:position}, speed, 'linear');
 }
 
+function moveToMiddleCall(target,_speed,callback){
+	var speed = _speed ? parseInt(_speed) : 400;
+	var position = target.offset().top - (window.innerHeight/2) + (target.height()/2);
+	$('body,html').stop(true,false).animate({scrollTop:position,complete:callback}, speed, 'linear');
+}
+
 
 $(function(){
 
