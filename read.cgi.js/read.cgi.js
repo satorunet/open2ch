@@ -2,8 +2,10 @@
 $(function(){
 
 
-	$("ares a").click(function(e){
+	$("ares a").live("click",function(e){
 		e.preventDefault();
+
+		$(this).parent().find(".plus").remove();
 
 		if($(this).attr("open")){
 			$(this).removeAttr("open");
@@ -870,6 +872,27 @@ function update_res(){
 				if(isNodeJS == 1){
 					nodejs_update_localupdated(local_updated);
 				}
+
+				$(html).find("a").filter(function(){
+					if( m = $(this).html().match(/^&gt;&gt;(\d+)$/) ){
+						var resnum = m[1];
+
+						if( $("[num="+resnum+"]") ){
+							$("[num="+resnum+"] div").show();
+							var count = parseInt($("[num="+resnum+"] count").html() || 0) + 1;
+							$("[num="+resnum+"] count").html(count);
+
+							if( $("[num="+resnum+"] plus").html() ){
+								var count = parseInt($("[num="+resnum+"] plus").html()) + 1;
+								$("[num="+resnum+"] plus").html(count);
+							} else {
+								$("[num="+resnum+"] a").after("<font class=plus color=red>+<plus>1</plus></font>");
+							}
+
+						}
+
+					}
+				})
 
 				$('#new_alert').slideUp('fast');
 
