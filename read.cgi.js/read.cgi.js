@@ -1357,18 +1357,6 @@ $(function(){
 		}
 	);
 
-	$("body").bind("UPDATE_NEWRES",function(event,res){
-
-/*
-		$("img.lazy").lazyload(
-			{	effect : "fadeIn",
-				effectspeed: 500,
-				threshold: 300
-			}
-		);
-*/
-
-	});
 
 
 });
@@ -2234,7 +2222,6 @@ function update_res(flag){
 		$("#get_newres_button").slideUp("fast");
 	}
 
-
 	if(flag == "now" || $('#autoOpen').is(':checked') == false){
 		$('#new_alert').fadeOut("fast");
 	} else {
@@ -2304,13 +2291,24 @@ function update_res(flag){
 	}
 
 	var htmls = html.split("<sp />").map(function(e){
+
+		var id = $(e).attr("uid");
+		var _html;
+
 		if(pageMode == "sp"){
-			var _html = "<li><dl class=hide><section>" + e + "</section></dl></li>";
-			$(".thread").append(_html);
+			_html = "<li><dl class=hide><section>" + e + "</section></dl></li>";
 		} else { /* PC */
-			var _html = "<dl class=hide>" + e + "</dl>";
-			$(".thread").append(_html);
+			_html = "<dl class=hide>" + e + "</dl>";
 		}
+
+		var html_obj = $(_html);
+
+		if(ignores[id]){
+			html_obj.attr("ignored",1)
+		}
+
+		$(".thread").append(html_obj);
+
 	});
 
 
@@ -2327,43 +2325,33 @@ function update_res(flag){
 			var org = $(this).attr("data-src");
 			var embed = "https://www.youtube.com/embed/" + org;
 			$(this).attr("src",embed).removeClass("youtubeiframe");
-
-
 		})
 	}
 
+	/* お絵描き遅延 */
 	if(html.match(/openpic/)){
 		$(".openpic").after("<div class=grid><img src=https://image.open2ch.net/image/icon/svg/loading.v2.svg width=100 height=100></div>");
-		
-
 		setTimeout(function(){
 			$(".grid").fadeOut("fast",function(){
 				$(this).remove();
-
 				$(".openpic").addClass("pic lazy").fadeIn("slow",function(){
 						var org = $(".openpic").attr("data-src");
 						$(".openpic").attr("src",org);
 						$(this).removeClass("openpic");
 						
 				});
-
 			});
 		},(isSmartPhone ? 5000 : 3000) );
 	}
 
+	$(".thread").find("dl:hidden").not("[ignored=1]").slideDown("fast",function(){
+		if( $("#auto_scroll").is(":checked") ){
+			moveToMiddle($(".thread dl:last"),500);
+		}
+	});
 
+	document.title = defTitle;
 
-				$(".thread").find("dl:hidden").slideDown("fast",function(){
-
-					if(
-						 $("#auto_scroll").is(":checked")
-						){
-						moveToMiddle($(".thread dl:last"),500);
-					}
-				});
-
-				updateIgnore();
-				document.title = defTitle;
 			} else {
 				;;
 			}
