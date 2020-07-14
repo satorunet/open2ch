@@ -1,4 +1,84 @@
 // <フォーム固定>
+var cachekey;
+var ignores;
+
+function updateIgnore(){
+
+
+	if(!Object.keys(ignores).length){
+		return;
+	}	
+
+	jQuery.each(ignores, function(key, val) {
+
+		if(key !== "???"){
+			if($("."+key).css("display") !== "none"){
+				$("."+key).fadeOut();
+			}
+		}
+	})
+	var length = Object.keys(ignores).length;
+	$("#clear_ignore").html("無視設定をクリア(" + length + "件)");
+}
+
+$(function(){
+	cachekey = "ign:"+bbs;
+	ignores = getStorage(cachekey) ? JSON.parse(getStorage(cachekey)) : new Object();
+
+	$("#clear_ignore").click(function(e){
+		e.preventDefault();
+		if(confirm("無視設定をクリアします。よろしいですか？")){
+			delStorage(cachekey);
+			ignores = new Object();
+			$(".mesg").fadeIn();
+			updateIgnore();
+		}
+	});
+
+	$("._id").each(function(){
+		var id = $(this).attr("val");
+		if(id !== "???"){
+			$(this).after(" <a href=# class=ignore val="+id+">×</a>");
+		}
+	});
+
+	var res;
+	if(Object.keys(ignores).length){
+		updateIgnore();
+	}
+
+	$(".ignore").live("click",function(e){
+
+		e.preventDefault();
+		var ID = $(this).attr("val");
+
+		if(ignores[ID]){
+
+			var message = "ID:" + ID + " の無視設定を解除します。よろしいですか？";
+			if( confirm(message) ){ //解除
+				delete ignores[ID];
+				$("."+ID).slideDown();
+				updateIgnore();
+				if( Object.keys(ignores).length ){
+					setStorage(cachekey,JSON.stringify(ignores))
+				} else {
+					delStorage(cachekey)
+				}
+
+			}
+		} else { //無視
+
+			var message = "ID:" + ID + " を無視設定します。よろしいですか？";
+			if( confirm(message) ){
+				ignores[ID] = 1;
+				setStorage(cachekey,JSON.stringify(ignores));
+				updateIgnore();
+			}
+		}
+
+	})
+
+});
 
 $(function(){
 	$("#formfix").click(function(){
@@ -747,6 +827,9 @@ function update_res(){
 				} else {
 					$(".thread").append(html);
 				}
+				
+				updateIgnore();
+
 				document.title = defTitle;
 			} else {
 				;;
