@@ -147,27 +147,48 @@ $(function(){
 function setFormKotei(flag){
 
 	if(flag == 1){
+		$("#formdiv").hide();
+
 		$("#formdiv").css({
 			"bottom":"0",
 			"position":"fixed",
-			"backgroundColor":"honeydew",
+			"backgroundColor":"#DDD",
 			"padding":"2px",
 			"border":"1pt dotted #999"
 		});
 
 		$(".social").hide();
 
+		if(isSmartPhone == 1){
+			$("#formdiv").css({"width":"100%"});
+		}
+
+		$("#formdiv").slideDown("slow");
+
+
 	} else {
+
+		$("#formdiv").fadeOut("fast");
+
 		$("#formdiv").css({
 				"bottom":"",
 				"position":"",
 				"backgroundColor":"",
 				"padding":"",
 				"border":""
-
 			});
 		$(".social").show();
+
+		if(isSmartPhone == 1){
+			$("#formdiv").css({"width":""});
+		}
+
+		$("#formdiv").fadeIn("fast");
+
 	}
+
+
+
 }
 // </フォーム固定>
 
@@ -322,9 +343,14 @@ $(function(){
 			if($('#MESSAGE').val()){
 				$('#MESSAGE').val(jQuery.trim( $('#MESSAGE').val() ));
 			}
+
+			$('#MESSAGE').focus();
 			$('#MESSAGE').val(  ($('#MESSAGE').val() ? $('#MESSAGE').val() + "\n" : $('#MESSAGE').val()) + ">>" + $(this).attr("val") + "\n")
+
+
 			if($("#formdiv").css("position") !== "fixed"){
-				moveToLink($("[name=_preForm]"));
+//			moveToLink($("[name=_preForm]"));
+				
 			}
 			e.preventDefault();
 		}
@@ -780,9 +806,9 @@ function submit_form(){
 	$("#status").html("投稿中...");
 
 	var query = {
-		FROM : $('#FROM').val(),
-		mail : $('#mail').val(),
-		sage : ($("#sage").is(':checked') ? 1 : 0),
+		FROM : $('[name=FROM]').val(),
+		mail : $('[name=mail]').val(),
+		sage : ($("[name=sage]").is(':checked') ? 1 : 0),
 
 		MESSAGE : $('#MESSAGE').val(),
 		bbs : bbs,
@@ -889,13 +915,16 @@ function update_res(){
 					}
 				})
 
-				$('#new_alert').fadeOut("fast");
+				setTimeout(function(){
+					$('#new_alert').slideUp("fast");
+				},1000);
 
-				html = "<dl class='hide'>"+html+"</dl>";
+
+				html = "<dl class=hide>"+html+"</dl>";
 
 				if(pageMode == "sp"){
-					$(".thread").append("<section class='r hide'><li><dl>" + html + "</dl></li></section>");
-					$(html).slideDown("slow");
+					$(".thread").append("<section><li>" + html + "</li></section>");
+					$(".thread").find("dl:hidden").slideDown("fast");
 
 				} else {
 					$(".thread").append(html);
@@ -926,8 +955,6 @@ function call_update_alert(_server_updated,_server_resnum){
 	server_resnum = _server_resnum;
 	server_updated = _server_updated;
 
-	if(!is_updating){
-
 		var diff = _server_resnum - local_resnum;
 
 		if( diff > 0 ){ // 更新アリ
@@ -944,9 +971,11 @@ function call_update_alert(_server_updated,_server_resnum){
 				}
 			}
 
-			if($('#autoOpen').is(':checked')){
-//				setTimeout(function(){update_res()},1000)
-					update_res();
+			if(!is_updating){
+				if($('#autoOpen').is(':checked')){
+	//				setTimeout(function(){update_res()},1000)
+						update_res();
+				}
 			}
 
 
@@ -955,7 +984,6 @@ function call_update_alert(_server_updated,_server_resnum){
 					alert("◆お知らせ◆\n新規レスが" + diff + "件ついたよ！");
 			}
 		}
-	}
 }
 
 
