@@ -8,6 +8,108 @@ $(function(){
 	SETTING = gethashStorage("setting");
 })
 
+/* AAモード */
+$(function(){
+
+	if(SETTING["aa_mode"] == "off"){
+		return;
+	} else {
+		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v1.css?v2" type="text/css"  />');
+	}
+
+	AA_filter($("body"))
+})
+
+function AA_filter(_this){
+
+	if(SETTING["aa_mode"] == "off"){
+		return;
+	}
+
+	$(_this).find(".body").each(function(){
+		if($(this).find(".body")){
+			if($(this).text().match("!AA")){
+				$(this).addClass("AA")
+			}
+
+		}
+	})
+}
+
+/* コード送信機能 */
+
+$(function(){
+
+	$(".pasteButton").click(function(){
+		
+		if($(this).is(":checked")){
+			$(".pastebin").show();
+		} else {
+			$(".pastebin").hide();
+		}
+
+	});
+
+	$(".pasteSubmitButton").click(function(e){
+
+		if($("[name=pasteText]").val() == ""){
+			alert("空は投稿できましぇん。");
+			return;
+		}
+
+		$(this).prop("disabled",true);
+		var data = {
+			q: $("[name=pasteText]").val(),
+			v: "1",
+		};
+
+		$.ajax({
+			type: 'POST',
+			url : "/ajax/pastebin/post.cgi",
+			data : data,
+			dataType :"json",
+			success : function(res){
+				if(res.success == 1){
+
+					alert("変換成功！本文にURLを張り付けといたばい。");
+
+					var texts = $("[name=MESSAGE]").val() ? $("[name=MESSAGE]").val().split("\n") : [];
+					texts.push(res.url);
+					$("[name=MESSAGE]").val(texts.join("\n"));
+					$("[name=pasteText]").val("");
+					$(".pasteSubmitButton").prop("disabled","");
+				} else {
+
+					alert("変換失敗！エラー：" + res.error);
+
+				}
+			}
+		})
+	});
+
+	$("[name=pasteText]").bind("change keyup keydown paste",function(){
+		var rows = $(this).attr("rows");
+		var len = $(this).val().split("\n").length;
+		var min = 5;
+		var max = 30;
+		var n;
+		
+		if(len > max){
+			n = max;
+		} else if(len < min){
+			n = min
+		} else {
+			n = len+1
+		}
+		
+		$(this).attr("rows",n);
+	
+	});
+})
+
+
+
+
 /* 可変コメント欄*/
 $(function(){
 		$("[name=MESSAGE]").bind("keyup change paste",function(){
@@ -3397,8 +3499,10 @@ function update_res(flag){
 
 
 			/* URL処理 */
-			url_info_handler($(html_obj))
+			url_info_handler($(html_obj));
 
+			/* AA処理 */
+			AA_filter($(html_obj));
 
 			if(SETTING["reverse_mode"] == "on"){
 				$(".thread").prepend(html_obj);
