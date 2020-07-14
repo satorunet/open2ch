@@ -1698,9 +1698,74 @@ $(function(){
 });
 
 
+/*
+<dl style="margin:0px"><dt><div class="info hd"><a class="num" val="92">92</a> ：20/07/04 06:30:05 nPk<font size="2"><font color="red">主</font></font><db></db></div>
+<div class="body" style="margin-left:15px;margin-bottom:5px"><div style="display:inline-block;margin-top:5px" class="ank_main" resnum=""><div class="ank_button" style="display:block"></div><div class="ank_result" style="display:block"><div> <div class="ank_kekka" num="1" val="0"> <div class="kekka_list"> <span class="kekka_per"><per>0</per>%</span> <div class="kekka_text"><text>うんこ</text></div> <span class="kekka_bar" style="width:0%">&nbsp;</span> </div> </div> </div> <div> <div class="ank_kekka" num="2" val="0"> <div class="kekka_list"> <span class="kekka_per"><per>0</per>%</span> <div class="kekka_text"><text>うんこ</text></div> <span class="kekka_bar" style="width:0%">&nbsp;</span> </div> </div> </div></div><div style="margin:5px;font-size:10pt"><font color="#99A"><total>0</total>票・<left sec="60">終了</left></font></div></div><br></div></dt></dl>
+*/
+
+
+function rating_filter(mado){
+
+	console.log(mado.html());
+
+
+	$(mado).find(".ank_main").each(function(){
+
+		var base = $(this);
+		var resnum = $(this).attr("resnum");
+		var total = 0;
+		var keys = ratings[resnum] || {};
+
+		console.log(base);
+
+		$(Object.keys(keys)).each(function(i,e){
+			var val = keys[e];
+			total += parseInt(val);
+		});
+
+		base.find("total").text(total);
+
+		$(Object.keys(keys)).each(function(i,e){
+			var num = e;
+			var val = keys[e];
+			var per = parseFloat( parseInt((val/total*100)*10)/10 );
+			var ank_target = $(base).find(".ank_kekka[num="+num+"]");
+			    ank_target.find("per").text(per);
+			    ank_target.find(".kekka_bar").css("width",per + "%");
+		});
+
+		if(VOTED[bbs+key+resnum]){
+			$(base).find(".ank_button").hide();
+			var num = VOTED[bbs+key+resnum];
+			$(base).find(".ank_result").show();
+			var targetKekka = $(base).find(".ank_kekka[num="+num+"]");
+			targetKekka.find("text").text( "✔" + targetKekka.find("text").text());
+		} else {
+			$(base).find(".ank_button").show();
+		}
+
+		
+
+	})
+
+
+}
+
 /* url2info */
 $(function(){
+
+	/* 開いた後*/
+
+
+	/* 開く前*/
+	$("body").bind("SP_ANK_OPEN",function(e,mado){
+		rating_filter($(mado));
+	});
+
+
 	$("body").bind("ANK_OPEN ARES_OPEN",function(e,mado){
+
+		console.log(mado);
 
 		icon_filter($(mado));
 
@@ -1714,7 +1779,7 @@ $(function(){
 
 		AA_filter($(mado))
 
-		console.log($(mado).html());
+		rating_filter($(mado));
 
 
 	});
@@ -3191,8 +3256,6 @@ $(function(){
 
 				var html = $(res);
 
-
-
 				$("body").trigger("ARES_OPEN",html);
 
 
@@ -3208,6 +3271,9 @@ $(function(){
 */
 
 				$(parent).find("areshtml").html( html );
+
+				$("body").trigger("ARES_OPENED");
+
 				$(parent).find(".aresclose").show();
 
 				$(parent).find("areshtml").find("a").filter(function(){ 
@@ -4920,10 +4986,12 @@ function nodejs_connect(){
 					var diff = new_totals[resnum] - old_total;
 
 
+/*
 					var $news = $(
 						"<div class=al><div style='font-size:9pt;display:inline-block;border-radius:10px 0 10px 0;cursor:pointer;border:1px solid #ddd;padding:10px;background:rgba(255,255,255,.8)'>" + 
 						"<a href='./"+resnum+"'>&gt;&gt;"+resnum+" に投票</a>：<b>+"+diff+"</b> <font color=#999 size=1>(計:"+new_totals[resnum]+"票)</font>" + 
 						"</div></div>");
+*/
 
 //				$(".fixedDiv").prepend($news);
 
