@@ -3,6 +3,7 @@ var ua = navigator.userAgent.toLowerCase();
 var IS_BOT = ua.match(/bot|bing/) ? 1 : 0;
 
 
+
 $.ajaxSetup({
 	cache: true
 });
@@ -68,7 +69,7 @@ $(function(){
 
 //		console.log("mado-visible:" + ($(".mado,.ankw").length));
 	
-			if(isScrolling == 0 && message_inview == 1 && !($(".ignore_check_over,.mado,.ankw").is(":visible")) ){
+			if(IS_ANK_OVER == 0 && isScrolling == 0 && message_inview == 1 && !($(".ignore_check_over,.mado,.ankw").is(":visible")) ){
 
 				$(window).scrollTop( $(window).scrollTop() + diff );
 			}
@@ -1774,11 +1775,12 @@ $(function(){
 			ng_list.push("http");
 			ng_list.push("https");
 			ng_list.push("ttp");
+		} else if(e == ":コテ"){
+			SETTING["ban_kotehan"] = 1;
 		}
 	})
 	
-	console.log(ng_list);
-
+//	console.log(ng_list);
 
 	if(ng_list){
 		NGREGEXP = list2regexp(ng_list);
@@ -1794,6 +1796,24 @@ $(function(){
 <div class="body" style="margin-left:15px;margin-bottom:5px"><div style="display:inline-block;margin-top:5px" class="ank_main" resnum=""><div class="ank_button" style="display:block"></div><div class="ank_result" style="display:block"><div> <div class="ank_kekka" num="1" val="0"> <div class="kekka_list"> <span class="kekka_per"><per>0</per>%</span> <div class="kekka_text"><text>うんこ</text></div> <span class="kekka_bar" style="width:0%">&nbsp;</span> </div> </div> </div> <div> <div class="ank_kekka" num="2" val="0"> <div class="kekka_list"> <span class="kekka_per"><per>0</per>%</span> <div class="kekka_text"><text>うんこ</text></div> <span class="kekka_bar" style="width:0%">&nbsp;</span> </div> </div> </div></div><div style="margin:5px;font-size:10pt"><font color="#99A"><total>0</total>票・<left sec="60">終了</left></font></div></div><br></div></dt></dl>
 */
 
+
+var IS_ANK_OVER = 0;
+var ANK_TIMER_ID;
+
+$(function(){
+	$(document).on("mouseenter",".ank_button",function(){
+		clearTimeout( ANK_TIMER_ID ) ;
+		IS_ANK_OVER = 1;
+	})
+
+	$(document).on("mouseleave",".ank_button",function(){
+		IS_ANK_OVER = 1;
+		clearTimeout( ANK_TIMER_ID ) ;
+		ANK_TIMER_ID = setTimeout( function () {
+			IS_ANK_OVER = 0 ;
+		}, 500 ) ;
+	})
+})
 
 function rating_filter(mado){
 
@@ -2157,6 +2177,28 @@ function ng_filter(_this){
 	}
 
 	var is_match = $(body).parent().html().match(NGREGEXP);
+
+	if(SETTING["ban_kotehan"]){
+
+		var name = body.parent().find(".name").text();
+		    name = name.replace(/^↓/,""); //sage
+
+//		console.log(name);
+
+		var is_zikkyo = $("title").text().match(/実況/) && name.match(/^[^\d]{1,2}\d{1,2}\-\d{1,2}[^\(]{1,2}\([^\)]{1,3}\)$/) ? 1 : 0;
+
+		var is_cap = name.match(/▲|▼/);
+		var is_nin = name.match(/^■/) ? 1 : 0;
+		var is_trip = name.match(/◆/) ? 1 : 0;
+		var is_nanasi = name.match(/^(名無し＠|名無しさん＠おーぷん|名無し)$/) ? 1 : 0;
+		var is_kotei = (!is_nin && !is_cap && !is_nanasi && !is_zikkyo || is_trip) ? 1 : 0;
+
+		if(is_kotei){
+			is_match = 1;
+			body.parent().find(".name").wrap("<k><n></n></k>");
+		}
+	
+	}
 
 	if(is_match){
 
@@ -2929,7 +2971,7 @@ function speechLoop(){
 	if(obj){
 		var text = obj.text;
 
-		console.log(obj);
+//		console.log(obj);
 
 		$(".reading").removeClass("reading");
 		$("kome[num="+obj.n+"]").addClass("reading");
