@@ -4953,73 +4953,7 @@ function nodejs_connect(){
 
 	/*ru:ratingUpdated*/
 	socket.on('ru',function(data){
-//		updateRating(updated);
-
-
-		var new_ratings = JSON.parse(data);
-		
-
-		{
-			/* 新着調査 */
-			var new_anks = [];
-			var new_totals = {};
-			$(Object.keys(new_ratings)).each(function(i,resnum){
-				var new_total = 0;
-				$(Object.keys(new_ratings[resnum])).each(function(i,num){
-					new_total += parseInt(new_ratings[resnum][num]);
-				});
-				new_totals[resnum] = parseInt(new_total);
-			});
-
-			$(Object.keys(ratings)).each(function(i,resnum){
-				var old_total = 0;
-				$(Object.keys(ratings[resnum])).each(function(i,num){
-					old_total += parseInt(ratings[resnum][num]);
-				});
-
-//			console.log(resnum + "::" + old_total + ":" + new_totals[resnum]);
-
-				if(old_total !== new_totals[resnum]){
-
-//				new_anks.push({resnum:resnum,old:old_total,new:new_totals[resnum]})
-
-					var diff = new_totals[resnum] - old_total;
-
-
-/*
-					var $news = $(
-						"<div class=al><div style='font-size:9pt;display:inline-block;border-radius:10px 0 10px 0;cursor:pointer;border:1px solid #ddd;padding:10px;background:rgba(255,255,255,.8)'>" + 
-						"<a href='./"+resnum+"'>&gt;&gt;"+resnum+" に投票</a>：<b>+"+diff+"</b> <font color=#999 size=1>(計:"+new_totals[resnum]+"票)</font>" + 
-						"</div></div>");
-*/
-
-//				$(".fixedDiv").prepend($news);
-
-/*
-					$news.animate({n:0},1000*10,function(){
-						$(this).fadeOut("fast",function(){
-							$(this).parents(".al").remove();
-						});
-					});
-
-					soundManager.play('vote');
-*/
-
-
-				}
-			});
-
-
-
-		}
-
-		ratings = new_ratings;
-
-		//console.log(new_totals);
-
-
-		updateRatings();
-
+		socket_update_ratings(data);
 	});
 
 	/* sc:setKusa */
