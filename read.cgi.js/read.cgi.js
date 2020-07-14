@@ -556,16 +556,9 @@ function setReverseMode(){
 	/* 10行以下の場合、1だけ上に入れる */
 	var ichi = $(".thread").find((isSmartPhone == "1" ? "li" : "dl") + "[val=1]");
 	var html = ichi.find(".nusi_message").html();
-	var nagasa = html ? html.split("<br>").length : 0;
 
-	if(nagasa < 15){
-		$(".formset").before($(".thread").find((isSmartPhone == "1" ? "li" : "dl") + "[val=1]"));
-	} else {
-		var url = "/test/read.cgi/" + bbs + "/" + key + "/1";
-		var padding = isSmartPhone ? "padding:10px" : "";
+	$(".formset").before($(".thread").find((isSmartPhone == "1" ? "li" : "dl") + "[val=1]"));
 
-		$(".formset").before("<div class=reverseTemp style='"+padding+"'><font color=#999><a class='_ank' href="+url+">&gt;&gt;1</a>&nbsp;&nbsp;(長文の為、省略。詳細は安価先で確認)</font></div>");
-	}
 
 	if(isSmartPhone !== 1){
 		ichi.after("<hr class=reverseTemp>");
@@ -2737,7 +2730,7 @@ $(function(){
 
 /* フォーム固定 */
 var cachekey;
-var ignores = {};
+var ignores_hash = {};
 var ignores_array;
 var IGNORE_MAX = 50;
 var ignore_cache_key;
@@ -2748,21 +2741,26 @@ $(function(){
 
 function updateIgnore(){
 
-
-	if(!Object.keys(ignores).length){
-		return;
-	}
-
-	ignores = {};
-	ignores_array.map(function(e){
-		ignores[e] = 1;
+	ignores_hash = {};
+	ignores_array.map(function(key){
+		ignores_hash[key] = 1;
+		if(key !== "???"){
+			$("dl").find(".id"+key + "[ignored!='1']").parents("li,dl")
+				.fadeOut("fast")
+				.attr({"ignored":1,"uid":key});
+		}
 	})
 
-	jQuery.each(ignores, function(key, val) {
-		if(key !== "???"){
-			$(".id"+key + "[ignored!='1']").fadeOut("fast").attr("ignored",1);
+	/* 解除 */
+	$("[ignored=1]").each(function(i,a){
+		var uid = $(this).attr("uid");
+		if(!ignores_hash[uid]){
+			$(this).removeAttr("ignored").fadeIn("fast");
 		}
+
 	});
+	
+
 
 	var length = ignores_array.length;
 
@@ -2785,19 +2783,15 @@ $(function(){
 	ignores_array = getListStorage(ignore_cache_key);
 
 	ignores_array.map(function(e){
-		ignores[e] = 1;
+		ignores_hash[e] = 1;
 	})
 
 	$(document).on("click",".ignore_back",function(e){
 
 		var array = getListStorage(ignore_cache_key);
 		var id = array.shift();
-
-		$(".id"+id).removeAttr("ignored").slideDown("fast");
-
 		ignores_array = shiftListStorage(ignore_cache_key);
 		updateIgnore();
-
 		e.preventDefault();
 	});
 
@@ -2806,10 +2800,9 @@ $(function(){
 		e.preventDefault();
 		if(confirm("無視設定をクリアします。\nよろしいですか？")){
 			delStorage(ignore_cache_key);
-			ignores = new Object();
-			ignores_array = new Array();
-
-			$(".mesg").fadeIn("fast").removeAttr("ignored");
+			ignores_hash = {};
+			ignores_array = [];
+			updateIgnore();
 			$("#ignore_div").fadeOut("fast");
 		}
 	});
@@ -2822,7 +2815,7 @@ $(function(){
 	});
 
 	var res;
-	if(Object.keys(ignores).length){
+	if(Object.keys(ignores_hash).length){
 		updateIgnore();
 	}
 
@@ -2832,11 +2825,11 @@ $(function(){
 		var ID = $(this).attr("val");
 		var _ID = ID.replace(/\./g,"");
 
-		if(ignores[ID]){
+		if(ignores_hash[ID]){
 			var message = "ID:" + ID + " の無視設定を解除します。\nよろしいですか？";
 
 			if( confirm(message) ){ /* 解除 */
-				delete ignores[_ID];
+				delete ignores_hash[_ID];
 				ignores_array = ignores_array.filter(function(e){return e!==_ID});
 
 				$(".id"+_ID).slideDown().removeAttr("ignored");
@@ -2853,7 +2846,7 @@ $(function(){
 			var message = "ID:" + ID + " を無視設定します。\nよろしいですか？";
 			if( confirm(message) ){
 
-				ignores[_ID] = 1;
+				ignores_hash[_ID] = 1;
 				ignores_array.unshift(_ID);
 
 				if(ignores_array.length > IGNORE_MAX){
@@ -3859,7 +3852,7 @@ function update_res(flag){
 
 		var html_obj = $(_html);
 
-		if(ignores[id]){
+		if(ignores_hash[id]){
 			html_obj.attr("ignored",1)
 		}
 
