@@ -30,6 +30,9 @@ function moveToMiddle(target,_speed){
 
 $(function(){
 
+	$("body").append("<div id='ninja_popup'><p></p></div>");
+	var my_tooltip = $("#ninja_popup");
+
 	//アラート自体をおせるように。
 	$("#new_alert")
 	.bind("click",function(e){
@@ -127,13 +130,12 @@ function updateIgnore(){
 	}	
 
 	jQuery.each(ignores, function(key, val) {
-
 		if(key !== "???"){
-			$(".id"+key + "[ignored!='1']").fadeOut().attr("ignored",1);
+			$(".id"+key + "[ignored!='1']").fadeOut("fast").attr("ignored",1);
 		}
 	})
 	var length = Object.keys(ignores).length;
-	$("#clear_ignore").html("無視設定をクリア(" + length + "件)");
+	$("#clear_ignore").html("無視設定をクリア(" + length + "件)").show();
 }
 
 $(function(){
@@ -145,8 +147,9 @@ $(function(){
 		if(confirm("無視設定をクリアします。\nよろしいですか？")){
 			delStorage(cachekey);
 			ignores = new Object();
-			$(".mesg").fadeIn().removeAttr("ignored");
-			updateIgnore();
+			$(".mesg").fadeIn("fast").removeAttr("ignored");
+			$(this).hide();
+			//updateIgnore();
 		}
 	});
 
@@ -902,8 +905,10 @@ function submit_form(){
 
 	var query = {
 		FROM : $('[name=FROM]').val(),
+
 		mail : $('[name=mail]').val(),
 		sage : ($("[name=sage]").is(':checked') ? 1 : 0),
+		ninja : ($("[name=ninja]").is(':checked') ? 1 : 0),
 
 		MESSAGE : $('#MESSAGE').val(),
 		bbs : bbs,
