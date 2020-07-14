@@ -439,29 +439,85 @@ $(function(){
 var is_update_que = 0;
 var is_textarea_focus = 0;
 
+var pretext;
+var MAX_HORYU_TIME = 3;
+
 $(function(){
 
-	$("[name=MESSAGE]").keydown(function(){
-		if(is_textarea_focus == 0){
-			is_textarea_focus = 1;
+//	$("[name=MESSAGE]").after("<div id=debug><b>0</b></div>");
+
+	var counter = 0;
+
+	setInterval(function(){
+
+		if(is_textarea_focus){
+			if(pretext == $("[name=MESSAGE]").val()){
+
+
+				if(counter >= MAX_HORYU_TIME){
+					counter = 0;
+					is_textarea_focus = 0;
+					auto_horyu_off();
+				} else {
+					counter++;
+					$("horyu").html(counter);
+
+				}
+
+			} else {
+				counter = 0;
+			}
+
+			pretext = $("[name=MESSAGE]").val();
+//			$("#debug").html("count:"+counter);
+
+		} else {
+//			$("#debug").html("-");
 		}
+
+
+	},1000);
+
+	$("[name=MESSAGE]").bind("keyup keydown",function(){
+
+		if(!event.ctrlKey){
+			counter = 0;
+			$("horyu").html(0);
+			if($("[name=MESSAGE]").val() && is_textarea_focus == 0){
+				is_textarea_focus = 1;
+
+				console.log("keydown event:" + $("[name=MESSAGE]").val());
+
+			}
+		}
+		
 	});
+
+	var keyup_timer;
+
+
 
 	$("[name=MESSAGE]").blur(function(){
-		is_textarea_focus = 0;
-
-		$("#new_alert_pending").slideUp("fast",function(){
-			$(this).remove();
-		});
-
-		setTimeout(function(){
-			if($('#autoOpen').is(':checked') && is_update_que == 1){
-				update_res("now");
-			}
-		},1000);
-
+		auto_horyu_off();
 	});
 })
+
+function auto_horyu_off(){
+	is_textarea_focus = 0;
+	counter = 0;
+	pretext = "";
+
+	$("#new_alert_pending").slideUp("fast",function(){
+		$(this).remove();
+	});
+
+	setTimeout(function(){
+		if($('#autoOpen').is(':checked') && is_update_que == 1){
+			update_res("now");
+		}
+	},1000);
+
+}
 
 /* 履歴 */
 
@@ -780,6 +836,7 @@ $(function(){
 	$("textarea").keydown(function(e){
 		if(event.ctrlKey){
 			if(e.keyCode === 13 && $(this).val()){
+
 				$("#form1").submit();
 				return false;
 			}
@@ -1433,7 +1490,6 @@ $(document).ready(function() {
 	
 	$('#form1').submit(function() {
 
-//	alert("debug");
 
 
 //お絵描きデータ生成
@@ -1857,12 +1913,15 @@ function submit_form(){
 	$("body").trigger("SUBMIT_SEND_PRE_START");
 
 
+
+
 	$("#submit_button").prop("disabled",true);
 	$("#loading_bar").slideDown('fast');
 
 	var img = "https://image.open2ch.net/image/read.cgi/image.cgi?" + bbs + "/" + key;
 	$("#statusicon").html("<img width=32 height=32 src='"+img+"'>&nbsp;");
 	$("#status").html("投稿中...");
+
 
 	var query = {
 		FROM : $('[name=FROM]').val(),
@@ -1890,6 +1949,20 @@ function submit_form(){
 		oekakiData : ($("#oekakiMode").is(':checked') ? $("[name=oekakiData]").val() : "")
 	};
 
+				$('#MESSAGE').val("");
+				$('#oekakiData').val("");
+				$("#parent_pid").val("");
+
+			console.log("submit-func");
+			is_textarea_focus = 0;
+			counter = MAX_HORYU_TIME;
+
+			$("#new_alert_pending").slideUp("fast",function(){
+				$(this).remove();
+			});
+
+
+
 	$.ajax({
 		type: "POST",
 		url    : "/test/bbs.cgi",
@@ -1910,9 +1983,7 @@ function submit_form(){
 //			server_resnum = (res.split(":"))[1];
 //			server_updated = (res.split(":"))[2];
 
-				$('#MESSAGE').val("");
-				$('#oekakiData').val("");
-				$("#parent_pid").val("");
+
 
 
 				if($('#sketch').is(":visible")){
@@ -2122,7 +2193,8 @@ function call_update_alert(_server_resnum){
 			if( !$('#formfix').is(':checked') && is_textarea_focus == 1 ){
 
 				if(!$("#new_alert_pending").is(":visible")){
-					$("#new_alert").append("<div id='new_alert_pending' style='margin-top:3px;color:pink;font-size:8pt'>※入力中の為、自動更新保留中</div>");
+					$("#new_alert").append("<div id='new_alert_pending' style='margin-top:3px;color:pink;font-size:8pt'>" + 
+						"※入力中の為、自動更新保留中 <horyu>0</horyu>/"+ MAX_HORYU_TIME +"秒</div>");
 				}
 
 				return;
