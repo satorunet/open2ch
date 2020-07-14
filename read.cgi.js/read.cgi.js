@@ -1,7 +1,5 @@
 // レス取得機能
 $(function(){
-
-
 	$("ares a").live("click",function(e){
 		e.preventDefault();
 
@@ -15,7 +13,6 @@ $(function(){
 		}
 
 		$(this).attr("open","1");
-
 		var resnum = $(this).attr("val");
 		var parent = $(this).parent().parent().parent();
 
@@ -838,9 +835,9 @@ function submit_form(){
 					setTimeout(function(){
 						$("#submit_button").prop("disabled",false);
 						$("#loading_bar").slideUp('slow');
-
 						is_updating = 0; 
 					},1000);
+
 				},1000);
 			} else {
 				alert("投稿失敗。。\n何らかの原因で投稿できませんでした。\nちょっと待ってからもう一度試してみよう。\n以下、エラー内容：\n"+res);
@@ -886,15 +883,13 @@ function update_res(){
 								var count = parseInt($("[num="+resnum+"] plus").html()) + 1;
 								$("[num="+resnum+"] plus").html(count);
 							} else {
-								$("[num="+resnum+"] a").after("<font class=plus color=red>+<plus>1</plus></font>");
+								$("[num="+resnum+"] .aresa").after("<font class=plus color=red>+<plus>1</plus></font>");
 							}
-
 						}
-
 					}
 				})
 
-				$('#new_alert').slideUp('fast');
+				$('#new_alert').hide();
 
 				if(pageMode == "sp"){
 					$(".thread").append("<section><li><dl>" + html + "</dl></li></section>");
@@ -931,7 +926,7 @@ function call_update_alert(_server_updated,_server_resnum){
 		if( diff > 0 ){ // 更新アリ
 			
 
-			$('#new_alert').slideDown('slow');
+			$('#new_alert').slideDown('fast');
 
 			$('#now_max').html(diff);
 			document.title = "(+" + diff + ")" + defTitle;
@@ -943,14 +938,14 @@ function call_update_alert(_server_updated,_server_resnum){
 			}
 
 			if($('#autoOpen').is(':checked')){
-				setTimeout(function(){update_res()},1500)
+//				setTimeout(function(){update_res()},1000)
+					update_res();
 			}
 
 
 			if($('#alertRes').is(':checked')){
-				setTimeout(function(){
+//				setTimeout(function(){alert("◆お知らせ◆\n新規レスが" + diff + "件ついたよ！");},500);
 					alert("◆お知らせ◆\n新規レスが" + diff + "件ついたよ！");
-				},500);
 			}
 		}
 	}
