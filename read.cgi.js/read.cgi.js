@@ -1,3 +1,6 @@
+var NODEJS = "nodejs.open2ch.net:80";
+//var NODEJS = "nodejs.open2ch.net:8000";
+
 /* */
 
 /*
@@ -72,6 +75,9 @@ $(function(){
 	});
 })
 */
+
+
+
 
 //新着レス関連
 function moveToBottom(target){
@@ -968,6 +974,7 @@ function submit_form(){
 		mail : $('[name=mail]').val(),
 		sage : ($("[name=sage]").is(':checked') ? 1 : 0),
 		ninja : ($("[name=ninja]").is(':checked') ? 1 : 0),
+		rating : ($("[name=rating]").is(':checked') ? 1 : 0),
 
 		MESSAGE : $('#MESSAGE').val(),
 		bbs : bbs,
@@ -1091,8 +1098,6 @@ function update_res(flag){
 					}
 				})
 
-
-
 				html = "<dl class=hide>"+html+"</dl>";
 
 				if(pageMode == "sp"){
@@ -1132,7 +1137,7 @@ function call_update_alert(_server_resnum){
 
 //	console.log("node-call: server_rewsnum :" + _server_resnum);
 
-	server_resnum = _server_resnum;
+		server_resnum = _server_resnum;
 		var diff = server_resnum - local_resnum;
 
 		if( diff > 0 ){ // 更新アリ
@@ -1213,7 +1218,7 @@ function nodejs_connect(){
 
 
 	"use strict";
-	socket = io.connect('http://nodejs.open2ch.net:80',{
+	socket = io.connect('http://' + NODEJS,{
 		'max reconnection attempts' : max_socket_reconnects
 		}
 	);
@@ -1329,6 +1334,13 @@ function nodejs_connect(){
 			setSureConter(res["n"]);
 		}
 	});
+
+	//ru:ratingUpdated
+	socket.on('ru',function(updated){
+//		setSureTotalConter(count);
+		updateRating(updated);
+	});
+
 
 
 
