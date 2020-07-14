@@ -8,6 +8,7 @@ $(function(){
 	SETTING = gethashStorage("setting");
 })
 
+
 /* 長文コラボ機能 */
 $(function(){
 
@@ -455,6 +456,8 @@ $(function(){
 	AA_filter($("body"))
 })
 
+$("body").append("<style>.aaa{cursor:pointer}</style>");
+
 function AA_filter(_this){
 
 	if(SETTING["aa_mode"] == "off"){
@@ -462,7 +465,6 @@ function AA_filter(_this){
 	}
 
 	$(_this).find(".body").each(function(){
-
 			var resnum = $(this).attr("rnum");
 
 			if($(this).text().match(/\!AA/i)){
@@ -477,10 +479,13 @@ function AA_filter(_this){
 
 				$(target).addClass("AA");
 
+				if($(this).text().match(/@AAA/i)){
+					$(target).addClass("AAA");
+				}
+
 
 				var body = $(target).html();
 					    body = body.replace(/<kome[^>]+>/g,"");
-				
 					    body = body.replace(/\!AA/gi,"");
 					    body = body.replace(/<br>/g,"\n");
 					    body = body.replace(/^\n*|\n*$/g,"");
@@ -493,9 +498,83 @@ function AA_filter(_this){
 				$(this).find(".hash,k,n").each(function(){
 					$(this).contents().remove("b").unwrap();
 				});
-
 			}
 	})
+
+	//AAA処理
+	$(_this).find(".AAA").each(function(i,a){
+
+		var aa = $(this).text();
+
+		var _speed = aa.match(/\@aaa:([\d\.]+)/);
+		var speed = 0.25;
+
+		if(_speed){
+			speed = _speed[1];
+		}
+
+		    aa = aa.replace(/@aaa(?::[\d\.]+|)/gi,"");
+		    aa = aa.replace(/^\n+|\n+$/,"");
+
+
+		var aaa = $(aa.split("@@@")).map(function(i,a){
+			a = a.replace(/^\n+/,"");
+			return a;
+		});
+
+		var max = aaa.length;
+		var count = 0;
+
+		var preview = $(
+			"<div key="+key+" style='count:"+aaa.length+"' class='aaa aa'>&nbsp;</div>" 
+		);
+		preview.text(aaa[0]);
+
+		preview.bind("start",function(){
+			var timerID = setInterval(function(_this){
+						if(max>count){
+							count++
+						} else {
+							count = 0;
+						}
+				preview.text(aaa[count]);
+			},(1000*speed),this);
+
+			$(this).prop("timer",timerID);
+
+		})
+
+ $(preview).on('inview', function(event, isInView){
+    if (!isInView && $(this).hasClass("playing")){
+    	$(this).trigger("stop");
+    }
+  });		
+
+
+		preview.bind("stop",function(){
+			clearInterval($(this).prop("timer"));
+			$(this).removeClass("playing");
+		});
+
+		preview.bind("click",function(){
+			if($(this).hasClass("playing")){
+				$(this).trigger("stop");
+			} else {
+				$(this).trigger("start");
+				$(this).addClass("playing");
+			}
+		})
+
+//		$(this).before(preview);
+
+		$(this).wrap("<details><p class=aaa_content></p></details>");
+
+		$(this).parents("details").append("<summary>@AAA</summary>");
+		$(this).parents("details").before(preview);
+	
+
+
+	});
 }
 
 /* コード送信機能 */
