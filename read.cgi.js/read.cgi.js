@@ -3,15 +3,67 @@ var OPT;
 var ua = navigator.userAgent.toLowerCase();
 var IS_BOT = ua.match(/bot|bing/) ? 1 : 0;
 
+
 var SETTING = {};
 $(function(){
 	SETTING = gethashStorage("setting");
 })
 
+/* Button-cookie */
+$(function(){
+
+	$(document).on("click","k",function(e){
+		$(this).find("n").contents().unwrap();
+		$(this).contents().unwrap();
+		e.preventDefault();
+		e.stopPropagation();
+	});
+
+	$(document).on("mouseover","k",function(){
+		$(this).addClass("o");
+	});
+
+	$(document).on("mouseout","k",function(){
+		$(this).removeClass("o");
+	});
+})
+
+
+$(function(){
+	$(".image_bt").click(function(e){
+		e.preventDefault();
+		$("#form1 .fileSelect").click();
+	});
+
+	if(getCookie("use_yomi") == "true"){
+		$("#use_yomi").prop("checked",true);
+	}
+
+	$("#use_yomi").change(function(){
+		setCookie("use_yomi",$(this).prop("checked"));
+	});
+
+
+
+	if(getCookie("use_autoaudio") == "true"){
+		$("#use_autoaudio").prop("checked",true);
+	}
+
+	$("#use_autoaudio").change(function(){
+		setCookie("use_autoaudio",$(this).prop("checked"));
+	});
+
+	if(getCookie("skip_prevoice") == "true"){
+		$("#skip_prevoice").prop("checked",true);
+	}
+
+	$("#skip_prevoice").change(function(){
+		setCookie("skip_prevoice",$(this).prop("checked"));
+	});
+})
+
 
 /* プレビューモード */
-
-
 function aaa_core(_this){
 
 		function updateSource(){
@@ -200,7 +252,10 @@ $(function(){
 			$(this).addClass("onAAAPreview");
 
 			$(".form_menu").append(
-				"<div class='aaa_preview_div'><label><input checked class=live_aaa_preview type=checkbox value='on'>＠AAAぷれびゅー</label></div>"
+				"<div style='margin-top:5px;margin-bottom:5px' class='aaa_preview_div'><label>" + 
+				"<input checked class=live_aaa_preview type=checkbox value='on'>＠AAAぷれびゅー</label>" + 
+//			"&nbsp;<input class=add_aaa_split type=button value='＠＠＠'>" + 
+				"</div>"
 			);
 			$("body").append("<div class=aaa_preview_window draggable=true><div><input class=preview_close type=button value='×'></div><div class=aaa_box></div></div>");
 			$(".live_aaa_preview").trigger("change");
@@ -215,6 +270,14 @@ $(function(){
 			$(".aaa_preview,.aaa_preview_div,.aaa_preview_window").remove();
 		}
 	});
+
+
+	$(document).on("click",".add_aaa_split",function(e){
+		var texts = $("[name=MESSAGE]").val().split("\n");
+		texts.push("@@@");
+		$("[name=MESSAGE]").val(texts.join("\n") + "\n").focus() ;
+	});
+
 
 	$(document).on("dragend",".aaa_preview_window",function(e){
 
@@ -428,13 +491,14 @@ $(function(){
 
 		if( $(body).find(".aaa_div").length ){ // AAA
 			html = $(body).find(".aaa_hide").html();
+			html = html.replace(/@aaa/i,"@AAA");
+			var n = new String(html).indexOf("@AAA");
+			html = html.substring(n,html.length);
 		} else { // AA
 			html = body.html();
 		}
-		
-		var res = html2AA(html);
-		
 
+		var res = html2AA(html);
 		var aa = res.aa;
 		var md5 = res.md5;
 		var resnum = body.attr("rnum");
@@ -499,6 +563,9 @@ $(function(){
 
 		$(this).parents("li,dl").find(".aa_checking").removeClass("aa_checking");
 		$(this).parents("li,dl").find(".aa_regist").remove();
+
+		e.preventDefault();
+
 	});
 
 
@@ -508,12 +575,169 @@ $(function(){
 	$(document).on("click",".kopipe_aaa",function(e){
 
 		$(".aa").attr("checked",true).trigger("change");
-		$("[name=MESSAGE]").val($(this).parents("li,dl").find(".aaa_hide").contents().text()).trigger("change"); 
 
-		alert("コメント欄にAAAのソースをコピペしますた。");
+		var text;
+		var type;
+		if( $(this).parents("li,dl").find(".aaa_hide").length ){ // AAA
+			text = $(this).parents("li,dl").find(".aaa_hide").contents().text();
+			type = "AAA";
+		} else { // AA
+			text = $(this).parents("li,dl").find(".body").text();
+			type = "AA";
+		}
+
+		$("[name=MESSAGE]").val(text).trigger("change"); 
+
+		alert("コメント欄に"+type+"をコピペしますた。");
 
 		e.preventDefault();
 
+	});
+
+	function aaa2gif_func(_this){
+		var text = $(_this).parents("li,dl").find(".aaa_hide").contents().text();
+
+		if($(_this).hasClass("gif")){
+			alert("GIF生成済み");
+			return;
+		}
+
+		var aid = $(_this).parents(".aa_regist").attr("aid");
+
+		makeGIF(text,function(url){
+			if(!$(_this).hasClass("gif")){
+				$(_this).parents("div").after("<aaa_gif />");
+				$(_this).addClass("gif");
+			}
+			var a = $("<a class=dl />");
+			a.attr("href",url)
+			 .attr("download", aid + ".gif");
+
+			$(_this).parents(".aa_menu").find("aaa_gif").html(
+				"<img title='クリックでダウンロード' style='border:1px solid #f9f9f9' src=" + url + "><br>※GIFダウンロード" 
+			).wrapAll(a);
+			
+			$(_this).remove();
+
+		});
+	
+	}
+
+	function makeGIF(text,callback){
+
+
+		// Gif
+		var gif = new GIF({
+		  workers: 2,
+		  quality: 10,
+		  background: "#FFFFFF",
+//	  transparent: "0xFFFFFF",
+		  
+		});
+
+		var time = new Date().getTime();
+
+		var aaa = text;
+		aaa = aaa.replace(/\r\n|\r/g,"\n");
+		var h = aaa.match(/@AAA(:[\d\.]+)?\n([\s\S]*)/i);
+		var aaa_header = h[1];
+		var aaa_content = h[2];
+		var aaa_datas = aaa_content.split("@@@");
+		var speed;
+
+		if(aaa_header){
+			var d = aaa_header.match(/:([\d\.]+)/);
+			speed = d[1];
+			if(speed < 0.01){
+				speed = 0.01
+			} else if(speed > 10){
+				speed = 10;
+			}
+		}
+
+		var delay = speed * 1000;
+		var width = 0;
+		var height = 0;
+		var max_y_length = 0;
+
+		$(aaa_datas).each(function(i,a){
+			a = a.replace(/^\n*|\n*$/g,"");
+			var text = new createjs.Text(a, "12pt Saitamaar");
+			var size = text.getBounds();
+
+		
+
+			var texts = a.split("\n");
+			console.log(texts);
+
+			if(width<size.width){width=parseInt(size.width+4)}
+			if(height<size.height){height=parseInt(size.height+4)}
+			if(max_y_length<texts.length){max_y_length=texts.length}
+		});
+	
+		height = height + (max_y_length*2);
+
+		$(aaa_datas).each(function(i,a){
+			a = a.replace(/^\n*|\n*$/g,"");
+
+			var id = "canvas_"+i + "_" + new Date().getTime();
+			var texts = a.split("\n");
+			var canvas = $("<canvas class=gif_temp width="+width+" height="+height+" id="+id+" />");
+			
+			$("body").append(canvas);
+
+			var stage = new createjs.Stage(id);
+			var text = new createjs.Text(a, "12pt Saitamaar");
+			text.textBaseline = "top";
+
+			text.y = 3;
+			text.x = 3;
+
+			var shape = new createjs.Shape();
+			shape.graphics.beginFill("#FFFFFF");
+			shape.graphics.drawRect(0, 0, width, height);
+			stage.addChild(shape);
+
+			text.lineHeight = 16;
+			stage.addChild(text);
+			stage.update();
+
+			gif.addFrame($("#"+id).get(0), {copy: true, delay: delay});
+
+		});
+
+		gif.on('finished', function(blob) {
+			//$(".gif_temp").remove();
+			callback(URL.createObjectURL(blob));
+			delete gif;
+		});
+
+		gif.render();
+
+
+	}
+
+
+	$(document).on("click",".aaa_2_gif",function(e){
+		var _this = $(this);
+
+		if(!$("body").hasClass("createJS")){
+
+			$.getScript("https://open.open2ch.net/lib/aaa2gif/lib/gif.js?v2xx").done(function(script, textStatus){
+				$.getScript("https://code.createjs.com/1.0.0/createjs.min.js").done(function(script, textStatus){
+					$("body").addClass("aaa2gif_init");
+					aaa2gif_func($(_this));
+					return;
+				});
+			});
+			$("body").addClass("createJS");
+		}
+
+		if($("body").hasClass("aaa2gif_init")){
+			aaa2gif_func($(_this));
+		}
+
+		e.preventDefault();
 	});
 
 	$(document).on("click",".view_aaa_source",function(e){
@@ -576,21 +800,28 @@ $(function(){
 
 			var input = $(
 				"<div class=aa_regist aid="+md5+">" + 
-				"<div><label><input type=checkbox checked class=is_use>すぐ使う</label>" + 
+				"<div clear=all><label><input type=checkbox checked class=is_use>すぐ使う</label>" + 
+				"<div style='float:right;display:inline-block'>" + 
+				"<a style='color:white;background:#555' href=# class=aa_cancel>閉</a></div>" + 
 				"</div>" + 
+
+				'<div style="white-space:nowrap">' + 
 				"<input size=12 class=title placeholder='AAスタンプ名'>" + 
 				"<input class='aa_ok' type=button value=" + (is_already ? "再登録" : "登録") + ">" + 
 				(is_already ? "<input class='aa_del' type=button value='削除'>" : "") + 
-				"<input class='aa_cancel' type=button value='取消'>" + 
-				"<div>" + 
+				'</div>' + 
+
+				"<div class='aa_menu'>" + 
 				(is_already ? "<font color=red>登録済み</font>＞<a href="+url+" target=_blank>AAスタンプ</a>" 
 				            : "<font color=#CCC>未登録</font>") + 
 				"<div style='float:right;display:inline-block'><font size=1 color=#999>ID:" + md5 + "</div>" + 
-				(res.aa.match(/@aaa/i) ? "<div>" + 
-				 "<a style='color:black' class='view_aaa_source' href=#>@AAAソース表示</a>&nbsp;&nbsp;" + 
-				 "<a style='color:black' class='kopipe_aaa' href=#>コメ欄にコピペ</a>" + 
-				 "</div><div class=source_view_div></div>"
-				 : "")+ 
+				"<div>"+
+				 "<a style='color:black' class='kopipe_aaa' href=#>コメ欄にコピペ</a> / " + 
+				(res.aa.match(/@aaa/i) ? 
+				"<a style='color:black' class='view_aaa_source' href=#>AAAソース表示</a><br>" +
+				"<a style='color:black' class='aaa_2_gif' href=#>GIFに変換</a><br>" : "")+ 
+				 "<div class=source_view_div></div>" + 
+				 "</div>" + 
 
 				"</div>");
 
@@ -1245,7 +1476,7 @@ function icon_filter(_this){
 	}
 
 	$(_this).find(".body").each(function(){
-		$(this).find("[icon=1]").remove()
+		$(this).find("[iconimg=1]").remove()
 	})
 }
 
@@ -1428,8 +1659,10 @@ function url_info_handler(_this){
 function url2info_request(_this,callback){
 
 
-		var url = $(_this).text();
-		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v4/" + escape(url);
+		var url = $(_this).attr("href");
+		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200201_v2/" + escape(url);
+//	var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v200229_08/" + escape(url);
+//	var json = "https://open.open2ch.net/lib/url2info/url2info.dev.cgi/v10/" + escape(url);
 
 		if(url.match(/(i\.img|imgur|png|jpg|mp4|gif|pdf)$/)){
 			return;
@@ -1457,7 +1690,8 @@ function url2info_request(_this,callback){
 
 
 $(function(){
-	OPT = $("body").attr("dev") ? new Date().getTime() : "";
+	//OPT = $("body").attr("dev") ? new Date().getTime() : "";
+	OPT = "";
 	OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.js/o2oEXLite.v7.js?v5"+OPT;
 //OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.org.js?v5"+OPT;
 });
@@ -2569,7 +2803,7 @@ var oekaki = (function(){
 
 		});
 
-	$("#_canvas").css({"overflow":"auto","max-width":"200px"});
+//$("#_canvas").css({"overflow":"auto","max-width":"200px"});
 
 	$(document).on("change","#scaleSelect",function(){
 		if($(this).val() > 1){
