@@ -816,6 +816,39 @@ function setFormKotei(flag){
 			"</div>"
 			))
 
+			setTimeout(function(){
+				$(document).on("mouseleave","#formdiv",function(){
+					$("#formdiv").stop(true).animate({"hoge":1},{duration:3000,complete:function(){
+						$(this).animate({"opacity":".3"},"fast");
+					}});
+				});
+
+				$(document).on("mouseover","#formdiv",function(){
+						$(this).stop(true).animate({"opacity":"1"},"fast");
+				});
+
+					$("#formdiv").stop(true).animate({"hoge":1},{duration:500,complete:function(){
+						$(this).animate({"opacity":".3"},"fast");
+					}});
+				
+				$('[name="MESSAGE"]').focus(function(){
+						$("#formdiv").stop(true).animate({"opacity":"1"},"fast");
+				})
+
+				$('[name="MESSAGE"]').blur(function(){
+					$("#formdiv").stop(true).animate({"hoge":1},{duration:3000,complete:function(){
+						$(this).animate({"opacity":".3"},"fast");
+					}});
+				})
+
+				$(document).on("keydown","#formdiv",function(){
+					$("#formdiv").stop(true).animate({"opacity":"1"},"fast");
+				});
+
+
+
+			},1000);
+
 			console.log(window.innerHeight)
 
 			$("#formdiv").css({
