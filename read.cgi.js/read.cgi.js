@@ -1,4 +1,6 @@
-var NODEJS = "nodejs.open2ch.net:80";
+//var NODEJS = "http://nodejs.open2ch.net:8880";
+var NODEJS = "https://nodessl.open2ch.net:8443";
+
 //var NODEJS = "nodejs.open2ch.net:8000";
 
 /* */
@@ -354,7 +356,8 @@ $(function(){
 // </お絵かき高機能モード>
 
 	function loadOekakiEx(){
-		var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js";
+//	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js";
+		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v2.js";
 		$.getScript(url);
 	}
 
@@ -527,7 +530,7 @@ function tuhoInit(){
 		var $win = $("#tuhoWindow");
 
 		$form.find("[type=submit]").attr("disabled",true);
-		$("#tuhoLoading").html("<img src='http://image.open2ch.net/image/loading.gif'>&nbsp;");
+		$("#tuhoLoading").html("<img src='//image.open2ch.net/image/loading.gif'>&nbsp;");
 
 		setTimeout(function(){
 
@@ -764,7 +767,7 @@ function setKoraboLink(){
 			$("#parent_pid").val($(this).attr("pid"));
 
 			//v3:画像をローカル画像に差し替える(編集可能化)
-			var local_image_url = $(this).attr("src").replace("http://.+open2ch.net","");
+			var local_image_url = $(this).attr("src").replace("https://.+open2ch.net","");
 
 			var _this = this;
 
@@ -964,7 +967,7 @@ function submit_form(){
 	$("#submit_button").prop("disabled",true);
 	$("#loading_bar").slideDown('fast');
 
-	var img = "http://image.open2ch.net/image/read.cgi/image.cgi?" + bbs + "/" + key;
+	var img = "https://image.open2ch.net/image/read.cgi/image.cgi?" + bbs + "/" + key;
 	$("#statusicon").html("<img width=32 height=32 src='"+img+"'>&nbsp;");
 	$("#status").html("投稿中...");
 
@@ -1019,7 +1022,7 @@ function submit_form(){
 				$("#parent_pid").val("");
 				$('#sketch').sketch().clear();
 
-				var img = "http://image.open2ch.net/image/read.cgi/image.cgi?mode=done&" + bbs + "/" + key;
+				var img = "https://image.open2ch.net/image/read.cgi/image.cgi?mode=done&" + bbs + "/" + key;
 				$("#statusicon").html("<img width=32 height=32 src='"+img+"'>&nbsp;");
 				$("#status").html("投稿完了しました!");
 //			update_res();
@@ -1218,7 +1221,7 @@ function nodejs_connect(){
 
 
 	"use strict";
-	socket = io.connect('http://' + NODEJS,{
+	socket = io.connect(NODEJS,{
 		'max reconnection attempts' : max_socket_reconnects
 		}
 	);
@@ -1237,7 +1240,7 @@ function nodejs_connect(){
 
 		//alert("error");
 		//startOldTypeUpdateChecker();
-		//$("body").append("<img src='http://hoge.open2ch.net/nodejs-status/error.png?"+reason+"' width=1 height=1>");
+		//$("body").append("<img src='https://hoge.open2ch.net/nodejs-status/error.png?"+reason+"' width=1 height=1>");
 	});
 
 
@@ -1403,7 +1406,7 @@ function twitterInit(){
 				if(getCookie("tw")){
 					loadTwitterUserInfo();
 				} else {
-					window.open("http://open2ch.net/auth/twitter_login.cgi","miniwin","width=600,height=400");
+					window.open("https://open2ch.net/auth/twitter_login.cgi","miniwin","width=600,height=400");
 					$(this).attr("checked",false);
 
 
@@ -1435,7 +1438,7 @@ function loadTwitterUserInfo(obj,callback){
 
 //		console.log(data);
 
-				var url = "http://twitter.com/" + data.screen_name;
+				var url = "https://twitter.com/" + data.screen_name;
 				setCookie("twfunc",1);
 
 				$("#twfunc").attr("logined","true");
