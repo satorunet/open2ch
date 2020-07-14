@@ -1,3 +1,5 @@
+
+
 /* 入力中は自動更新を一時停止 */
 var is_update_que = 0;
 /*
@@ -688,13 +690,13 @@ function setKoraboLink(){
 	});
 
 	$(document).on("click", ".opic", function(){
-		if(confirm("この画像とコラボするとね？\n(他の人が描いた絵をベースに追記できる機能でござる☆)")){
+		if(confirm("この画像とコラボするとね？？\n(他の人が描いた絵をベースに追記できる機能でござる☆)")){
 
 			//親IDをセット
 			$("#parent_pid").val($(this).attr("pid"));
 
 			//v3:画像をローカル画像に差し替える(編集可能化)
-			var local_image_url = $(this).attr("src").replace("http://open2ch.net","");
+			var local_image_url = $(this).attr("src").replace("http://.+open2ch.net","");
 
 			var _this = this;
 
@@ -1081,7 +1083,9 @@ function call_update_alert(_server_resnum){
 
 			if(!$('#noSoundAlert').is(':checked')){
 				if(isSmartPhone == "0"){
-					$("#soundClip")[0].play();
+//				$("#soundClip")[0].play();
+					soundManager.play('res');
+
 				}
 			}
 
