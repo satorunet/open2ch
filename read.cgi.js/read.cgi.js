@@ -7,8 +7,8 @@ function doValus(){
 
 	if( $("#is_valus_after").val() != 1 ){
 
-//,"shake-chunk" "shake-slow"
-		var shakes = ["shake","shake-hard","shake-horizontal","shake-vertical","shake-rotate","shake-opacity"];
+//,"shake-chunk" "shake-slow" "shake-rotate"
+		var shakes = ["shake","shake-hard","shake-horizontal","shake-vertical","shake-opacity"];
 		var all_shake = shakes[Math.floor(Math.random()*shakes.length)];
 
 		var valu_shakes = ["shake-chunk","shake-chunk","shake-chunk","shake-opacity","shake-crazy","shake-hard"];
@@ -22,7 +22,7 @@ function doValus(){
 			$('html').addClass(all_shake);
 			$(".valus").css('background','#FFCCCC');
 			var s = document.createElement('script');
-			s.setAttribute('src','//open.open2ch.net/lib/bomb/bomb.v2.js?v181124_v2');
+			s.setAttribute('src','//open.open2ch.net/lib/bomb/bomb.v3.js?v181126_v4');
 			document.body.appendChild(s);
 
 		},2500);
