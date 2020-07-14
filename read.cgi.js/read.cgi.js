@@ -515,32 +515,45 @@ $(function(){
 
 // <フォーム固定>
 var cachekey;
-var ignores;
+var ignores = {};
+var ignores_array;
+var IGNORE_MAX = 50;
 
 function updateIgnore(){
-
 	if(!Object.keys(ignores).length){
 		return;
-	}	
+	}
+
+	ignores = {};
+	ignores_array.map(function(e){
+		ignores[e] = 1;
+	})
 
 	jQuery.each(ignores, function(key, val) {
 		if(key !== "???"){
 			$(".id"+key + "[ignored!='1']").fadeOut("fast").attr("ignored",1);
 		}
-	})
-	var length = Object.keys(ignores).length;
+	});
+
+	var length = ignores_array.length;
 	$("#clear_ignore").html("無視設定をクリア(" + length + "件)").show();
 }
 
 $(function(){
-	cachekey = "ign:"+bbs;
-	ignores = getStorage(cachekey) ? JSON.parse(getStorage(cachekey)) : new Object();
+	cachekey = "ignv3:"+bbs;
+	ignores_array = getStorage(cachekey) ? JSON.parse(getStorage(cachekey)) : new Array();
+
+	ignores_array.map(function(e){
+		ignores[e] = 1;
+	})
 
 	$("#clear_ignore").click(function(e){
 		e.preventDefault();
 		if(confirm("無視設定をクリアします。\nよろしいですか？")){
 			delStorage(cachekey);
 			ignores = new Object();
+			ignores_array = new Array();
+
 			$(".mesg").fadeIn("fast").removeAttr("ignored");
 			$(this).hide();
 			//updateIgnore();
@@ -570,10 +583,12 @@ $(function(){
 			var message = "ID:" + ID + " の無視設定を解除します。\nよろしいですか？";
 			if( confirm(message) ){ //解除
 				delete ignores[_ID];
+				ignores_array = ignores_array.filter(function(e){return e!==_ID});
+
 				$(".id"+_ID).slideDown().removeAttr("ignored");
 				updateIgnore();
-				if( Object.keys(ignores).length ){
-					setStorage(cachekey,JSON.stringify(ignores))
+				if( ignores_array.length ){
+					setStorage(cachekey,JSON.stringify(ignores_array))
 				} else {
 					delStorage(cachekey)
 				}
@@ -584,7 +599,15 @@ $(function(){
 			var message = "ID:" + ID + " を無視設定します。\nよろしいですか？";
 			if( confirm(message) ){
 				ignores[_ID] = 1;
-				setStorage(cachekey,JSON.stringify(ignores));
+				ignores_array.unshift(_ID);
+
+				console.log(ignores_array)
+
+				if(ignores_array.length > IGNORE_MAX){
+					ignores_array.length = IGNORE_MAX;
+				}
+
+				setStorage(cachekey,JSON.stringify(ignores_array));
 				updateIgnore();
 			}
 		}
@@ -877,37 +900,34 @@ function tuhoInit(){
 		$form.find("[type=submit]").attr("disabled",true);
 		$("#tuhoLoading").html("<img src='//image.open2ch.net/image/loading.gif'>&nbsp;");
 
-		setTimeout(function(){
+		$.ajax({
+				type: "POST",
+				url    : "/ajax/tuho_submit.cgi",
+				data   :  $form.serialize(),
+				cache  : false,
+				success: function(res){
 
-			$.ajax({
-					type: "POST",
-					url    : "/ajax/tuho_submit.cgi",
-					data   :  $form.serialize(),
-					cache  : false,
-					success: function(res){
+					$("#tuhoLoading").html("");
+					alert("通報しました。削除人の対応まで、今しばらくおまちください。m(_ _)m");
 
+					//終了処理
+					$(".mainBox").fadeOut("fast",function(){
+
+						$win.hide();
+						closeCheckbox();
+						tuhoClosed();
+						IDSelectionClear();
+						isCheckboxOpened = "";
+
+						$form.get(0).reset();
+						$("[name=res_num]").removeAttr("disabled");
 						$("#tuhoLoading").html("");
-						alert("通報しました。削除人の対応まで、今しばらくおまちください。m(_ _)m");
+						
+						$("#menu").val("");
 
-						//終了処理
-						$(".mainBox").fadeOut("fast",function(){
-
-							$win.hide();
-							closeCheckbox();
-							tuhoClosed();
-							IDSelectionClear();
-							isCheckboxOpened = "";
-
-							$form.get(0).reset();
-							$("[name=res_num]").removeAttr("disabled");
-							$("#tuhoLoading").html("");
-							
-							$("#menu").val("");
-
-						});
-					}
-			})
-		},1000);
+					});
+				}
+		})
 	});
 
 
@@ -1456,10 +1476,9 @@ function update_res(flag){
 
 	if(pageMode == "sp"){
 		html = html.replace(/名無しさん＠おーぷん/g,'名無し');
-		html = html.replace(/<\/dt><br>/g,'</dt>');
+		html = html.replace(/<br><\/dd>/g,'</dd>');
 
-
-		var html = html.split("<s />").map(function(e){
+		var html = html.split("<sp />").map(function(e){
 			return "<section><li>" + e + "</li></section>";
 		}).join("\n");
 
