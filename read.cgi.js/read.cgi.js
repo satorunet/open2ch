@@ -8,6 +8,43 @@ $(function(){
 	SETTING = gethashStorage("setting");
 })
 
+/* 長文コラボ機能 */
+$(function(){
+
+	$(document).on("click",".koraboLong",function(e){
+
+		var key = ($(this).attr("key"));
+		var n= $(this).attr("n");
+		var texts = [];
+
+		if(confirm(">>"+n+" の長文とコラボする？")){
+			$.ajax({
+				url: "https://cache.open2ch.net/long/v2/"+key+".txt",
+				success: function(res){
+
+					$(res).find("li").each(function(){
+						texts.push($(this).text());
+					});
+
+					$(".pastebin").slideDown("fast");
+					$("[name=pasteText]").val(texts.join("")).trigger("change");
+					$("[name=MESSAGE]").val(">>" + n);
+
+
+					moveToMiddle($(".pastebin"));
+
+				}
+			})
+		}
+
+
+		e.preventDefault();
+
+	});
+
+
+})
+
 /* AAストック機能 */
 var AA_LIST = {};
 
