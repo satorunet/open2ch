@@ -10,7 +10,7 @@ var OPT;
 
 $(function(){
 	OPT = $("body").attr("dev") ? new Date().getTime() : "";
-	OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.js/o2oEXLite.v6.js?v4"+OPT;
+	OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.js/o2oEXLite.v7.js?v5"+OPT;
 });
 
 
