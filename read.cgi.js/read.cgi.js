@@ -3,14 +3,50 @@ var OPT;
 var ua = navigator.userAgent.toLowerCase();
 var IS_BOT = ua.match(/bot|bing/) ? 1 : 0;
 
+var SETTING = {};
+$(function(){
+	SETTING = gethashStorage("setting");
+})
+
+/* 絶対名無しモード */
+$(function(){
+
+	if(SETTING["nanasi_mode"] == "on"){
+		$(".name").each(function(){
+			nanasi_filter($(this));
+		});
+	}
+
+	$(document).on("click","prename",function(e){
+
+		if($(this).find("pp").is(":visible")){
+			$(this).find("pp").remove();
+		} else {
+			$(this).append("<pp style='opacity:.8'>"+$(this).attr("text")+"</pp>");
+		}
+
+		e.preventDefault();
+		e.stopPropagation();
+	});
+
+});
+
+
+function nanasi_filter(_this){
+
+	var pre = $(_this).text();
+	var text = '<b>名無し</b><prename text="'+pre+'">＠</prename>';
+	$(_this).html(text);
+}
+
+
+
 /* NG機能 */
 //NG機能
 var NGWORDS = {};
 var NGREGEXP = null;
-var SETTING = {};
 
 $(function(){
-	SETTING = gethashStorage("setting");
 	NGREGEXP = list2regexp(getListStorage("ng"));
 
 });
@@ -3145,6 +3181,14 @@ function update_res(flag){
 					ng_filter($(this));
 				});
 			}
+
+			/* NG処理 */
+			if(SETTING["nanasi_mode"] == "on"){
+				$(html_obj).find(".name").each(function(){
+					nanasi_filter($(this));
+				});
+			}
+
 
 			/* URL処理 */
 
