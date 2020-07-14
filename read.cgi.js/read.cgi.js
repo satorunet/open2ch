@@ -89,6 +89,8 @@ $(function(){
 
 		var key = $(this).val();
 
+		$(".aa_kanri").attr("href","/stamp/?q=" + key);
+
 		if(!key){
 			$("del_aa").html("");
 			$("[name=MESSAGE]").val(addAnka).trigger("change");
@@ -101,6 +103,53 @@ $(function(){
 		    aa = aa.replace(/&gt;/g,">");
 		    aa = aa.replace(/&amp;/g,"&");
 
+		//発言テンプレ機能
+		var is_template = aa.match(/@TEXT/) ? 1 : 0;
+
+		//位置調査
+		var n = 0;
+		var l = 0;
+		var i = 0;
+
+		var aa_array = aa.split("\n");
+
+		$.each(aa_array,function(i,a){
+			if(a.match(/@TEXT/)){
+				n=i;
+				l = a.indexOf("@TEXT");
+			}
+			i++;
+		});
+
+		console.log(n +":" + l);
+		
+		if($(".aa_talk").val()){
+
+				aa_array[n] = aa_array[n].replace(/@TEXT/,"");
+
+				var texts = new String($(".aa_talk").val()).split("\n");
+				$.each(texts,function(i,a){
+
+					var new_words = a.split("");
+			
+					var aa_array_strings = aa_array[n+i] ? aa_array[n+i].split("") : [];
+					    aa_array_strings.splice(l,new_words.length,new_words.join(""));
+
+					var marged = aa_array_strings.join("");
+					aa_array[n+i] = marged;
+				});
+			aa = aa_array.join("\n");
+		}
+
+
+		if(is_template){
+			if(!$(".aa_talk").length){
+				$("aa_talk_div").html("<textarea cols=40 rows=4 class=aa_talk placeholder='発言テンプレ'></textarea>")
+			}
+		} else {
+			$(".aa_talk").remove();
+		}
+
 
 
 		$("[name=MESSAGE]").val(addAnka + aa).trigger("change");
@@ -110,6 +159,10 @@ $(function(){
 
 	});
 	
+	$(document).on("change keydown keyup",".aa_talk",function(){
+		$(".aa-select").trigger("change");
+	})
+
 
 	$("body").append(
 		"<style>" + 
@@ -296,7 +349,7 @@ function updateAAStamp(){
 	$.each(get_AA_favlist(),function(i,a){
 		var json = JSON.parse(AA_LIST[a]);
 		var text = "title" in json ? json.title : a;
-		aa_fav_list.push("<option value='"+a+"'>" + text + "</option>");
+		aa_fav_list.unshift("<option value='"+a+"'>" + text + "</option>");
 	})
 
 	$(".aa-fav-div").remove();
@@ -307,7 +360,9 @@ function updateAAStamp(){
 		                     "<option style='color:#999' value=''>AAスタンプ</option>" + 
 		                     aa_fav_list+
 		                     "</select><del_aa></del_aa>" +
-		                     "&nbsp;<div style='display:inline-block;padding:2px;background:#EEE'><a style='color:black' href=/stamp/ target=_blank>AA管理</a></div>" + 
+		                     "&nbsp;<div style='display:inline-block;padding:2px;background:#EEE'>" + 
+		                     "<a class=aa_kanri style='color:black' href=/stamp/ target=_blank>AA管理</a></div>" + 
+		                     "<div><aa_talk_div /></div>" +
 		                     "</div>"
 		);
 	}
@@ -3876,6 +3931,8 @@ function submit_form(){
 			!$('#MESSAGE').val().match(/\!aa/i)
 		){
 			$('#MESSAGE').val("!AA\n" + $('#MESSAGE').val());
+
+
 	}
 
 
@@ -3941,6 +3998,7 @@ function submit_form(){
 				$("#parent_pid").val("");
 
 				$(".admin_command").val("");
+				$(".aa_talk").val("");
 
 
 
