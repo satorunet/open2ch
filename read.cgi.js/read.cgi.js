@@ -938,7 +938,9 @@ $(function(){
 	function loadOekakiEx(){
 //	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js";
 		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v2.js?v3";
-		$.getScript(url);
+		$.getScript(url,function(){
+			$('#sketch').sketch().bgcolor = "#FFFFFF";
+		});
 	}
 
 
@@ -1518,24 +1520,25 @@ function oekakiInit(){
 	$('#sketch_honban').hide();
 
 	$("#bgcolorPicker").spectrum({
-		showAlpha: true,
-		color: "#fff",
+		color: "#FFFFFF",
 		showPalette: true,
 		change: function(color) {
 			setBGColor();
 		}
 	});
 
-	if(isSmartPhone == 1){
-		$("#bgcolorPicker").bind("change",function(e){
-			setBGColor()
-		});
-	}
-
 	function setBGColor(){
 		var color = $("#bgcolorPicker").val();
 		$('#sketch').css("background",color);
 		$('#sketch').prop("bgcolor",color);
+
+	}
+
+	if(isSmartPhone == 1){
+		$("#bgcolorPicker").bind("change",function(e){
+			setBGColor()
+		});
+		$("#bgcolorPicker").spectrum("set", "#FFF");
 	}
 
 
