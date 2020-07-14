@@ -1,3 +1,16 @@
+
+/* 入力中は自動更新を一時停止 */
+var is_update_que = 0;
+$(function(){
+	$("[name=MESSAGE]").blur(function(){
+		setTimeout(function(){
+			if($('#autoOpen').is(':checked') && is_update_que == 1){
+				update_res("now");
+			}
+		},1500);
+	});
+})
+
 //新着レス関連
 function moveToBottom(target){
 	var speed = 400;
@@ -8,7 +21,7 @@ function moveToBottom(target){
 function moveToMiddle(target,_speed){
 	var speed = _speed ? _speed : 400;
 	var position = target.offset().top - (window.innerHeight/2) + (target.height()/2);
-	$('body,html').animate({scrollTop:position}, speed, 'swing');
+	$('body,html').animate({scrollTop:position}, speed, 'linear');
 }
 
 
@@ -935,21 +948,24 @@ function submit_form(){
 	});
 }
 
-function update_res(){
+function update_res(flag){
 
 	submit_flag = 0;
+	is_update_que = 0;
+
 	var query = "u=" + local_updated + "&s=" + server_updated;
 
 	if( $("#get_newres_button").is(":visible") ){
 		$("#get_newres_button").slideUp("fast");
 	}
 
-	if($('#autoOpen').is(':checked')){
+
+	if(flag == "now" || $('#autoOpen').is(':checked') == false){
+		$('#new_alert').fadeOut("fast");
+	} else {
 		setTimeout(function(){
 			$('#new_alert').fadeOut("slow");
 		},2000);
-	} else {
-		$('#new_alert').fadeOut("fast");
 	}
 
 	$.ajax({
@@ -999,8 +1015,17 @@ function update_res(){
 				}
 
 				$(".thread").find("dl:hidden").slideDown("slow",function(){
-					if($("#auto_scroll").is(":checked") && $("[name=MESSAGE]").is(":focus") == false){
-						moveToMiddle($(".thread dl:last"),1000);
+					if(
+						 $("#auto_scroll").is(":checked")
+						){
+
+						if( 
+								$("#formfix").is(":checked") == true ||
+								$("[name=MESSAGE]").is(":focus") == false
+						 ){
+							moveToMiddle($(".thread dl:last"),500);
+						}
+
 					}
 				});
 
@@ -1049,7 +1074,19 @@ function call_update_alert(_server_updated,_server_resnum){
 
 			if($('#autoOpen').is(':checked') || submit_flag == 1){
 //				setTimeout(function(){update_res()},1000)
-					update_res();
+//				update_res();
+
+					if(
+						$('#autoOpen').is(':checked') && 
+						$("[name=MESSAGE]").is(":focus") == true && 
+						!(isSmartPhone == 0 && $("#formfix").is(":checked")) //PCで位置固定の場合はキューにいれない。
+					){
+						is_update_que = 1;
+					} else {
+						update_res();
+					}
+
+
 			} else {
 
 				$("#get_newres_button").val("新着レスを表示する("+diff+"件)").fadeIn("fast");
