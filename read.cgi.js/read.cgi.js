@@ -5332,5 +5332,3 @@ function twInfoClose(flag){
 	});
 	delCookie("twfunc");
 }
-
-
