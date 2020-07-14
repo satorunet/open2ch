@@ -102,8 +102,10 @@ $(function(){
 
 
 /* Button-cookie */
-$(function(){
 
+
+//黒塗り
+$(function(){
 	$(document).on("click","k",function(e){
 		$(this).find("n").contents().unwrap();
 		$(this).contents().unwrap();
@@ -799,7 +801,7 @@ $(function(){
 		});
 
 		gif.on('finished', function(blob) {
-			//$(".gif_temp").remove();
+			$(".gif_temp").remove();
 			callback(URL.createObjectURL(blob));
 			delete gif;
 		});
@@ -1771,7 +1773,9 @@ function url2info_request(_this,callback){
 
 
 		var url = $(_this).attr("href");
-		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200201_v2/" + escape(url);
+		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200203_v9/" + escape(url);
+
+//		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200203_v7/" + escape(url);
 //	var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v200229_08/" + escape(url);
 //	var json = "https://open.open2ch.net/lib/url2info/url2info.dev.cgi/v10/" + escape(url);
 
@@ -2907,7 +2911,7 @@ $(function(){
 						cache  : false,
 						success: function(res){
 
-							var res = action[res] ? "<a href=//open2ch.net/test/history.cgi>履歴</a>を" + action[res] + "したよ！(ﾟ∀ﾟ)ノ</a>" 
+							var res = action[res] ? "<a href=/test/history.cgi>履歴</a>を" + action[res] + "したよ！(ﾟ∀ﾟ)ノ</a>" 
 																		: "エラー。なんかおかしいみたい。。(；∀；)";
 
 							$(".history_res").html( "<font color=red>" + res + "</font>");
@@ -4372,11 +4376,11 @@ function update_res(flag){
 	}
 
 
-	$(".thread").find(".hide").not("[ignored=1],.ng_hide").slideDown("fast",function(){
-		if( $("#auto_scroll").is(":checked") ){
-			moveToMiddle($(".thread dl:last"),500);
-		}
-	});
+	$(".thread").find(".hide").not("[ignored=1],.ng_hide").fadeIn("fast");
+
+	if( $("#auto_scroll").is(":checked") ){
+		moveToMiddle($(".thread dl:last"),500);
+	}
 
 	document.title = defTitle;
 
