@@ -1,14 +1,83 @@
-//var NODEJS = "http://nodessl.open2ch.net:8880"; //http
+/*
+var NODEJS = "http://nodessl.open2ch.net:8880"; //http
+var NODEJS = "https://nodessl.open2ch.net:2083"; //https-test
+*/
 
-var NODEJS = "https://nodessl.open2ch.net:8443"; //https
-//var NODEJS = "https://nodessl.open2ch.net:2083"; //https-test
+var NODEJS = "https://nodessl.open2ch.net:8443";
 
 var speech;
 var speechUtt;
 var pm = getUrlVars();
 
+/*バルス*/
+var doneValus = false;
+$(function(){
+	$(".valus_res").on("inview",function(event, isInView, visiblePartX, visiblePartY){
+		if(isInView && !doneValus){
+			doneValus=1;
+			$("#is_valus_after").val(0);
+				setTimeout(function(){
+				doValus();
+				},1000);
+		}
+	})
+});
 
-//草機能
+/*お絵描きツール*/
+
+$(function(){
+	$(".dis").hide();
+	$("#oekaki_plugin").change(function(){
+		update_dis();
+	})
+	update_dis();
+
+
+	$(".toolBt").bind("touchstart mousedown",function(){
+		$(".toolBt").removeClass("selectedTool");
+		$(this).addClass("selectedTool");
+		$(this).find("input").trigger("click");
+	})
+
+
+})
+
+function update_dis(){
+	if($("#oekaki_plugin").is(":checked")){
+		$(".dis").show();	
+		$(".toolBt").hide();
+	}
+}
+
+
+
+/*背景動画*/
+$(function(){
+
+	setInterval(check_bg_tag,3000);
+	$("#useBGVideo").change(function(){
+		if(!$(this).is(":checked")){
+			removeBGVideo();
+		}
+	});
+
+})
+
+function check_bg_tag(){
+	if(!$("#useBGVideo").is(':checked')){
+		return;
+	}
+	var $bgvideos = $("bgvideo:not(.checked)");
+	$bgvideos.addClass("checked");
+	if($bgvideos.length){
+		var $bgvideo = $("bgvideo:last");
+		playBGVideo($bgvideo.attr("vid"));
+	}
+}
+
+
+
+/*草機能*/
 $(function(){
 	$(".kusaButton").click(function(e){
 		e.preventDefault();
@@ -83,7 +152,8 @@ function updateKusa(count){
 
 }
 
-//スレ主コマンド用
+/*スレ主コマンド用*/
+
 $(function(){
 
 	$(".admin_command").change(function(){
@@ -100,7 +170,7 @@ $(function(){
 
 
 
-//アイコンクリック
+/*アイコンクリック*/
 $(function(){
 	$(".faceicon img").live("mouseover",function(){
 		$(this).css("border","solid 3px #fed7eb");
@@ -115,13 +185,14 @@ $(function(){
 });
 
 
-//お絵描き画像うｐ関連
+/*お絵描き画像うｐ関連*/
+
 $(function(){
 	funcFilUpload();
 	funcDragAndDrop();
 })
 
-// Drag-And-Drop
+/* Drag-And-Drop */
 function funcDragAndDrop(){
 	var droppable = $("#sketch");
 	var cancelEvent = function(event) {
@@ -147,7 +218,7 @@ function funcDragAndDrop(){
 	droppable.bind("drop", handleDroppedFile);
 }
 
-// File-Select
+/* File-Select*/
 function funcFilUpload(){
 	$('#upImage').click(function() {
 		$('input[name=photo]').trigger('click');
@@ -202,7 +273,8 @@ function clamp(num, min, max) {
  return min;
 }
 
-//設定ボタン関連
+/*設定ボタン関連*/
+
 $(function(){
 
 	$(".settingButton_pc").click(function(){
@@ -224,7 +296,8 @@ $(function(){
 
 });
 
-//検索を目立たせる
+/*検索を目立たせる*/
+
 $(function(){
 
 	$("body").append("<style>hit{background:yellow}</style>");
@@ -436,7 +509,6 @@ function doValus(){
 
 	if( $("#is_valus_after").val() != 1 ){
 
-//,"shake-chunk" "shake-slow" "shake-rotate"
 		var shakes = ["shake","shake-hard","shake-horizontal","shake-vertical","shake-opacity"];
 		var all_shake = shakes[Math.floor(Math.random()*shakes.length)];
 
@@ -464,8 +536,6 @@ $(function(){
 });
 
 
-
-//var NODEJS = "nodejs.open2ch.net:8000";
 
 /* */
 
@@ -537,8 +607,6 @@ var MAX_HORYU_TIME = 3;
 
 $(function(){
 
-//	$("[name=MESSAGE]").after("<div id=debug><b>0</b></div>");
-
 	var counter = 0;
 
 	setInterval(function(){
@@ -561,10 +629,9 @@ $(function(){
 			}
 
 			pretext = $("[name=MESSAGE]").val();
-//			$("#debug").html("count:"+counter);
 
 		} else {
-//			$("#debug").html("-");
+;
 		}
 
 
@@ -628,7 +695,6 @@ $(function(){
 
 			is_history_updating =1;
 
-//		$(this).css({"color":"black","text-decoration":"none","cursor":"default"});
 
 			var $this = $(this);
 			var action = {"update":"更新", "new":"追加"};
@@ -653,7 +719,6 @@ $(function(){
 							setTimeout(function(){
 								$(".history_res").fadeOut("fast",function(){ is_history_updating = 0 })
 
-//							$("#history_add").css({"color":"blue","text-decoration":"underline","cursor":"hand"});
 
 							},5000);
 
@@ -750,7 +815,7 @@ $(function(){
 })
 
 
-// レス取得機能
+/* レス取得機能 */
 $(function(){
 	$("ares a").live("click",function(e){
 		e.preventDefault();
@@ -792,7 +857,6 @@ $(function(){
 						}
 					} 
 				});
-//				$(parent).find(".aresdata").slideDown("fast");
 					$(parent).find(".aresdata").fadeIn("fast");
 			}
 		});
@@ -803,7 +867,7 @@ $(function(){
 })
 
 
-// <フォーム固定>
+/* フォーム固定 */
 var cachekey;
 var ignores = {};
 var ignores_array;
@@ -846,7 +910,6 @@ $(function(){
 
 			$(".mesg").fadeIn("fast").removeAttr("ignored");
 			$(this).hide();
-			//updateIgnore();
 		}
 	});
 
@@ -871,7 +934,8 @@ $(function(){
 		if(ignores[ID]){
 
 			var message = "ID:" + ID + " の無視設定を解除します。\nよろしいですか？";
-			if( confirm(message) ){ //解除
+
+			if( confirm(message) ){ /* 解除 */
 				delete ignores[_ID];
 				ignores_array = ignores_array.filter(function(e){return e!==_ID});
 
@@ -884,14 +948,13 @@ $(function(){
 				}
 
 			}
-		} else { //無視
+		} else { /*無視*/
 
 			var message = "ID:" + ID + " を無視設定します。\nよろしいですか？";
 			if( confirm(message) ){
 				ignores[_ID] = 1;
 				ignores_array.unshift(_ID);
 
-//				console.log(ignores_array)
 
 				if(ignores_array.length > IGNORE_MAX){
 					ignores_array.length = IGNORE_MAX;
@@ -1016,7 +1079,6 @@ function mouseEventInit(){
 			$(".pata").remove();
 			var posi = e.style.top + ":" + e.style.left;
 			localStorage.formPosition = posi;
-			//console.log(posi);
 			mouse = 'up';
 			$("body").css({
 				"-moz-user-select": "",
@@ -1173,10 +1235,11 @@ function setFormKotei(flag){
 
 
 
-// </フォーム固定>
+/* </フォーム固定> */
 
 
-// <お絵かき高機能モード>
+/* <お絵かき高機能モード */
+
 $(function(){
 	$("#oekaki_plugin").click(function(){
 		loadOekakiEx();
@@ -1201,17 +1264,18 @@ $(function(){
 		}
 	}
 });
-// </お絵かき高機能モード>
+/* </お絵かき高機能モード> */
 
 	function loadOekakiEx(){
-//	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js";
+/*	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js"; */
 		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v2.js?v3";
 
 		$.ajaxSetup({cache: true});
 		$.getScript(url,function(){
 
 
-//整合性調整
+/*整合性調整*/
+
 			$('#sketch').sketch().bgcolor = "#FFFFFF";
 
 			$("#prevButton").hide();
@@ -1228,8 +1292,6 @@ $(function(){
 
 var hour = new Date().getHours();
 
-// 23:00-1:00 
-//var sec = (hour > 22 || hour < 2) ? (1000*30) : (1000*10); 
 var sec = 1000*10;
 
 var defTitle;
@@ -1319,7 +1381,7 @@ function viewCheckbox(callback){
 	$("dt").each(function(){
 		if(!$(this).hasClass("tuho")){
 			$(this).addClass("tuho");
-			//Num
+			/* Num */
 			{
 				var $obj = $(this).find(".num");
 				var $chk = $("<input class=tchk type=checkbox value='"+ $obj.attr("val") +"'>");
@@ -1341,7 +1403,7 @@ function closeCheckbox(){
 		$(this).removeClass("tuho");
 	});
 
-	// ID選択解除
+	/* ID選択解除 */
 	selectedID = [];
 }
 
@@ -1372,8 +1434,8 @@ function IDSelectInit(callback){
 	});
 }
 
+/*安価機能*/
 $(function(){
-	//安価機能
 
 	$(".num").live("click",function(e){ 
 
