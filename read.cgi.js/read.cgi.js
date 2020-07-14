@@ -7,6 +7,73 @@ var speech;
 var speechUtt;
 var pm = getUrlVars();
 
+//動画右上再生機能(PC用)
+$(function(){
+
+	$(".viewRight").live("mouseover",function(e){
+		$(this).css("opacity",.5)
+	});
+
+	$(".viewRight").live("mouseout",function(e){
+		$(this).css("opacity",1)
+	});
+
+
+	$(".viewRight").live("click",function(e){
+		if($(this).prop("returnObj")){
+
+			var obj = $(this).prop("returnObj");
+			var table = $(this).parents("table");
+
+			table.css({position:"absolute"}).animate(
+					{
+						"opacity":.5,
+						"left": -($(window).width() - 50) ,
+						"top" :  $(obj).offset().top - $(window).scrollTop(),
+					},
+					{duration: "slow", easing: "swing",
+						complete: function(){
+							$(table).css({position:"",left:"",top:"","opacity":""});
+							$(obj).prepend(table);
+						}
+					}
+			);
+
+			$(this).removeProp("returnObj");
+
+
+
+		} else {
+			var p = $(this).parents("v");
+			var table = $(p).find("table");
+
+			table.css({position:"absolute"}).animate({
+						"opacity":.5,
+						"left": $(window).width() - table.width() ,
+						"top" :  $(window).scrollTop()
+					},
+					{duration: "slow", easing: "swing",
+						complete: function(){
+						$(table).css({position:"",left:"",top:"","opacity":""});
+						$("#rightVideoDiv").append(table);
+					}
+			}
+
+
+			);
+
+			$(this).prop("returnObj",p);
+		}
+
+		e.preventDefault();
+
+
+	});
+
+
+})
+
+
 //アイコンクリック
 $(function(){
 	$(".faceicon img").live("mouseover",function(){
