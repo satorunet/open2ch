@@ -132,6 +132,12 @@ $(function(){
 		$(this).parents("li,dl").find("._aa").click();
 	});
 
+	$(document).on("click",".aa_close",function(e){
+		$(this).parents("li,dl").find(".aa_checking").removeClass("aa_checking");
+		$(this).parents("li,dl").find(".aa_regist").remove();
+	});
+
+
 
 
 	$(document).on("click",".aa_ok",function(e){
@@ -166,7 +172,9 @@ $(function(){
 
 			$(this).parents(".aa_regist").html("<div>登録完了＞<a href='/stamp/'>AAスタンプ</a>"+
 			                                   "<div>" + message+"</div>" + 
-			                                   "<div align=center><input type=button class=aa_retry value='再設定'></div>"+
+			                                   "<div align=center>" + 
+			                                   "<input type=button class=aa_close value='閉じる'>" + 
+			                                   "<input type=button class=aa_retry value='再設定'></div>"+
 			                                   "</div>");
 
 			
@@ -190,7 +198,10 @@ $(function(){
 
 			$(this).parents(".aa_regist").html("<div>削除完了＞<a href='/stamp/'>AAスタンプ</a>"+
 			                                   "<div>AAスタンプから消しますた。</div>" + 
-			                                   "<div align=center><input type=button class=aa_retry value='再設定'></div>"+
+			                                   "<div align=center>" + 
+			                                   "<input type=button class=aa_close value='閉じる'>" + 
+			                                   "<input type=button class=aa_retry value='再設定'>" + 
+			                                   "</div>"+
 			                                   "</div>");
 			updateAAStamp();
 	});
@@ -234,14 +245,20 @@ $(function(){
 			}
 
 			$(this).addClass("aa_checking");
+
+			var url = "https://hayabusa.open2ch.net/stamp/?q=" + md5;
+
 			var input = $(
 				"<div class=aa_regist aid="+md5+">" + 
-				(is_already ? "<div><font color=red>登録済み</font>＞<a href=/stamp/  target=_blank>AAスタンプ</a></div>" : "") + 
-				"<div>ID:" + md5 + "<label><input type=checkbox checked class=is_use>すぐ使う</label></div>" + 
-				"<input size=10 class=title placeholder='AAスタンプ名'>" + 
+				"<div><label><input type=checkbox checked class=is_use>すぐ使う</label></div>" + 
+				"<input size=12 class=title placeholder='AAスタンプ名'>" + 
 				"<input class='aa_ok' type=button value=" + (is_already ? "修正" : "登録") + ">" + 
 				(is_already ? "<input class='aa_del' type=button value='削除'>" : "") + 
 				"<input class='aa_cancel' type=button value='取消'>" + 
+				"<div>" + 
+				(is_already ? "<font color=red>登録済み</font>＞<a href="+url+" target=_blank>AAスタンプ</a>" 
+				            : "<font color=#CCC>未登録</font>") + 
+				"<div style='float:right;display:inline-block'><font size=1 color=#999>ID:" + md5 + "</div>" + 
 				"</div>");
 
 			if(is_already){
@@ -398,7 +415,7 @@ $(function(){
 	if(SETTING["aa_mode"] == "off"){
 		return;
 	} else {
-		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v2.css?20200122_last" type="text/css"  />');
+		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v4.css?20" type="text/css"  />');
 	}
 
 	AA_filter($("body"))
@@ -3215,6 +3232,10 @@ function setFormKotei(flag){
 		$("#formdiv").hide();
 
 
+		if($(".aa").is(":checked")){
+				$("[name=MESSAGE]").css("max-width","450px");
+		}
+
 		$("#formdiv").css({
 			"backgroundColor":"#DDD",
 			"padding":"2px",
@@ -3235,7 +3256,7 @@ function setFormKotei(flag){
 //		$(".formDivDefault").after("<p class=closeKoteiWindow_div><button class=closeKoteiWindow>別窓リセット</button></p>");
 
 			$("#formdiv").prepend($(
-			"<div class=ddWindow style='border-radius:3px;font-size:0pt;background:#449;color:#007;padding:4px;cursor: move !important;'>"+
+			"<div class=ddWindow style='max-width:450px;border-radius:3px;font-size:0pt;background:#449;color:#007;padding:4px;cursor: move !important;'>"+
 			"<div style='width:95%;text-align:center;display: inline-block;'>&nbsp;</div>"+
 			"<div style='display: inline-block;'><img class=closeKoteiWindow src=//open.open2ch.net/image/icon/svg/batu_white_v2.svg width=10 height=10 style='cursor:pointer;paddnig:3px'></div>" + 
 			"</div>"
@@ -3274,6 +3295,10 @@ function setFormKotei(flag){
 		$(document).off("mouseleave mouseover keydown","#formdiv");
 
 		$(".ddWindow").remove();
+
+		if($(".aa").is(":checked")){
+				$("[name=MESSAGE]").css("max-width","450px");
+		}
 
 
 		$("#formdiv").css({
@@ -3436,14 +3461,17 @@ $(function(){
 	$(".num").live("click",function(e){ 
 
 
-		if($('#MESSAGE').val()){
-			$('#MESSAGE').val(jQuery.trim( $('#MESSAGE').val() ));
+		var array = [];
+		var message = $('#MESSAGE').val();
+
+		if(message){
+			message = message.replace(/(\r\n|\r|\n)$/,"");
+			array = message.split("\n");
 		}
 
-		var is_ai = $(this).parent().parent().find("ai").html() ? 1 : 0;
-		var text = ($('#MESSAGE').val() ? $('#MESSAGE').val() + "\n" : $('#MESSAGE').val()) + ">>" + $(this).attr("val") + "\n";
+		array.push(">>" + $(this).attr("val") + "\n");
 
-		if(is_ai){ text += "!ai " }
+		var text = array.join("\n");
 
 
 		if($(".mainBox").css("display") !== "block"){
