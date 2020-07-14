@@ -267,7 +267,7 @@ $(function(){
 
 			$(this).addClass("aa_checking");
 
-			var url = "https://hayabusa.open2ch.net/stamp/?q=" + md5;
+			var url = "/stamp/?q=" + md5;
 
 			var input = $(
 				"<div class=aa_regist aid="+md5+">" + 
@@ -449,7 +449,7 @@ $(function(){
 	if(SETTING["aa_mode"] == "off"){
 		return;
 	} else {
-		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v5.css?20200127_v2" type="text/css"  />');
+		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v5.css?20200127_v444" type="text/css"  />');
 	}
 
 	AA_filter($("body"))
