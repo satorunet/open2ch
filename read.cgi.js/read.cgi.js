@@ -1,3 +1,27 @@
+//新着レス関連
+$(function(){
+
+	$("#get_newres_button").click(function(e){
+		e.preventDefault();
+		$("#get_newres_button").fadeOut("fast");
+		update_res();
+	});
+
+	if(getCookie("autoOpen") == ""){
+		$("#autoOpen").attr("checked",true).trigger("change");
+	}
+
+
+	if($("#autoOpen").is(':checked')){
+		$("#new_alert_link").hide();
+	} else {
+		$("#new_alert_link").show();
+	}
+
+
+})
+
+
 // レス取得機能
 $(function(){
 	$("ares a").live("click",function(e){
@@ -489,6 +513,13 @@ $(document).ready(function() {
 	//状態をCookieで保持
 	$("#autoOpen").change(function(){
 		setCookie("autoOpen", $(this).is(':checked') ? "1" : "0");
+
+		if($(this).is(':checked')){
+			$("#new_alert_link").slideUp();
+		} else {
+			$("#new_alert_link").slideDown();
+		}
+
 	});
 
 	$("#ajaxSubmit").change(function(){
@@ -789,6 +820,7 @@ function reuse_request(){
 }
 
 
+
 // フォーム送信関連
 var submit_flag = 0;
 function submit_form(){
@@ -873,6 +905,16 @@ function update_res(){
 	submit_flag = 0;
 	var query = "u=" + local_updated + "&s=" + server_updated;
 
+	if( $("#get_newres_button").is(":visible") ){
+		$("#get_newres_button").slideUp("fast");
+	}
+
+	setTimeout(function(){
+		$('#new_alert').slideUp("fast");
+	},500);
+
+	if($)
+
 	$.ajax({
 		type: "GET",
 		url    : "/ajax/get_res.v6.cgi/" + bbs + "/" + key + "/",
@@ -909,9 +951,6 @@ function update_res(){
 					}
 				})
 
-				setTimeout(function(){
-					$('#new_alert').slideUp("fast");
-				},1000);
 
 
 				html = "<dl class=hide>"+html+"</dl>";
@@ -955,6 +994,7 @@ function call_update_alert(_server_updated,_server_resnum){
 
 			$('#new_alert').slideDown('fast');
 
+
 			$('#now_max').html(diff);
 			document.title = "(+" + diff + ")" + defTitle;
 
@@ -967,6 +1007,10 @@ function call_update_alert(_server_updated,_server_resnum){
 			if($('#autoOpen').is(':checked') || submit_flag == 1){
 //				setTimeout(function(){update_res()},1000)
 					update_res();
+			} else {
+
+				$("#get_newres_button").val("新着レスを表示する("+diff+"件)").fadeIn("fast");
+
 			}
 
 
