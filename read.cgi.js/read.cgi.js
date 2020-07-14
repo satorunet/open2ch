@@ -8,6 +8,25 @@ $(function(){
 	SETTING = gethashStorage("setting");
 })
 
+/* アイコン非表示 */
+$(function(){
+	icon_filter($("body"))
+})
+
+function icon_filter(_this){
+
+	if(SETTING["icon_view"] !== "off"){
+		return;
+	}
+
+	$(_this).find(".body").each(function(){
+		if($(this).find(".talk")){
+			var content = $(this).find(".says p").html();
+			$(this).append(content);
+			$(this).find(".talk").remove();
+		}
+	})
+}
 
 /* 絶対名無しモード */
 $(function(){
@@ -54,11 +73,9 @@ $(function(){
 $(function(){
 	$("body").bind("ANK_OPEN ARES_OPEN",function(e,mado){
 
-		if(SETTING["url_view"] !== "off"){
-			$(mado).find(".url").each(function(){
-				url_info_handler($(this))
-			});
-		}
+		icon_filter($(mado));
+
+		url_info_handler($(mado))
 
 		if(SETTING["nanasi_mode"] == "on"){
 			$(mado).find(".name").each(function(){
@@ -75,11 +92,23 @@ $(function(){
 $(function(){
 
 		if(isSmartPhone !== 1){
-			$(document).on("mouseover",".uim",function(e){
-				$(this).after("<img class=uimo style='opacity:.9;position:absolute;width:150px' src="+$(this).attr("src") +">")
+			$(document).on("mouseover",".url",function(e){
+
+				$(this).addClass("over");
+
+				var _this = $(this);
+				url2info_request($(this),function(text){
+					if($(_this).hasClass("over")){
+							var div = $("<div class=uimo style='position:absolute'>" + text + "</div>").hide();
+							$(_this).after(div);
+							div.fadeIn("fast");
+						}
+				});
+
 				e.preventDefault();
 			});
-			$(document).on("mouseout",".uim",function(e){
+			$(document).on("mouseleave mouseoout",".url",function(e){
+				$(this).removeClass("over");
 				$(".uimo").remove();
 			});
 		}
@@ -87,7 +116,7 @@ $(function(){
 		$("body").append(
 			"<style>" + 
 			".ufull{border:1px solid #ddd;padding:3px;background:#f5f5f5;border-radius:2px;margin:2px}"+
-			".urlinfo{max-width:"+(isSmartPhone ==1 ? "90%" : "600px")+";font-size:10pt;color:#777;display:inline-block;padding:1px}" + 
+			".urlinfo{max-width:"+(isSmartPhone ==1 ? "90%" : "600px")+";font-size:10pt;color:#777;display:inline-block;padding:2px}" + 
 			".uim{border-radius:3px;width:30px;height:30px;object-fit:cover;padding-right:2px}" + 
 			".ufullim{width:100px;height:100px;object-fit:cover;float:left;margin-right:5px;}" + 
 			".udetail{max-width:600px;margin-top:3px;user-select: none;-moz-user-select: none;-ms-user-select: none;line-height:12pt;font-size:"+(isSmartPhone==1?8:9)+"pt}"+
@@ -105,23 +134,51 @@ $(function(){
 			$(this).find(".utt").css("text-decoration","none");
 		});
 
+		url_info_handler($("body"))
+
+
+/*
 		$(".url").on("inview",function(){
 			url_info_handler($(this))
 			$(this).removeClass(".url");
 		});
+*/
 
 
 })
 
 function url_info_handler(_this){
 
+		if(IS_BOT){
+			return;
+		}
+
 		if(SETTING["url_view"] == "off"){
 			return;
 		}
 
-		if(IS_BOT){
-			return;
-		}
+		$(_this).find(".body").each(function(){
+
+
+			var urls = $(this).find(".url");
+			if(urls){
+				if(urls.length == 1){
+					$(this).find(".url").removeClass("url").on("inview",function(){
+						var _this = $(this);
+						url2info_request($(this),function(text){
+							$(_this).html(text);
+						});
+					});
+				}
+			}
+		});
+
+
+}
+
+
+function url2info_request(_this,callback){
+
 
 		var url = $(_this).text();
 		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v3/" + escape(url);
@@ -132,38 +189,18 @@ function url_info_handler(_this){
 
 		var xhr = $.get(json);
 		xhr.done(function(data){
-
-				var d = data.split("");
-				var text;
-
-				if(SETTING["url_view"] == "full"){
-
-					var details = d[2] ? d[2].split("") : [];
-					details.length = 80;
-					var detail = details.join("");
-
-					text = "<div><div class='urlinfo ufull'>" + 
-						(d[1] ? "<img class='lazy ns ufullim' src="+d[1]+">" : "")+ 
-						"<div class='ut ns'>" + (d[2] ? "<b>" : "") +d[0]+"</b></div>" + 
-						(d[2] ? "<div class='udetail'>"+detail+"</div>" : "") + 
-						"<div style='margin-top:10px' class='ut utt'><font color=blue>"+url+"</font></div>" + 
-						"</div></div>";
-					
-				} else {
-					text = "<div class=urlinfo>" + 
-						(d[1] && SETTING["url_view"] !== "text" ? "<div style='float:left'><img class='lazy uim ns' src="+d[1]+"></div>" : "")+ 
-						"<div class='ut ns'>" +
-
-						(SETTING["url_view"] == "text" ? "<font color=blue>" : "") +d[0]+"</font></div>" + 
-
-						((SETTING["url_view"] == "text" && d[0] !== "") ? "" : "<div class='ut utt'><font color=blue>"+url+"</font></div>") + 
-						"</div>";
-
-				}
-
-					$(_this).html(text);
-
-
+			var d = data.split("");
+			var text;
+			var details = d[2] ? d[2].split("") : [];
+			details.length = 80;
+			var detail = details.join("");
+			text = "<div class='urlinfo ufull'>" + 
+				(d[1] ? "<img class='lazy ns ufullim' src="+d[1]+">" : "")+ 
+				"<div class='ut ns'>" + (d[2] ? "<b>" : "") +d[0]+"</b></div>" + 
+				(d[2] ? "<div class='udetail'>"+detail+"</div>" : "") + 
+				"<div style='margin-top:10px' class='ut utt'><font color=blue>"+url+"</font></div>" + 
+				"</div>";
+				callback(text);
 		});
 
 
@@ -378,7 +415,7 @@ $(function(){
 //var map_history = [];
 
 	$(function(){
-		show_map();
+		//show_map();
 	});
 
 	$(document).on("change",".map_draw",function(){
@@ -3233,11 +3270,12 @@ function update_res(flag){
 				});
 			}
 
-			/* URL処理 */
+			/* ICON処理 */
+			icon_filter($(html_obj));
 
-			$(html_obj).find(".url").each(function(){
-				url_info_handler($(this))
-			});
+
+			/* URL処理 */
+			url_info_handler($(html_obj))
 
 
 		$(".thread").append(html_obj);
