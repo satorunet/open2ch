@@ -1328,7 +1328,11 @@ $(function(){
 
 	function loadOekakiEx(){
 /*	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js"; */
-		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v2.js?v3";
+		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v2.js?v5";
+
+		$(".dis").show();
+		$(".toolBt").hide();
+
 
 		$.ajaxSetup({cache: true});
 		$.getScript(url,function(){
@@ -1343,6 +1347,10 @@ $(function(){
 
 			setTimeout(function(){
 				$("#goBtn").val("進む");
+
+			$("#psize").css("margin-right","5px");
+			$("#psize").after($("#goBtn,#backButton"));
+
 			},500)
 
 
