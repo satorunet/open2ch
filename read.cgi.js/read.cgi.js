@@ -1457,7 +1457,7 @@ $(function(){
 
 
 			if($("#formdiv").css("position") !== "fixed"){
-//			moveToLink($("[name=_preForm]"));
+
 				
 			}
 			e.preventDefault();
@@ -1521,7 +1521,6 @@ function tuhoInit(){
 					$("#tuhoLoading").html("");
 					alert("通報しました。削除人の対応まで、今しばらくおまちください。m(_ _)m");
 
-					//終了処理
 					$(".mainBox").fadeOut("fast",function(){
 
 						$win.hide();
@@ -1592,13 +1591,13 @@ $(document).ready(function() {
 		isNodeJS = 1;
 		nodejs_connect();
 	}
-	// WebSocketに未対応のブラウザは更新チェックしない。
+	/* WebSocketに未対応のブラウザは更新チェックしない。*/
+
 
 	oekakiInit();
 	matomeInit();
 	menuInit();
 
-	//状態をCookieで保持
 	$("#autoOpen").change(function(){
 		setCookie("autoOpen", $(this).is(':checked') ? "1" : "0");
 
@@ -1668,7 +1667,8 @@ $(document).ready(function() {
 
 
 
-//お絵描きデータ生成
+/* お絵描きデータ生成 */
+
 		if( isOekakiDone == 1 && 
 		    $("#oekakiMode").is(':checked') && 
 		    ($('#sketch').sketch().actions.length || $('#sketch').sketch().baseImageURL) && 
@@ -1694,13 +1694,12 @@ $(document).ready(function() {
 
 			var _source = new String(source).replace(/^data:image\/png;base64,/, '');
 					$("[name=oekakiData]").val(_source);
-					$('#form1').submit(); //再度、送信する。
+					$('#form1').submit(); 
 			}
 		
 			return false;
 		}
 
-//		return false;
 
 		var isAjaxMode = $('#ajaxSubmit').is(':checked');
 		if(isAjaxMode){ submit_form() };
@@ -1717,7 +1716,8 @@ $(document).ready(function() {
 });
 
 
-// MatomeLink
+/* まとめLink */
+
 function matomeInit(){
 	var query = {
 		bbs : bbs,
@@ -1760,10 +1760,10 @@ function setKoraboLink(){
 	$(document).on("click", ".opic", function(){
 		if(confirm("この画像とコラボするとね？？\n(他の人が描いた絵をベースに追記できる機能でござる☆)")){
 
-			//親IDをセット
 			$("#parent_pid").val($(this).attr("pid"));
 
-			//v3:画像をローカル画像に差し替える(編集可能化)
+			/* 画像をローカル画像に差し替える(編集可能化) */
+
 			var local_image_url = $(this).attr("src").replace("https://.+open2ch.net","");
 
 			var _this = this;
@@ -1780,7 +1780,8 @@ function setKoraboLink(){
 				});
 			}
 
-			// v13サイズを一致させる。
+			/* サイズを一致させる */
+
 			var size = $(this).width() + "x" + $(this).height();
 			$("#canvasSize").val(size).trigger("change");
 
@@ -1823,15 +1824,10 @@ function oekakiInit(){
     var doc = document;
     var body = doc.body;
 
-/*
-    var stalker = doc.createElement("div");
-    stalker.id = "stalker";
-    stalker.innerHTML = 'x';
-    body.appendChild(stalker);
-*/
 
 
-	// ツール：戻る
+	/* ツール：戻る*/
+
 	var back_actions = [];
 
 	$("#backButton").click(function(){
@@ -1862,7 +1858,8 @@ function oekakiInit(){
 	});
 
 
-	// キーで戻る
+	/* キーで戻る*/
+
 	$(document).keydown(function(e){
 		if( e.which === 90 && e.ctrlKey ){
 			$('#sketch').sketch().actions.pop();
@@ -1871,15 +1868,9 @@ function oekakiInit(){
 	}); 
 
 
-	//お絵かきモード
+	/*お絵かきモード*/
+
 	var sketch = $('#sketch').sketch();
-
-/*
-	$('#sketch').bind("stopPainting",function(){
-		redrawHonban();
-	});
-*/
-
 
 	sketch.bind("mousedown", function(){
 		isOekakiDone = 1;
@@ -1889,12 +1880,12 @@ function oekakiInit(){
 		
 	});
 
-	//スマホ用
+	/*スマホ用*/
+
 	sketch.get(0).addEventListener("touchend", function(){
 		isOekakiDone = 1;
 	});
 
-	// 色選択
 	$("#colorPicker").spectrum({
 		palette: [
 		["#000000","#1d2b53","#7e2553","#008751",],
@@ -1909,7 +1900,7 @@ function oekakiInit(){
 		}
 	});
 
-	//スマホは発動しないので直指定
+	/* スマホは発動しないので直指定 */
 	if(isSmartPhone == 1){
 		$("#colorPicker").bind("change",function(e){
 			changeColorPicker()
@@ -1922,7 +1913,6 @@ function oekakiInit(){
 	}
 	
 
-	// 背景色
 	$('#sketch').css("background","#FFF");
 	$('#sketch').prop("bgcolor","#FFF");
 	$('#sketch_honban').hide();
@@ -1935,7 +1925,6 @@ function oekakiInit(){
 	});
 
 	function setBGColor(){
-//		var color = $("#bgcolorPicker").val();
 		var color = $("#bgcolorPicker").next().find(".sp-preview-inner").css("background-color");
 
 		$('#sketch').css("background",color);
@@ -1951,22 +1940,20 @@ function oekakiInit(){
 	}
 
 
-	// ツール：サイズ
+	/* ツール関連 */
+
 	$("#psize").change(function(){
 		$('#sketch').sketch("size",$(this).val());
 	});
 
-	// ツール：消しゴム
 	$("#kesu").click(function(){
 		$("[data-tool=eraser]").click();
 	});
 
-	// ツール：スポイト
 	$("#spoit").click(function(){
 		$("[data-tool=spoit]").click();
 	});
 
-	// ツール：塗り
 	$("#fill").click(function(){
 		$("[data-tool=fill]").click();
 	});
@@ -1987,7 +1974,8 @@ function oekakiInit(){
 
 
 
-	// ツール：クリアボタン
+	/* ツール：クリアボタン */
+
 	$("#clearButton").click(function(){
 		if(confirm("お絵かきをクリアします。よろしいですか？")){
 			$('#sketch').sketch().clear();
@@ -2008,7 +1996,8 @@ function oekakiInit(){
 	})
 
 
-	//サイズ変更
+	/* サイズ変更 */
+
 	$("#canvasSize").change(function(){
 		var size = $(this).val().split("x");
 
@@ -2057,7 +2046,8 @@ function reuse_request(){
 		cache  : false,
 		success: function(res){
 
-			if(res.match(/success/)){ // 投稿成功
+			if(res.match(/success/)){ /* 投稿成功 */
+
 				count = (res.split(":"))[1];
 				$("#reuse_count").html("現在、"+count+"人がこのスレ復活を望んでいます。。");
 
@@ -2082,7 +2072,8 @@ function reuse_request(){
 
 
 
-// フォーム送信関連
+/* フォーム送信関連 */
+
 var submit_flag = 0;
 function submit_form(){
 
@@ -2156,24 +2147,23 @@ function submit_form(){
 
 			$(".dlink").remove();
 
-			if(res.match(/success/)){ // 投稿成功、新規書き込みを読み込む
+ /* 投稿成功、新規書き込みを読み込む */
 
-//			server_resnum = (res.split(":"))[1];
-//			server_updated = (res.split(":"))[2];
+			if(res.match(/success/)){
 
 
 
 
 				if($('#sketch').is(":visible")){
 					$('#sketch').sketch().clear();
-					//honbanを更新するため呼び出し
+
+					/* honbanを更新するため呼び出し */
 					redrawHonban();
 				}
 
 				var img = "https://image.open2ch.net/image/read.cgi/image.cgi?mode=done&" + bbs + "/" + key;
 				$("#statusicon").html("<img width=32 height=32 src='"+img+"'>&nbsp;");
 				$("#status").html("投稿完了しました!");
-//			update_res();
 				submit_flag = 1;
 
 				setTimeout(function(){
@@ -2222,11 +2212,9 @@ function update_res(flag){
 		success: function(res){
 
 			if(res.match(/success/)){
-				//update時に最新情報を同時に取得
+				/* update時に最新情報を同時に取得 */
 				var html = (res.split(""))[1];
 
-				//local_resnum = (res.split(""))[2];
-				//nodejs_set_resnum(local_resnum);
 
 				$(html).find("a").filter(function(){
 					if( m = $(this).html().match(/^&gt;&gt;(\d+)$/) ){
@@ -2284,7 +2272,6 @@ function update_res(flag){
 			var embed = "https://www.youtube.com/embed/" + org;
 			$(this).attr("src",embed).removeClass("youtubeiframe");
 
-//			console.log("iframe:org" + org);
 
 		})
 	}
@@ -2326,10 +2313,10 @@ function update_res(flag){
 			} else {
 				;;
 			}
-			//setKoraboLink();
 
 
-//音声置換処理(PC用)
+/* 音声置換処理(PC用) */
+
 				$("body").trigger("UPDATE_NEWRES",[html]);
 
 
@@ -2349,18 +2336,17 @@ $(function(){
 	})
 })
 
-// nodeJS版
+/* nodeJS-alert機能 */
+
 function call_update_alert(_server_resnum){
 
 		is_update_que = 1;
 
-
-//	console.log("node-call: server_rewsnum :" + _server_resnum);
-
 		server_resnum = _server_resnum;
 		var diff = server_resnum - local_resnum;
 
-		if( diff > 0 ){ // 更新アリ
+/* 更新があった時 */
+		if( diff > 0 ){
 
 			if(!$("#new_alert_hide").is(":checked")){
 				$('#new_alert').fadeIn('fast');
@@ -2372,14 +2358,15 @@ function call_update_alert(_server_resnum){
 
 			if(!$('#noSoundAlert').is(':checked')){
 				if(isSmartPhone == "0"){
-//				$("#soundClip")[0].play();
 					soundManager.play('res');
 
 				}
 			}
 
 
-//投稿中は更新延期
+
+/* 延期機能 */
+
 			if( !$('#formfix').is(':checked') && is_textarea_focus == 1 ){
 
 				if(!$("#new_alert_pending").is(":visible")){
@@ -2394,9 +2381,6 @@ function call_update_alert(_server_resnum){
 			if( $('#autoOpen').is(':checked') || 
 					submit_flag == 1
 				){
-//				setTimeout(function(){update_res()},1000)
-//				update_res();
-
 					update_res();
 
 			} else {
@@ -2407,13 +2391,12 @@ function call_update_alert(_server_resnum){
 
 
 			if($('#alertRes').is(':checked')){
-//				setTimeout(function(){alert("◆お知らせ◆\n新規レスが" + diff + "件ついたよ！");},500);
 					alert("◆お知らせ◆\n新規レスが" + diff + "件ついたよ！");
 			}
 		}
 }
 
-// Node.js-client
+/* Node.js関連 */
 
 var socket;
 var sockID;
@@ -2470,9 +2453,6 @@ function nodejs_connect(){
 		io.sockets = [];
 		console.log("error! cannot connect.");
 
-		//alert("error");
-		//startOldTypeUpdateChecker();
-		//$("body").append("<img src='https://hoge.open2ch.net/nodejs-status/error.png?"+reason+"' width=1 height=1>");
 	});
 
 
@@ -2480,7 +2460,6 @@ function nodejs_connect(){
 		onConnect_nodejs = 0;
 
 		console.log("disconnect");
-//		console.log(socket);
 
 		setTimeout(function(){
 			if($("#disconnect").is(":visible") == 0 && onConnect_nodejs == 0){
@@ -2525,31 +2504,29 @@ function nodejs_connect(){
 		}
 		
 		console.log("connect");
-//		console.log(socket);
 
 		socket.emit('set', bbs,key,local_resnum,getCookie("a"));
 	});
 
 
-	//u:updated
+	/* u:updated */
 	socket.on('u',function(_server_resnum){
 		call_update_alert(_server_resnum);
 	});
 
-	//stc:setTotalCounter
+	/* stc:setTotalCounter */
 	socket.on('stc',function(count){
 		setSureTotalConter(count);
 	});
 	
-	//sc:setCounter
+	/* sc:setCounter */
 	socket.on('sc',function(count){
 		setSureConter(count);
 	});
 
-	//su:setCounterUpdate
+	/*su:setCounterUpdate*/
 
 	socket.on('c',function(res){
-//		setSureTotalConter(count);
 		if(res["p"]){
 			setSureTotalConter(res["p"]);
 		}
@@ -2564,13 +2541,12 @@ function nodejs_connect(){
 
 	});
 
-	//ru:ratingUpdated
+	/*ru:ratingUpdated*/
 	socket.on('ru',function(updated){
-//		setSureTotalConter(count);
 		updateRating(updated);
 	});
 
-	//sc:setKusa
+	/* sc:setKusa */
 	socket.on('sk',function(count){
 		updateKusa(count);
 	});
@@ -2584,11 +2560,10 @@ function nodejs_pushKusa(){
 
 
 function nodejs_set_resnum(_local_resnum){
-	//sr=SetResnum
 	socket.emit('sr',_local_resnum );
 }
 
-// Twitter
+/* Twitter */
 
 var twitterCheckTimerID;
 
@@ -2606,7 +2581,6 @@ function twitterInit(){
 		setCookie("twid",$(this).attr("checked") ? 1 : 0);
 	});
 
-	//初期状態
 	if(getCookie("tw") && getCookie("twfunc") == 1){
 		$("#twfunc").attr("checked",true);
 
@@ -2653,7 +2627,7 @@ function twitterInit(){
 			} else {
 				$("#twinfo").slideDown();
 			}
-		} else { // 閉じた
+		} else {
 			twInfoClose();
 		}
 
@@ -2670,7 +2644,6 @@ function loadTwitterUserInfo(obj,callback){
 			url:'/ajax/twitter/get_info.cgi',
 			success: function(data){
 
-//		console.log(data);
 
 				var url = "https://twitter.com/" + data.screen_name;
 				setCookie("twfunc",1);
