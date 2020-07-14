@@ -272,20 +272,55 @@ function AA_filter(_this){
 
 $(function(){
 
-	$(".pasteButton").click(function(){
-		
-		if($(this).is(":checked")){
-			$(".pastebin").show();
-		} else {
-			$(".pastebin").hide();
-		}
+	var binLIMIT = 30;
 
+	$("binmax").text(binLIMIT);
+
+	$(".pasteCancel").click(function(){
+		$(".pasteButton").click();
+	})
+
+	$(".pasteButton").click(function(){
+		if($(".pastebin").is(":visible")){
+			$(".pastebin").slideUp("fast");
+			$("[name=pasteText]").val("").trigger("change");
+		} else {
+			$(".pastebin").slideDown("fast");
+		}
 	});
+
+	$("body").bind("SUBMIT_SEND_PRE_START",function(){
+		$(".binlist").html("");
+	});
+
+
+	$(document).on("click",".cancelBin",function(e){
+		var url = $(this).attr("url");
+
+		var message = $("[name=MESSAGE]").val();
+		    message = message.replace(new RegExp("(?:\n|)" + url + "(?:\n|)"),"");
+		$("[name=MESSAGE]").val(message);
+
+		$(".binlist").html("");
+		e.preventDefault();
+	})
+
 
 	$(".pasteSubmitButton").click(function(e){
 
 		if($("[name=pasteText]").val() == ""){
 			alert("空は投稿できましぇん。");
+			return;
+		}
+
+		if($("[name=MESSAGE]").val().match(/https:\/\/pastebin.com/)){
+			alert("長文のURLは1回の投稿に1個まで。");
+			return;
+		}
+
+
+		if( parseInt($("binlen").text()) < binLIMIT){
+			alert("文字数が足りないです。もうちょっとかいてね。");
 			return;
 		}
 
@@ -303,12 +338,19 @@ $(function(){
 			success : function(res){
 				if(res.success == 1){
 
-					alert("変換成功！本文にURLを張り付けといたばい。");
+
+					$(".binlist").html(
+					"<div style='padding:5px'><a target=_blank href="+res.url+">" + 
+					"<img width=12 height=12 src=https://open.open2ch.net/image/icon/svg/memo.svg?vxxx3>&nbsp;" + 
+					res.url + 
+					"</a>" + 
+					" <a href=# url="+res.url+" class=cancelBin>×</a></div>"
+					);
 
 					var texts = $("[name=MESSAGE]").val() ? $("[name=MESSAGE]").val().split("\n") : [];
 					texts.push(res.url);
 					$("[name=MESSAGE]").val(texts.join("\n"));
-					$("[name=pasteText]").val("");
+					$("[name=pasteText]").val("").trigger("change");
 					$(".pasteSubmitButton").prop("disabled","");
 				} else {
 
@@ -320,6 +362,8 @@ $(function(){
 	});
 
 	$("[name=pasteText]").bind("change keyup keydown paste",function(){
+
+		//高さ調整
 		var rows = $(this).attr("rows");
 		var len = $(this).val().split("\n").length;
 		var min = 5;
@@ -335,6 +379,13 @@ $(function(){
 		}
 		
 		$(this).attr("rows",n);
+		
+		//文字量
+		var texts = $("[name=pasteText]").val();
+		    texts = texts.replace(/(\r\n|\r|\n)/g,"");
+
+		$("binlen").text(texts.length);
+
 	
 	});
 })
