@@ -57,7 +57,17 @@ $(function(){
 
 	$(document).on("click",".aa_clear",function(e){
 		$("del_aa").html("");
-		$("[name=MESSAGE]").val("");
+
+		//安価維持
+		var m = new String($("[name=MESSAGE]").val()).match(/^((>>\d+(?:\n|))+)/);
+		var addAnka = "";
+		if(m){
+			m[0] = m[0].replace(/(\r\n|\r|\n)$/,"");
+			addAnka = m[0] + "\n";
+		}
+
+
+		$("[name=MESSAGE]").val(addAnka).trigger("change");
 		e.preventDefault();
 	});
 
@@ -68,11 +78,20 @@ $(function(){
 			$(".aa").click();
 		}
 
+
+		//安価はそのまま追記
+		var m = new String($("[name=MESSAGE]").val()).match(/^((>>\d+(?:\n|))+)/);
+		var addAnka = "";
+		if(m){
+			m[0] = m[0].replace(/(\r\n|\r|\n)$/,"");
+			addAnka = m[0] + "\n";
+		}
+
 		var key = $(this).val();
 
 		if(!key){
 			$("del_aa").html("");
-			$("[name=MESSAGE]").val("");
+			$("[name=MESSAGE]").val(addAnka).trigger("change");
 			return;
 		}
 
@@ -82,7 +101,9 @@ $(function(){
 		    aa = aa.replace(/&gt;/g,">");
 		    aa = aa.replace(/&amp;/g,"&");
 
-		$("[name=MESSAGE]").val(aa).trigger("change");
+
+
+		$("[name=MESSAGE]").val(addAnka + aa).trigger("change");
 
 		$("del_aa").html("&nbsp;<a class='aa_clear' href=#>クリア</a>");
 
@@ -90,34 +111,150 @@ $(function(){
 	});
 	
 
+	$("body").append(
+		"<style>" + 
+			".aa_regist{user-select: none;font-family:sans-serif;font-size:9pt;background:#F8F8F8;padding:2px;display:inline-block}" + 
+			"._aa{width:80;padding:5px;user-select: none}" + 
+		"</style>"
+	);
+
+
+	$(document).on("mouseover","._aa",function(e){
+		$(this).css("color","blue");
+	});
+
+	$(document).on("mouseout","._aa",function(e){
+		$(this).css("color","");
+	});
+
+
+	$(document).on("click",".aa_retry",function(e){
+		$(this).parents("li,dl").find("._aa").click();
+	});
+
+
+
+	$(document).on("click",".aa_ok",function(e){
+
+
+		var body = $(this).parents("li,dl").find(".body");
+
+		var res = html2AA(body.html());
+
+		var aa = res.aa;
+		var md5 = res.md5;
+		var resnum = body.attr("rnum");
+		var is_use = $(this).parents(".aa_regist").find(".is_use").is(":checked");
+		var title = $(this).parents(".aa_regist").find(".title").val() || md5;
+
+			var val = LZString.compressToUTF16(aa);
+			var data = {
+				"time": parseInt(new Date().getTime()/1000),
+				"data":val,
+				"bbskey": bbs + "/" + key + "/",
+				"resnum": resnum,
+				"fav": (is_use ? 1 : 0) ,
+				"title" : title
+			};
+			var json = sethashStorage_json("aa",md5,data,1000);
+			AA_LIST[md5] = json;
+
+			var message = is_use ?  "※スタンプに登録したよ！<font color=red>すぐ使えるバイ。</font>" 
+			                      : "※スタンプに登録したよ！使う時に有効にしてね！";
+
+			$(this).parents("li,dl").find(".aa_checking").removeClass("aa_checking");
+
+			$(this).parents(".aa_regist").html("<div>登録完了＞<a href='/stamp/'>AAスタンプ</a>"+
+			                                   "<div>" + message+"</div>" + 
+			                                   "<div align=center><input type=button class=aa_retry value='再設定'></div>"+
+			                                   "</div>");
+
+			
+			//find(".aa_cancel").click();
+
+			updateAAStamp();
+
+
+	});
+
+
+	$(document).on("click",".aa_del",function(e){
+
+			var body = $(this).parents("li,dl").find(".body");
+			var res = html2AA(body.html());
+			var md5 = res.md5;
+			delhashStorage("aa",md5);
+			delete AA_LIST[md5];
+
+			$(this).parents("li,dl").find(".aa_checking").removeClass("aa_checking");
+
+			$(this).parents(".aa_regist").html("<div>削除完了＞<a href='/stamp/'>AAスタンプ</a>"+
+			                                   "<div>AAスタンプから消しますた。</div>" + 
+			                                   "<div align=center><input type=button class=aa_retry value='再設定'></div>"+
+			                                   "</div>");
+			updateAAStamp();
+	});
+
+
+	$(document).on("click",".aa_cancel",function(e){
+
+		$(this).parents("li,dl").find(".aa_checking").removeClass("aa_checking");
+		$(this).parents("li,dl").find(".aa_regist").remove();
+	});
+
+
 	$(document).on("click","._aa",function(e){
 
 		var _this = this;
-		var aa = $(this).parent().html();
-		aa = aa.replace(/\r\n|\n/g,"\n");
-		aa = aa.replace(/<br>/g,"\n");
-		aa = aa.replace(/<[^>]+>/g,"");
-		aa = aa.replace(/\!AA\n/g,"\n");
-		aa = aa.replace(/^\n+|\n+$/g,"");
-		aa = aa.replace(/\!AA/g,"");
+		var res = html2AA($(this).parents("li,dl").find(".body").html());
 	
-		//Empty-check
-		var temp = aa;
-		temp = temp.replace(/\s+/g,"");
-		temp = temp.replace(/\n/g,"");
+		console.log(res);
 
-		if(!aa || !temp.length){
-			alert("空のようだ。")
+		if(!res.aa){
+			alert("空のAAみたい。。")
 			return;
 		}
 
-		var md5 = XXH.h32( aa, "open2ch" ).toString(16).toUpperCase();
+		var md5 = res.md5;
+		var is_already;
+		var json;
 
 		if(md5 in AA_LIST){
-			addGetLink(_this);
-			return;
+			is_already = 1;
+			json = JSON.parse(AA_LIST[md5]);
 		}
 
+		if($(this).hasClass("aa_checking")){
+			$(this).parent().find(".aa_cancel").click();
+		} else {
+
+
+			if($(this).parents("li,dl").find(".aa_regist")){
+				$(this).parents("li,dl").find(".aa_regist").remove();
+			}
+
+			$(this).addClass("aa_checking");
+			var input = $(
+				"<div class=aa_regist aid="+md5+">" + 
+				(is_already ? "<div><font color=red>登録済み</font>＞<a href=/stamp/  target=_blank>AAスタンプ</a></div>" : "") + 
+				"<div>ID:" + md5 + "<label><input type=checkbox checked class=is_use>すぐ使う</label></div>" + 
+				"<input size=10 class=title placeholder='AAスタンプ名'>" + 
+				"<input class='aa_ok' type=button value=" + (is_already ? "修正" : "登録") + ">" + 
+				(is_already ? "<input class='aa_del' type=button value='削除'>" : "") + 
+				"<input class='aa_cancel' type=button value='取消'>" + 
+				"</div>");
+
+			if(is_already){
+				$(input).find(".title").val(json.title);
+				$(input).find(".is_use").attr("checked", json.fav ? true : false);
+			}
+
+			$(this).after(input)
+		}
+
+	})
+
+/*
 		if(confirm("ID:" + md5 + "\nこのAAをゲットするぽ？") ){
 
 			var val = LZString.compressToUTF16(aa);
@@ -125,63 +262,67 @@ $(function(){
 				"time": parseInt(new Date().getTime()/1000),
 				"data":val,
 				"bbskey": bbs + "/" + key + "/",
-				"resnum": $(_this).attr("rnum")
+				"resnum": $(_this).attr("rnum"),
+				"fav":1,
 			};
 			var json = sethashStorage_json("aa",md5,data,1000);
 			AA_LIST[md5] = json;
 
 			addGetLink(_this);
 		}
-
-
-/*
-		get_md5sum(aa,function(md5){
-
-				console.log(AA_LIST)
-
-				if(md5 in AA_LIST){
-						addGetLink(_this);
-						return;
-				}
-
-				if(confirm("ID:" + md5 + "\nこのAAをゲットするぽ？") ){
-
-					var val = LZString.compressToUTF16(aa);
-					var data = {
-						"time": parseInt(new Date().getTime()/1000),
-						"data":val,
-						"bbskey": bbs + "/" + key + "/",
-						"resnum": $(_this).attr("rnum")
-					};
-					var json = sethashStorage_json("aa",md5,data,1000);
-					AA_LIST[md5] = json;
-
-					addGetLink(_this);
-				}
-		})
 */
+			updateAAStamp();
+})
 
+function updateAAStamp(){
+	var aa_fav_list = [];
+	$.each(get_AA_favlist(),function(i,a){
+		var json = JSON.parse(AA_LIST[a]);
+		var text = "title" in json ? json.title : a;
+		aa_fav_list.push("<option value='"+a+"'>" + text + "</option>");
 	})
 
-		var aa_fav_list = [];
-		$.each(get_AA_favlist(),function(i,a){
-			var json = JSON.parse(AA_LIST[a]);
-			var text = "title" in json ? json.title : a;
-			aa_fav_list.push("<option value='"+a+"'>" + text + "</option>");
-		})
+	$(".aa-fav-div").remove();
 
-		if(aa_fav_list.length){
-			$(".fav_aa").append( "<div class='aa-fav-div'>" + 
-			                     "<img width=16 src=https://image.open2ch.net/image/icon/svg/stamp_v2.svg>" + 
-			                     "<a style='color:black' href=/stamp/ target=_blank>AAスタンプ</a>&nbsp;" + 
-			                     "<select class='aa-select'>" + 
-			                     "<option style='color:#999' value=''>使いたいAAを選択</option>" + 
-			                     aa_fav_list+
-			                     "</select><del_aa></del_aa>" +
-			                     "</div>"
-			);
-		}
-})
+	if(aa_fav_list.length){
+		$(".fav_aa").append( "<div class='aa-fav-div'>" + 
+		                     "<select class='aa-select'>" + 
+		                     "<option style='color:#999' value=''>AAスタンプ</option>" + 
+		                     aa_fav_list+
+		                     "</select><del_aa></del_aa>" +
+		                     "&nbsp;<div style='display:inline-block;padding:2px;background:#EEE'><a style='color:black' href=/stamp/ target=_blank>AA管理</a></div>" + 
+		                     "</div>"
+		);
+	}
+
+
+}
+
+function html2AA(html){
+
+	var aa = html;
+	aa = aa.replace(/\r\n|\n/g,"\n");
+	aa = aa.replace(/<br>/g,"\n");
+	aa = aa.replace(/<[^>]+>/g,"");
+	aa = aa.replace(/\!AA\n/g,"\n");
+	aa = aa.replace(/^(&gt;&gt;\d+(?:\n|))+/g,"");
+	aa = aa.replace(/^\n+|\n+$/g,"");
+	aa = aa.replace(/\!AA/g,"");
+
+	//Empty-check
+	var temp = aa;
+	temp = temp.replace(/\s+/g,"");
+	temp = temp.replace(/\n/g,"");
+
+	if(!aa || !temp.length){
+//	alert("空のようだ。")
+		return {md5:"",aa:""};
+	}
+
+	var md5 = XXH.h32( aa, "open2ch" ).toString(16).toUpperCase();
+
+	return {md5:md5,aa:aa};
+}
 
 function get_AA_favlist(){
 	var keys = Object.keys(AA_LIST);
@@ -292,10 +433,11 @@ function AA_filter(_this){
 					    body = body.replace(/\!AA/gi,"");
 					    body = body.replace(/<br>/g,"\n");
 					    body = body.replace(/^\n*|\n*$/g,"");
-					    body = body.replace(/$/gi,"<div rnum="+resnum+" class='_aa'>!AA</div>");
 
 
 				$(target).html(body);
+
+				$(target).after("<div rnum="+resnum+" class='_aa'>!AA</div>");
 
 				$(this).find(".hash,k,n").each(function(){
 					$(this).contents().remove("b").unwrap();
@@ -857,7 +999,7 @@ function ng_filter(_this){
 
 		if(SETTING && "ng_action" in SETTING && SETTING["ng_action"].match(/hide/)){
 
-			$(body).parent().addClass("ng_hide");
+			$(body).parents("li,dl").addClass("ng_hide");
 
 
 
@@ -2745,15 +2887,22 @@ $(function(){
 	ignore_cache_key = "ignv4" + bbs;
 });
 
-function updateIgnore(){
+function updateIgnore(is_action){
 
 	ignores_hash = {};
 	ignores_array.map(function(key){
 		ignores_hash[key] = 1;
 		if(key !== "???"){
-			$("dl").find(".id"+key + "[ignored!='1']").parents("li,dl")
-				.fadeOut("fast")
-				.attr({"ignored":1,"uid":key});
+			
+			var target = $("dl").find(".id"+key + "[ignored!='1']").parents("li,dl");
+			    target.attr({"ignored":1,"uid":key});
+
+			if(is_action){
+				target.slideUp("fast");
+			} else {
+				target.hide();
+			}
+
 		}
 	})
 
@@ -2761,7 +2910,7 @@ function updateIgnore(){
 	$("[ignored=1]").each(function(i,a){
 		var uid = $(this).attr("uid");
 		if(!ignores_hash[uid]){
-			$(this).removeAttr("ignored").fadeIn("fast");
+			$(this).removeAttr("ignored").slideDown("fast");
 		}
 
 	});
@@ -2825,6 +2974,38 @@ $(function(){
 		updateIgnore();
 	}
 
+	$("body").append("<style>" + 
+		".iok,.ino{cursor:pointer;font-size:8pt}" + 
+		".ignore_check_over{padding:1px;background:#e2e2e2}" + 
+		".ignore_check{display:inline-block;}" + 
+		"</style>"
+	);
+
+	$(document).on("click",".iok",function(){
+		var id = $(this).parent().attr("vid");
+		ignores_array.unshift(id);
+
+		if(ignores_array.length > IGNORE_MAX){
+			ignores_array.length = IGNORE_MAX;
+		}
+
+		//setStorage(cachekey,JSON.stringify(ignores_array));
+		setListStorage(ignore_cache_key,id,IGNORE_MAX);
+
+		$(this).parent().find(".ino").click();
+
+		updateIgnore(1);
+	})
+
+	$(document).on("click",".ino",function(){
+		var id = $(this).parent().attr("vid");
+
+		$(this).parents("li,dl").find(".ignore_checking").html("×").removeClass("ignore_checking");
+		$(this).parents("li,dl").removeClass("ignore_check_over");
+		$(this).parents(".ignore_check").remove();
+	
+	})
+
 	$(".ignore").live("click",function(e){
 
 		e.preventDefault();
@@ -2849,7 +3030,24 @@ $(function(){
 			}
 		} else { /*無視*/
 
+			$(this).html("");
+
 			var message = "ID:" + ID + " を無視設定します。\nよろしいですか？";
+
+			if(!$(this).hasClass("ignore_checking")){
+
+
+					var confirm = $("<div class='ignore_check' vid='"+ID+"'>" + 
+					                "<input type=button value='無視' class=iok><input class=ino type=button value='取消'>" + 
+					                "</div>");
+
+					$(this).addClass("ignore_checking");
+					$(this).parents("li,dl").addClass("ignore_check_over");
+					confirm.attr("uid",ID);
+					$(this).after(confirm);
+
+				}
+/*
 			if( confirm(message) ){
 
 				ignores_hash[_ID] = 1;
@@ -2864,6 +3062,8 @@ $(function(){
 
 				updateIgnore();
 			}
+*/
+
 		}
 
 	})
