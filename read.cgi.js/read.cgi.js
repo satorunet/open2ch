@@ -13,6 +13,14 @@ var storage = {};
 
 $(function(){
 
+	$(document).on("inview","nn",function(){
+		if(!$(this).prop("on")){
+			$(this).prop("on",1).animate({count:0},{duration:1000*5,complete:function(){
+				$(this).contents().unwrap();
+			}});
+		}
+	});
+
 	storage = gethashStorage("hist");
 	var last_res = storage[bbs + "/" + key];
 
@@ -53,49 +61,43 @@ function kokomade_new_func(){
 		return $(this).attr("res");
 	})
 
-	var sort = resnums.sort();
+	var sort = resnums.sort((a, b) => a - b);
 
 	var from = sort[0];
 	var to = sort[resnums.length-1];
 
-	$("dt.mesg[res="+from+"]").before( "<a class='new_kokokara'></a>" );
-	$("dt.mesg[res="+from+"]").on("inview",function(){
+	$("dt.mesg").filter(function(i,a){
+		return parseInt($(this).attr("res")) > last_res;
+	}).map(function(i,a){
+			$(this).find(".num").css("color","red");
+	})
 
+
+	$("dt.mesg[res="+from+"]").before( "<a class='new_kokokara'></a>" );
+
+	$(".mesg[res="+to+"]").on("inview",function(){
+			$(".attayo").stop().fadeOut("slow");
+			$(this).animate({count:0},{duration:1000*5,complete:function(){
+				$news.fadeOut("fast");
+				$(".num").css("color","");
+				$(".kokokara_new,.kokomade_new").slideUp("fast");
+			}});
+			$(this).unbind("inview");
+	});
+
+
+	$("dt.mesg[res="+from+"]").on("inview",function(){
 		$("body").prop("IS_KOKOKARA_DONE",1);
 
-		var $kokokara = $("<div class=kokokara_new style='padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
+		var $kokokara = $("<div class=kokokara_new style='border:1px solid #eeeeee;padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
 		"↓ここから新着</div>").hide();
 		$("dt.mesg[res="+from+"]").before( $kokokara );
 
-/*
-		if( new_res > 5 ){
-			var $kokomade = $("<div class=kokomade_new style='padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
-			"↑ここまで新着</div>").hide();
-			$("dt.mesg[res="+to+"]").parent().after( $kokomade );
-		}
-*/
-
-
-			$("dt.mesg").filter(function(i,a){
-				return parseInt($(this).attr("res")) > last_res;
-			}).map(function(i,a){
-				$(this).find(".num").css("color","red");
-			})
-			$kokokara.slideDown("fast");
+			$kokokara.fadeIn("fast");
 
 			$(this).unbind("inview");
 	});
 
-	$("dt.mesg[res="+to+"]").on("inview",function(){
-
-			$(".attayo").stop().fadeOut("slow");
-
-			$(this).animate({hoge:100},1000*5,function(){
-				$(".num").css("color","");
-				$news.fadeOut("fast");
-				$(".kokokara_new,.kokomade_new").slideUp("fast");
-			});
-	});
 
 }
 
@@ -602,15 +604,12 @@ $(function(){
 		});
 
 
+
+
+
 		$("body").bind("UPDATE_NEWRES",function(event,res){
 
-		
-		updateHistory();
-
-		$("nn").animate({count:0},{duration:1000*10,complete:function(){
-			$(this).contents().unwrap();
-		}});
-
+			updateHistory();
 
 
 		if( 
