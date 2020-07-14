@@ -27,14 +27,18 @@ $(function(){
 
 		if($(".clean_mode").is(":checked")){
 
-			$(".OPTIONS").hide();
+			$(".CLEAN").hide();
 
-			$("clean_mode_after").css({"display":"inline-block","width":"100%"}).append($(".clean_mode").parents("label"));
+			$("clean_mode_after").append($(".clean_mode").parents("label"));
+			$("gazo_up_after").append($(".gazo_up"));
 
 		} else {
 
-			$(".OPTIONS").show();
+			$(".CLEAN").show();
 			$("clean_mode_before").append($(".clean_mode").parents("label"));
+			$("gazo_up_before").append($(".gazo_up"));
+
+
 		}
 	}
 })
@@ -1804,7 +1808,7 @@ function url2info_request(_this,callback){
 
 
 		var url = $(_this).attr("href");
-		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200203_v9/" + escape(url);
+		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200206_v3/" + escape(url);
 
 //		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200203_v7/" + escape(url);
 //	var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v200229_08/" + escape(url);
