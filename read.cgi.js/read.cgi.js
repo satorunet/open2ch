@@ -8,6 +8,32 @@ $(function(){
 	SETTING = gethashStorage("setting");
 })
 
+/* 可変コメント欄*/
+$(function(){
+
+
+	if(isSmartPhone !== 1){
+		$("[name=MESSAGE]").bind("keyup change paste",function(){
+			var n = $(this).val().split("\n").length;
+			var to;
+
+			if(n < 3){
+				to = 3
+			} else if(n > 20){
+				to = 20;
+			} else {
+				to = n;
+			}
+
+			$(this).attr("rows",to);
+
+		})
+
+	}
+
+
+})
+
 /* 逆順モード */
 $(function(){
 
@@ -43,6 +69,10 @@ $(function(){
 		$("#history_add").click();
 	});
 
+	if(new String(document.title).match(/実況/)){
+		SETTING["reverse_mode"] = "on";
+	}
+
 	if(SETTING["reverse_mode"] == "on"){
 		$("[name=reverse_mode]").attr("checked",true);
 		setReverseMode();
@@ -50,6 +80,8 @@ $(function(){
 })
 
 function resetReverseMode(){
+
+
 	$("#auto_scroll").prop({"checked":true,"disabled":false});
 	$("[for=auto_scroll]").prop("disabled",false).css("color","#000");
 
@@ -62,9 +94,10 @@ function resetReverseMode(){
 		$("#threadFunction").before($(".history_res"));
 
 	} else {
+		$(".normalFormPosition").after($(".formset"));
+		$(".normalYondaPosition").after($(".yonda"));
 
-		$(".thread").after($(".formset"));
-		$(".thread").after($(".threadNavOuter"));
+
 	}
 
 
@@ -73,6 +106,7 @@ function resetReverseMode(){
 		$(".thread").prepend($(this));
 	});
 
+	$(".reverseTemp").remove();
 
 
 }
@@ -80,6 +114,9 @@ function resetReverseMode(){
 function setReverseMode(){
 	$("#auto_scroll").prop({"checked":false,"disabled":true});
 	$("[for=auto_scroll]").prop("disabled",true).css("color","#AAA");
+
+
+	$(".thread").before($(".formset"));
 
 	if(isSmartPhone == "1"){
 		$(".form").css("padding-bottom","0px");
@@ -89,12 +126,33 @@ function setReverseMode(){
 			.append($("<div style='margin:5px;text-align:center;'><input class=yonda type=button value='ここまでよんだ'></div>"))
 			.append($(".history_res"));
 	} else {
-		$(".thread").before($(".threadNavOuter"));
+		$(".formset").after($(".yonda")).after("<hr class=reverseTemp>");
+		$(".yonda").wrap("<div class=reverseTemp align=center />");
 	}
-	$(".thread").before($(".formset"));
+
 	$(".thread").find(isSmartPhone == "1" ? "li" : "dl").each(function(){
-		$(".thread").prepend($(this));
+		var resnum = $(this).attr("val");
+			$(".thread").prepend($(this));
 	});
+
+	/* 10行以下の場合、1だけ上に入れる */
+	var ichi = $(".thread").find((isSmartPhone == "1" ? "li" : "dl") + "[val=1]");
+	var html = ichi.find(".nusi_message").html();
+	var nagasa = html ? html.split("<br>").length : 0;
+
+	if(nagasa < 15){
+		$(".formset").before($(".thread").find((isSmartPhone == "1" ? "li" : "dl") + "[val=1]"));
+	} else {
+		var url = "/test/read.cgi/" + bbs + "/" + key + "/1";
+		var padding = isSmartPhone ? "padding:10px" : "";
+
+		$(".formset").before("<div class=reverseTemp style='"+padding+"'><font color=#999><a class='_ank' href="+url+">&gt;&gt;1</a>&nbsp;&nbsp;(長文の為、省略。詳細は安価先で確認)</font></div>");
+	}
+
+	if(isSmartPhone !== 1){
+		ichi.after("<hr class=reverseTemp>");
+	}
+
 }
 
 /* アイコン非表示 */
@@ -272,7 +330,7 @@ function url2info_request(_this,callback){
 		var url = $(_this).text();
 		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v3/" + escape(url);
 
-		if(url.match(/(i\.img|imgur|png|jpg|mp4|gif)$/)){
+		if(url.match(/(i\.img|imgur|png|jpg|mp4|gif|pdf)$/)){
 			return;
 		}
 
@@ -758,9 +816,8 @@ $(function(){
 			});
 			deleteAnk($(this).attr("val"),$(this).attr("time"));
 
-			$(".ankaFrom").removeClass("ankaFrom");
-			$(".ankaTo").removeClass("ankaTo");
-
+			$(".ankaFrom").contents().unwrap(".ankaFrom");
+			$(".ankaTo").contents().unwrap(".ankaTo");
 		})
 	});
 }());
@@ -3171,7 +3228,7 @@ function submit_form(){
 
 			if(res.match(/success/)){
 
-				$('#MESSAGE').val("");
+				$('#MESSAGE').val("").trigger("change");
 				$('#oekakiData').val("");
 				$("#parent_pid").val("");
 
@@ -3309,11 +3366,14 @@ function update_res(flag){
 
 	var htmls = html.split("<sp />").map(function(e){
 		var id = $(e).attr("uid");
+		var resnum = $(e).attr("res");
+		
+
 		var _html;
 		if(pageMode == "sp"){
-			_html = "<li><dl class=hide><section>" + e + "</section></dl></li>";
+			_html = "<li val="+resnum+"><dl class=hide><section>" + e + "</section></dl></li>";
 		} else { /* PC */
-			_html = "<dl class=hide>" + e + "</dl>";
+			_html = "<dl val="+resnum+" class=hide>" + e + "</dl>";
 		}
 
 		var html_obj = $(_html);
@@ -3717,8 +3777,8 @@ function nodejs_connect(){
 
 		if($("#useAnka").is(":checked")){
 
-				$("[res="+_from+"]").next().addClass("ankaFrom");
-				$("[res="+_to+"]").next().addClass("ankaTo");
+				$("[res="+_from+"]").parent().find(".body").contents().wrap("<span class=ankaFrom />");
+				$("[res="+_to+"]").parent().find(".body").contents().wrap("<span class=ankaTo />");
 
 
 				console.log("visibke>>" + $(".ankaview_div").is(":visible"));
