@@ -3,6 +3,10 @@ var ua = navigator.userAgent.toLowerCase();
 var IS_BOT = ua.match(/bot|bing/) ? 1 : 0;
 
 
+$.ajaxSetup({
+	cache: true
+});
+
 var SETTING = {};
 $(function(){
 	SETTING = gethashStorage("setting");
@@ -1941,21 +1945,28 @@ function twitter_handler(_this){
 }
 
 function twitter_request(_this){
-	var code = ($(_this).html().match(/\[(.*)\]/))[1];
-	var tw = code.split(":");
-	var url = "https://twitter.com/"+tw[1]+"/status/" + tw[2];
-	var html = '<blockquote class="twitter-tweet" data-lang="ja">' + 
-	           '<a href="'+url+'?ref_src=twsrc\%5Etfw"><img src=https://open2ch.net/image/loading.gif></a>' + 
-	           '</blockquote>'+
-	           '<a target=_blank href='+url+'><font size=2>'+url+'</font></a>';
 
-	$.ajax( {
-		"timeout": 5000,
-		"url": "https://open2ch.net/lib/twitter/widgets.v1.js",
-		"dataType": "script",
-		"cache": true,
-	} );
-	$(_this).html(html);
+//	var code = ($(_this).html().match(/\[(.*)\]/))[1];
+//	var tw = code.split(":");
+//	var url = "https://twitter.com/"+tw[1]+"/status/" + tw[2];
+
+	var url = $(_this).attr("url");
+
+	var html = 
+		"<div><a target=_blank href="+url+">"+url+"</a></div>"+
+		'<blockquote style="display:none" class="twitter-tweet" data-lang="ja">' + 
+		'<a href="'+url+'?ref_src=twsrc\%5Etfw">' +
+		'</blockquote>';
+
+	_this.url = url;
+
+	$.getScript("https://open2ch.net/lib/twitter/widgets.v1.js");
+
+	var tw_el = $(html);
+	$(_this).html("").append(tw_el);
+
+	
+
 }
 
 /* Nico-Handler */
