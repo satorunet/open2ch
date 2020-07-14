@@ -1217,6 +1217,14 @@ function update_res(flag){
 					}
 				})
 
+//置換処理
+
+if( $("#use_autoaudio").prop("checked") ){
+	html = html.replace("<audio ","<audio autoplay ");
+	console.log(html)
+}
+
+
 				html = "<dl class=hide>"+html+"</dl>";
 
 				if(pageMode == "sp"){
