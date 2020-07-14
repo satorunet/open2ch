@@ -422,8 +422,18 @@ $(function(){
 
 
 		var body = $(this).parents("li,dl").find(".body");
+		var html;
 
-		var res = html2AA(body.html());
+		console.log($(body).html());
+
+		if( $(body).find(".aaa_div").length ){ // AAA
+			html = $(body).find(".aaa_hide").html();
+		} else { // AA
+			html = body.html();
+		}
+		
+		var res = html2AA(html);
+		
 
 		var aa = res.aa;
 		var md5 = res.md5;
