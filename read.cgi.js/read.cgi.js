@@ -1860,6 +1860,7 @@ $(function(){
 
 
 var NODEJS = "https://nodessl.open2ch.net:8443";
+//var NODEJS = "https://nodessl.open2ch.net:2083";
 var speech;
 var speechUtt;
 var pm = getUrlVars();
@@ -4390,7 +4391,7 @@ function update_res(flag){
 							}
 
 							if( $("[num="+resnum+"]") ){
-								$("[num="+resnum+"] div").show();
+//							$("[num="+resnum+"] div").show();
 								var count = parseInt($("[num="+resnum+"] count").html() || 0) + 1;
 								$("[num="+resnum+"] count").html(count);
 
@@ -4883,9 +4884,74 @@ function nodejs_connect(){
 	});
 
 
+
 	/*ru:ratingUpdated*/
-	socket.on('ru',function(updated){
-		updateRating(updated);
+	socket.on('ru',function(data){
+//		updateRating(updated);
+
+
+		var new_ratings = JSON.parse(data);
+		
+
+		{
+			/* 新着調査 */
+			var new_anks = [];
+			var new_totals = {};
+			$(Object.keys(new_ratings)).each(function(i,resnum){
+				var new_total = 0;
+				$(Object.keys(new_ratings[resnum])).each(function(i,num){
+					new_total += parseInt(new_ratings[resnum][num]);
+				});
+				new_totals[resnum] = parseInt(new_total);
+			});
+
+			$(Object.keys(ratings)).each(function(i,resnum){
+				var old_total = 0;
+				$(Object.keys(ratings[resnum])).each(function(i,num){
+					old_total += parseInt(ratings[resnum][num]);
+				});
+
+//			console.log(resnum + "::" + old_total + ":" + new_totals[resnum]);
+
+				if(old_total !== new_totals[resnum]){
+
+//				new_anks.push({resnum:resnum,old:old_total,new:new_totals[resnum]})
+
+					var diff = new_totals[resnum] - old_total;
+
+
+					var $news = $(
+						"<div class=al><div style='font-size:9pt;display:inline-block;border-radius:10px 0 10px 0;cursor:pointer;border:1px solid #ddd;padding:10px;background:rgba(255,255,255,.8)'>" + 
+						"<a href='./"+resnum+"'>&gt;&gt;"+resnum+" に投票</a>：<b>+"+diff+"</b> <font color=#999 size=1>(計:"+new_totals[resnum]+"票)</font>" + 
+						"</div></div>");
+
+//				$(".fixedDiv").prepend($news);
+
+/*
+					$news.animate({n:0},1000*10,function(){
+						$(this).fadeOut("fast",function(){
+							$(this).parents(".al").remove();
+						});
+					});
+
+					soundManager.play('vote');
+*/
+
+
+				}
+			});
+
+
+
+		}
+
+		ratings = new_ratings;
+
+		//console.log(new_totals);
+
+
+		updateRatings();
+
 	});
 
 	/* sc:setKusa */
