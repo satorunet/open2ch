@@ -2257,26 +2257,60 @@ function update_res(flag){
 			if(res.match(/success/)){
 				/* update時に最新情報を同時に取得 */
 				var html = (res.split(""))[1];
-
+				var already = {};
 
 				$(html).find("a").filter(function(){
 					if( m = $(this).html().match(/^&gt;&gt;(\d+)$/) ){
 						var resnum = m[1];
+					
 
-						if( $("[num="+resnum+"]") ){
-							$("[num="+resnum+"] div").show();
-							var count = parseInt($("[num="+resnum+"] count").html() || 0) + 1;
-							$("[num="+resnum+"] count").html(count);
+						if(!already[resnum]){
 
-							if( $("[num="+resnum+"] plus").html() ){
-								var count = parseInt($("[num="+resnum+"] plus").html()) + 1;
-								$("[num="+resnum+"] plus").html(count);
-							} else {
-								$("[num="+resnum+"] .aresa").after("<font class=plus color=red>+<plus>1</plus></font>");
+							if( ! $("ares[num="+resnum+"]").find(".aresdiv").length ){
+									var ares = '<div class="aresdiv">'+
+									'<span class="aresspan">'+
+									'<font size=2>'+
+									'<a class="aresa" val="'+resnum+'" href="#" >' +
+									'<img class="aresicon" width=12 height=12 src="//open.open2ch.net/image/icon/ank.svg"><count></count>件</a></font>' +
+									'</span>' +
+									'</div>';
+									$("ares[num="+resnum+"]").append(ares);
 							}
+
+							if( $("[num="+resnum+"]") ){
+								$("[num="+resnum+"] div").show();
+								var count = parseInt($("[num="+resnum+"] count").html() || 0) + 1;
+								$("[num="+resnum+"] count").html(count);
+
+								if( $("[num="+resnum+"] plus").html() ){
+									var count = parseInt($("[num="+resnum+"] plus").html()) + 1;
+									$("[num="+resnum+"] plus").html(count);
+								} else {
+									$("[num="+resnum+"] .aresa").after("<font class=plus color=red>+<plus>1</plus></font>");
+								}
+							}
+
+							already[resnum]=1;
+
 						}
+
+
+
 					}
 				})
+
+
+/*
+<ares num="1">
+<div class="aresdiv">
+<span class="aresspan">
+<font size=2>
+<a val="1" href="#" >
+<img width=12 height=12 src="//open.open2ch.net/image/icon/ank.svg"> <count>$ank{1}{num}</count>件</a></font>
+</span>
+</div>
+</ares>
+*/
 
 
 
