@@ -1,5 +1,7 @@
 var OEKAKI_EX;
 var OPT;
+var ua = navigator.userAgent.toLowerCase();
+var IS_BOT = ua.match(/bot|bing/) ? 1 : 0;
 
 /* NG機能 */
 //NG機能
@@ -20,12 +22,21 @@ $(function(){
 
 		$("body").append(
 			"<style>" + 
-			".urlinfo{border-radius:3px;max-width:90%;font-size:10pt;border:1px solid #ddd;color:black;display:inline-block;background:white;padding:1px}" + 
-			".ut{overflow: hidden;white-space: nowrap;text-overflow:ellipsis}" + 
-			".utt{font-size:9pt}" + 
-			".ns{user-select: none;-moz-user-select: none;-ms-user-select: none}" +
+			".urlinfo{border-radius:3px;max-width:90%;font-size:10pt;border:1px solid #ddd;color:black;display:inline-block;background:" + (isSmartPhone == 1 ? "#f9f9f9" : "white") + ";padding:1px}" + 
+
+			".ut{overflow: hidden;white-space: nowrap;text-overflow:ellipsis;}" + 
+			".utt{font-size:"+(isSmartPhone == 1 ? "7" : "9" )+"pt}" + 
+			".ns{user-select: none;-moz-user-select: none;-ms-user-select: none ; font-size:"+(isSmartPhone == 1 ? "9" : "11" )+"pt}" +
 			"</style>"
 		);
+
+		$(document).on("mouseover",".urlinfo",function(e){
+			$(this).css("background","#F5F5FF");
+		});
+
+		$(document).on("mouseout",".urlinfo",function(e){
+			$(this).css("background","#fff");
+		});
 
 /*
 		$(".url").each(function(){
@@ -47,8 +58,16 @@ function url_info_handler(_this){
 			return;
 		}
 
+		if(IS_BOT){
+			return;
+		}
+
 		var url = $(_this).text();
 		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v1/" + escape(url);
+
+		if(url.match(/(png|jpg|mp4|gif)$/)){
+			return;
+		}
 
 		var xhr = $.get(json);
 		xhr.done(function(data){
