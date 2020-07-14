@@ -1,14 +1,14 @@
 //var NODEJS = "http://nodejs.open2ch.net:8880";
 var NODEJS = "https://nodessl.open2ch.net:8443";
+
 var speech;
+var speechUtt;
 
 $(function() {
-
 	if ('SpeechSynthesisUtterance' in window) {
-		speech = eval("new SpeechSynthesisUtterance()");
+		speech = eval("speechSynthesis");
+		speechUtt = eval("new SpeechSynthesisUtterance()");
 	}
-
-
 });
 
 var did = {};
@@ -17,14 +17,25 @@ var orgVoice;
 /* 音声再生 */
 $(function(){
 
-	if(speech){
+	if(speech && speechUtt){
 
 		$(document).on("change","#allow_yomi",function(){
-			speechSynthesis.speak(new SpeechSynthesisUtterance( $(this).prop("checked") ? "読みモードをおんにしまふ" : "読みモードをおふにしまふ。"));
+			console.log("test");
+			speechUtt.text = $(this).prop("checked") ? "このスレを読みまふ" : "読むのを止めまふ。またつかってね！";
+			speech.speak(speechUtt);
 		});
 
 		$(document).on("change","#use_yomi",function(){
-			speechSynthesis.speak(new SpeechSynthesisUtterance( $(this).prop("checked") ? "読みモードをおんにしまふ。" : "読みモードをおふにしまふ。"));
+
+			var sub = isSmartPhone == 1 ? "次回からは画面うえの新着読上げチェックしたら読み上げるでふ" 
+			                            : "スレに新着コメがあったら読み上げるでふ";
+
+			speechUtt.text = $(this).prop("checked") ? ("読みモードをおんにしまふ。" + sub) 
+				                                       : "読みモードをおふにしまふ。またつかってね！";
+
+			speech.speak(speechUtt);
+			$("#allow_yomi").prop("checked",true).trigger("checked");
+
 		});
 
 
@@ -44,47 +55,46 @@ $(function(){
 
 				var text = dds.join("");
 
-				text = text.replace(/件|\r\n|\n/g,"");
-				text = text.replace(/>>/g,"安価");
+				text = text.replace(/件|\r\n|\r|\n/g,"");
 				text = text.replace(/彡\(ﾟ\)\(ﾟ\)/g,"やきうのおにいちゃん");
 				text = text.replace(/彡\(゜\)\(゜\)/g,"やきうのおにいちゃん");
-
-				if(new String(text).length > 100){
-					text = text.substring(0,100) + "以下略";
-				}
-
-		var ran = 3;
+				text = text.replace(/((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))/g,"");
 
 			if(isSmartPhone == 0){
-				var rand = 4;
-				var voices = speechSynthesis.getVoices();
-	//		var voice = voices[Math.floor(Math.random()*rand) == 1 ? 5 : 0];
+				var voices = speech.getVoices();
+				var is_gaijin;
 
-				if(text.match(/^[\u30A0-\u30FF]+$/)){
+				if(text.match(/^(?:[\u30A0-\u30FF]|[ｦ-ﾟ]|[0-9a-zA-Z０-９Ａ-Ｚａ-ｚ]|[>%=/\@;:\(\)\!\?,\.\-"']|[「」（）、。！？ー\s])+$/)){
+					text = text.replace(/>>/g,"アンカ");
 					voice = voices[5];
+					is_gaijin = 1;
 				} else {
+					text = text.replace(/>>/g,"安価");
 					voice = voices[0];
 				}
 				
 
+				if(new String(text).length > 100){
+					text = text.substring(0,100) + (is_gaijin ? "and so on" : "以下略");
+				}
+
+
 				if(voice){
-						speech.voice = voice;
+						speechUtt.voice = voice;
 				}
 			}
 
-				speech.text = text;
-				speech.lang = 'ja-JP';
+				speechUtt.lang = 'ja-JP';
 
-				if( isSmartPhone == 1 ){
-					speech.rate = 1.0;
-				} else {
-					speech.rate = 1.5;
-				}
 
-					speech.text = text;
-					speechSynthesis.speak(speech);
-					speechSynthesis.onend = function(event) {
-						speechSynthesis.cancel();
+					speechUtt.text = text;
+					speech.speak(speechUtt);
+
+		console.log("test" + text);
+
+
+					speech.onend = function(event) {
+						speechUtt.cancel();
 					}
 		}
 
