@@ -36,9 +36,6 @@ $(function(){
 		moveToMiddle($("#new_res_end"));
 	})
 
-
-
-
 	$("#get_newres_button").click(function(e){
 		e.preventDefault();
 		$("#get_newres_button").fadeOut("fast");
@@ -55,6 +52,8 @@ $(function(){
 	} else {
 		$("#new_alert_link").show();
 	}
+
+
 
 
 })
@@ -82,7 +81,7 @@ $(function(){
 		$(parent).append("<div class=aresdata><areshtml style='display:table-cell'></areshtml></div>");
 		$(parent).find(".aresdata").hide();
 
-		var query = "resnum=" + resnum + "&s=" + server_updated;
+		var query = "resnum=" + resnum + "&s=" + server_resnum;
 
 		$.ajax({
 			type: "GET",
@@ -553,6 +552,10 @@ $(document).ready(function() {
 		setCookie("autoOpen", $(this).is(':checked') ? "1" : "0");
 
 		if($(this).is(':checked')){
+
+			if($("#get_newres_button").is(":visible") == 1){
+				$("#get_newres_button").trigger("click");
+			}
 			$("#new_alert_link").slideUp();
 		} else {
 			$("#new_alert_link").slideDown();
@@ -569,6 +572,17 @@ $(document).ready(function() {
 
 	$("#new_alert_hide").change(function(){
 		setCookie("new_alert_hide", $(this).is(':checked') ? "1" : "0");
+
+		if($(this).is(':checked')){
+			if($('#new_alert_link').is(":visible")){
+				$('#new_alert').fadeOut();
+			}
+		} else {
+			if($('#new_alert_link').is(":visible")){
+				$('#new_alert').fadeIn();
+			}
+		}
+
 	});
 
 
@@ -955,7 +969,7 @@ function update_res(flag){
 	submit_flag = 0;
 	is_update_que = 0;
 
-	var query = "u=" + local_updated + "&s=" + server_updated;
+	var query = "l=" + local_resnum + "&s=" + server_resnum;
 
 	if( $("#get_newres_button").is(":visible") ){
 		$("#get_newres_button").slideUp("fast");
@@ -972,7 +986,7 @@ function update_res(flag){
 
 	$.ajax({
 		type: "GET",
-		url    : "/ajax/get_res.v6.cgi/" + bbs + "/" + key + "/",
+		url    : "/ajax/get_res.v7.cgi/" + bbs + "/" + key + "/",
 		data   :query,
 		cache  : true,
 		success: function(res){
@@ -981,11 +995,7 @@ function update_res(flag){
 				//update時に最新情報を同時に取得
 				var html = (res.split(""))[1];
 				local_resnum = (res.split(""))[2];
-				local_updated = (res.split(""))[3];
-
-				if(isNodeJS == 1){
-					nodejs_update_localupdated(local_updated);
-				}
+				nodejs_set_resnum(local_resnum);
 
 				$(html).find("a").filter(function(){
 					if( m = $(this).html().match(/^&gt;&gt;(\d+)$/) ){
@@ -1043,21 +1053,18 @@ function update_res(flag){
 }
 
 // nodeJS版
-function call_update_alert(_server_updated,_server_resnum){
+function call_update_alert(_server_resnum){
 
-	console.log("node-call: server-updated:" + _server_updated + " server_rewsnum:" + _server_resnum);
+	console.log("node-call: server_rewsnum :" + _server_resnum);
 
 	server_resnum = _server_resnum;
-	server_updated = _server_updated;
-
-		var diff = _server_resnum - local_resnum;
+		var diff = server_resnum - local_resnum;
 
 		if( diff > 0 ){ // 更新アリ
 
 			if(!$("#new_alert_hide").is(":checked")){
 				$('#new_alert').fadeIn('fast');
 			}
-
 
 
 			$('#now_max').html(diff);
@@ -1117,27 +1124,30 @@ function nodejs_connect(){
 	});
 
 	socket.on('connect',function(){
-		socket.emit('set', bbs,key,local_updated);
+		socket.emit('set', bbs,key,local_resnum);
 	});
 
-	socket.on('updated',function(_server_updated,_server_resnum){
-		call_update_alert(_server_updated,_server_resnum);
+	//u:updated
+	socket.on('u',function(_server_resnum){
+		call_update_alert(_server_resnum);
 	});
 
-	socket.on('setTotalCounter',function(count){
+	//stc:setTotalCounter
+	socket.on('stc',function(count){
 		setSureTotalConter(count);
 	});
-
-
-	socket.on('setCounter',function(count){
+	
+	//sc:setCounter
+	socket.on('sc',function(count){
 		setSureConter(count);
 	});
 
 
 }
 
-function nodejs_update_localupdated(_local_updated){
-	socket.emit('set_modified',_local_updated );
+function nodejs_set_resnum(_local_resnum){
+	//sr=SetResnum
+	socket.emit('sr',_local_resnum );
 }
 
 // Twitter
