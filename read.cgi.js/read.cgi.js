@@ -1,6 +1,21 @@
 //var NODEJS = "http://nodejs.open2ch.net:8880";
 var NODEJS = "https://nodessl.open2ch.net:8443";
 
+/* 音声再生 */
+$(function(){
+	$("body").bind("UPDATE_NEWRES",function(){
+
+		if(!isSmartPhone){
+			setTimeout(function(){
+					$(".new_audio").each(function(i){
+						$(this).removeClass("new_audio").trigger("click");
+					});
+				},1000);
+		}
+	});
+
+})
+
 
 /* バルス強化版 */
 function doValus(){
@@ -1080,7 +1095,6 @@ function reuse_request(){
 var submit_flag = 0;
 function submit_form(){
 
-
 	$("body").trigger("SUBMIT_SEND_PRE_START");
 
 
@@ -1174,6 +1188,15 @@ function update_res(flag){
 	}
 
 
+	if(flag == "now" || $('#autoOpen').is(':checked') == false){
+		$('#new_alert').fadeOut("fast");
+	} else {
+		setTimeout(function(){
+			$('#new_alert').fadeOut("slow");
+		},2000);
+	}
+
+
 	local_resnum = server_resnum;
 	nodejs_set_resnum(local_resnum);
 
@@ -1214,45 +1237,33 @@ function update_res(flag){
 
 //音声置換処理(PC用)
 
-	$("body").trigger("UPDATE_NEWRES");
 
 	if( $("#use_autoaudio").prop("checked") ){
-		html = html.replace("<audio ","<audio autoplay ");
+		html = html.replace('class="audio"','class="audio new_audio"');
 	}
-
-
 				html = "<dl class=hide>"+html+"</dl>";
-
 				if(pageMode == "sp"){
 					$(".thread").append("<section><li>" + html + "</li></section>");
 				} else {
 					$(".thread").append(html);
 				}
-
 				$(".thread").find("dl:hidden").slideDown("slow",function(){
 					if(
 						 $("#auto_scroll").is(":checked")
 						){
-
 						moveToMiddle($(".thread dl:last"),500);
-
 					}
 				});
-
-				
-
 				updateIgnore();
-
 				document.title = defTitle;
 			} else {
 				;;
 			}
-
 			//setKoraboLink();
-
 		}
 	});
-	
+	$("body").trigger("UPDATE_NEWRES");
+
 }
 
 // nodeJS版
@@ -1265,31 +1276,12 @@ function call_update_alert(_server_resnum){
 
 		if( diff > 0 ){ // 更新アリ
 
-			var $new_alert = $("<div class='new_alert'>" + 
-'<font size=2 color="white">' + 
-'<font color=yellow size=3><b>+<span id=now_max>'+diff+'</span>件</b></font> の新着レス <a href=# id=gotoNewRes>▼</a>' +
-'</font></div>');
-
-
-	if( $('#autoOpen').is(':checked') == false){
-		$("#new_alert_div").html( $new_alert );
-	} else {
-		$("#new_alert_div").append( $new_alert );
-	}
-
-
-
 			if(!$("#new_alert_hide").is(":checked")){
-				$new_alert.fadeIn('fast');
+				$('#new_alert').fadeIn('fast');
 			}
 
-	setTimeout(function(){
-		$new_alert.animate( { opacity: '0.2',}, { duration: 2000, easing: 'swing', complete:function(){
-			$(this).slideUp("fast");
-		}});
-	},1000);
 
-
+			$('#now_max').html(diff);
 			document.title = "(+" + diff + ")" + defTitle;
 
 			if(!$('#noSoundAlert').is(':checked')){
