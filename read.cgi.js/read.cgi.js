@@ -1998,6 +1998,7 @@ function updateKusa(count){
 
 
 	var list = [
+		[100000,"👑","おうかん"],
 		[10000,"💩","うこん"],
 		[1000,"🍑","おけつ"],
 		[100,"🥒","きうり"],
@@ -2081,21 +2082,29 @@ $(function(){
 
 $(function(){
 
-	$(".settingButton_pc").click(function(){
+	$(".settingButton")
+	.mouseover(function(){
+		$(this).css("color","#00B")
+	})
+	.mouseout(function(){
+		$(this).css("color","")
+	})
+	.click(function(){
 
-		if($(".options-1").is(":visible")){
-			$(".options-1,.options-2").slideUp("fast");
-			$($(this).find("img")).attr("src","//open.open2ch.net/image/icon/setting_on.gif");
-			localStorage.offSetting_pc = 1;
+		if($(".options").is(":visible")){
+			$(".options").slideUp("fast");
+			$(this).text("▲");
+			setStorage("offSetting",1);
 		} else {
-			$(".options-1,.options-2").slideDown("fast");
-			$($(this).find("img")).attr("src","//open.open2ch.net/image/icon/setting_off.gif");
-			localStorage.offSetting_pc = 0;
+			$(".options").slideDown("fast");
+			$(this).text("▼");
+			setStorage("offSetting",0);
 		}
 	});
 
-	if( localStorage.offSetting_pc == 1 ){
-		$(".settingButton_pc").click();
+	if( getStorage("offSetting") == 1 ){
+		$(".options").hide();
+		$(".settingButton").text("▲");
 	}
 
 
@@ -2695,19 +2704,15 @@ $(function(){
 
 
 				/* 無視設定の投稿を消す */
+/*
 				html.find("dt").each(function(i,a){
-
-					alert(i);
-	
 					var id = $(this).attr("val");
-
 					alert(id);
-
 					if( ignores[id] ){
 						alert($(this).html());
 					}
 				})
-
+*/
 
 				$(parent).find("areshtml").html( html );
 				$(parent).find(".aresclose").show();
@@ -2735,8 +2740,15 @@ var cachekey;
 var ignores = {};
 var ignores_array;
 var IGNORE_MAX = 50;
+var ignore_cache_key;
+
+$(function(){
+	ignore_cache_key = "ignv4" + bbs;
+});
 
 function updateIgnore(){
+
+
 	if(!Object.keys(ignores).length){
 		return;
 	}
@@ -2753,29 +2765,52 @@ function updateIgnore(){
 	});
 
 	var length = ignores_array.length;
-	$("#clear_ignore").html("無視設定をクリア(" + length + "件)").show();
+
+	if(length>0){
+		$("#ignore_div").html(
+			"<div class=ignore_box>" + 
+			"<div>無視設定：" + length + "件</div>" + 
+
+			"<a class=ignore_back href=#>一個戻す</a>&nbsp;" + 
+			"<a class=clear_ignore href=#>全クリア</a>" + 
+			"</div>").show();
+	} else {
+		$("#ignore_div").fadeOut("fast");
+	}
 }
 
 $(function(){
-	cachekey = "ignv4:"+bbs;
 
 	//ignores_array = localStorage[cachekey] ? JSON.parse(getStorage(cachekey)) : new Array();
-	ignores_array = getListStorage(cachekey);
-
+	ignores_array = getListStorage(ignore_cache_key);
 
 	ignores_array.map(function(e){
 		ignores[e] = 1;
 	})
 
-	$("#clear_ignore").click(function(e){
+	$(document).on("click",".ignore_back",function(e){
+
+		var array = getListStorage(ignore_cache_key);
+		var id = array.shift();
+
+		$(".id"+id).removeAttr("ignored").slideDown("fast");
+
+		ignores_array = shiftListStorage(ignore_cache_key);
+		updateIgnore();
+
+		e.preventDefault();
+	});
+
+
+	$(document).on("click",".clear_ignore",function(e){
 		e.preventDefault();
 		if(confirm("無視設定をクリアします。\nよろしいですか？")){
-			delStorage(cachekey);
+			delStorage(ignore_cache_key);
 			ignores = new Object();
 			ignores_array = new Array();
 
 			$(".mesg").fadeIn("fast").removeAttr("ignored");
-			$(this).hide();
+			$("#ignore_div").fadeOut("fast");
 		}
 	});
 
@@ -2808,9 +2843,9 @@ $(function(){
 				updateIgnore();
 				if( ignores_array.length ){
 //				setStorage(cachekey,JSON.stringify(ignores_array))
-					delListStorage(cachekey,_ID,IGNORE_MAX);
+					delListStorage(ignore_cache_key,_ID,IGNORE_MAX);
 				} else {
-					delStorage(cachekey)
+					delStorage(ignore_cache_key)
 				}
 			}
 		} else { /*無視*/
@@ -2826,7 +2861,7 @@ $(function(){
 				}
 
 				//setStorage(cachekey,JSON.stringify(ignores_array));
-				setListStorage(cachekey,_ID,IGNORE_MAX);
+				setListStorage(ignore_cache_key,_ID,IGNORE_MAX);
 
 				updateIgnore();
 			}
