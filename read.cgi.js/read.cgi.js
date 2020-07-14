@@ -1,6 +1,41 @@
 //var NODEJS = "http://nodejs.open2ch.net:8880";
 var NODEJS = "https://nodessl.open2ch.net:8443";
 
+
+/* バルス強化版 */
+function doValus(){
+
+	if( $("#is_valus_after").val() != 1 ){
+
+//,"shake-chunk" "shake-slow"
+		var shakes = ["shake","shake-hard","shake-horizontal","shake-vertical","shake-rotate","shake-opacity"];
+		var all_shake = shakes[Math.floor(Math.random()*shakes.length)];
+
+		var valu_shakes = ["shake-chunk","shake-chunk","shake-chunk","shake-opacity","shake-crazy","shake-hard"];
+		var valus_shake = valu_shakes[Math.floor(Math.random()*valu_shakes.length)];
+
+
+		$(".valus_res").addClass(valus_shake);
+
+		setTimeout(function(){
+
+			$('html').addClass(all_shake);
+			$(".valus").css('background','#FFCCCC');
+			var s = document.createElement('script');
+			s.setAttribute('src','//open.open2ch.net/lib/bomb/bomb.v2.js?v181124_v2' + $.now());
+			document.body.appendChild(s);
+
+		},2500);
+
+	}
+}
+
+$(function(){
+	$("body").bind("valus",doValus);
+});
+
+
+
 //var NODEJS = "nodejs.open2ch.net:8000";
 
 /* */
