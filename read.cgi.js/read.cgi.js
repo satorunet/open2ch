@@ -579,13 +579,15 @@ function AA_filter(_this){
 
 //		$(this).before(preview);
 
-		
 
-		$(this).wrap("<details><p class=aaa_content></p></details>");
+		$(this).contents().wrap("<details><p class=aaa_content></p></details>");
 
-		$(this).parents("details").append("<summary>@AAA</summary>");
-		$(this).parents("details").before(preview);
-	
+		$(this).parents("li,dl").find("details")
+			.append("<summary>@AAA</summary>")
+			.before(preview);
+		$(this).parents("dt").append($(this));
+
+		//$(this).remove();	
 
 
 	});
