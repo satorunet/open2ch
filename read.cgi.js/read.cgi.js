@@ -1080,6 +1080,10 @@ function reuse_request(){
 var submit_flag = 0;
 function submit_form(){
 
+
+	$("body").trigger("SUBMIT_SEND_PRE_START");
+
+
 	$("#submit_button").prop("disabled",true);
 	$("#loading_bar").slideDown('fast');
 
@@ -1217,12 +1221,13 @@ function update_res(flag){
 					}
 				})
 
-//置換処理
+//音声置換処理(PC用)
 
-if( $("#use_autoaudio").prop("checked") ){
-	html = html.replace("<audio ","<audio autoplay ");
-	console.log(html)
-}
+	$("body").trigger("UPDATE_NEWRES");
+
+	if( $("#use_autoaudio").prop("checked") ){
+		html = html.replace("<audio ","<audio autoplay ");
+	}
 
 
 				html = "<dl class=hide>"+html+"</dl>";
