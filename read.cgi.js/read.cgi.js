@@ -642,36 +642,55 @@ $(function(){
 var is_update_que = 0;
 var is_textarea_focus = 0;
 
+var is_oekaki_focus = 0;
+var is_oekaki_done = 0;
+
 var pretext;
 var MAX_HORYU_TIME = 3;
 
+var horyu_counter = 0;
+
 $(function(){
 
-	var counter = 0;
 
 	setInterval(function(){
 
-		if(is_textarea_focus){
+		if(is_textarea_focus == 1){
 			if(pretext == $("[name=MESSAGE]").val()){
 
-				if(counter >= MAX_HORYU_TIME || $("[name=MESSAGE]").val() == ""){
-					counter = 0;
+				if(horyu_counter >= MAX_HORYU_TIME || $("[name=MESSAGE]").val() == ""){
+					horyu_counter = 0;
 					is_textarea_focus = 0;
 					auto_horyu_off();
 				} else {
-					counter++;
-					$("horyu").html(counter);
+					horyu_counter++;
+					$("horyu").html(horyu_counter);
 
 				}
 
 			} else {
-				counter = 0;
+				horyu_counter = 0;
 			}
-
 			pretext = $("[name=MESSAGE]").val();
 
-		} else {
-;
+		} 
+
+
+		if(is_oekaki_done == 1){
+
+			console.log("oekaki::" + horyu_counter);
+
+			if(horyu_counter >= MAX_HORYU_TIME ){
+
+				is_oekaki_focus = 0;
+				horyu_counter = 0;
+				is_oekaki_done = 0;
+				auto_horyu_off();
+			} else {
+				horyu_counter++;
+				$("horyu").html(horyu_counter);
+			}
+
 		}
 
 
@@ -680,7 +699,7 @@ $(function(){
 	$("[name=MESSAGE]").bind("keyup keydown",function(){
 
 		if(!event.ctrlKey){
-			counter = 0;
+			horyu_counter = 0;
 			$("horyu").html(0);
 			if($("[name=MESSAGE]").val() && is_textarea_focus == 0 && !$("#noWait").is(":checked")){
 				is_textarea_focus = 1;
@@ -701,7 +720,8 @@ $(function(){
 function auto_horyu_off(flag){
 
 	is_textarea_focus = 0;
-	counter = 0;
+	is_oekaki_done = 0;
+	horyu_counter = 0;
 	pretext = "";
 
 	$("#new_alert_pending").slideUp("fast",function(){
@@ -1912,9 +1932,22 @@ function oekakiInit(){
 
 	var sketch = $('#sketch').sketch();
 
+	sketch.bind("startPainting", function(){
+		is_oekaki_focus = 1;
+		is_oekaki_done = 0;
+		horyu_counter = 0;
+		$("horyu").html(horyu_counter);
+	});
+
+	sketch.bind("stopPainting", function(){
+		is_oekaki_done = 1;
+		horyu_counter = 0;
+	});
+
+
 	sketch.bind("mousedown", function(){
 		isOekakiDone = 1;
-
+		
 		back_actions = [];
 		$("#prevButton").prop("disabled","true");
 		
@@ -2438,11 +2471,13 @@ function call_update_alert(_server_resnum){
 
 /* 延期機能 */
 
-			if( !$('#formfix').is(':checked') && is_textarea_focus == 1 ){
+			if( !$('#formfix').is(':checked') &&( is_textarea_focus == 1 || is_oekaki_focus == 1) ){
+
+				 var mode = is_textarea_focus ? "入力中" : "お絵描き中";
 
 				if(!$("#new_alert_pending").is(":visible")){
 					$("#new_alert").append("<div id='new_alert_pending' style='margin-top:3px;color:pink;font-size:8pt'>" + 
-						"※入力中の為、更新保留中 <horyu>0</horyu>/"+ MAX_HORYU_TIME +"秒</div>");
+						"※"+mode+"の為、保留中 <horyu>0</horyu>/"+ MAX_HORYU_TIME +"秒</div>");
 				}
 
 				return;
