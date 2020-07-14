@@ -4,6 +4,64 @@ var NODEJS = "https://nodessl.open2ch.net:8443";
 var speech;
 var speechUtt;
 
+var pm = getUrlVars();
+
+//検索を目立たせる
+$(function(){
+
+	$("body").append("<style>hit{background:yellow}</style>");
+
+	if(pm["id"]){
+		updateHit()
+	}
+
+})
+
+function updateHit(){
+	var query = pm["id"];
+	var count = 0;
+
+	$(".id").filter(function(obj,i){
+		if( !$(this).prop("d") ){
+			var html = $(this).html();
+
+			query.split(/ |　/).filter(function(word){
+				var pattern=new RegExp(word,["gi"]);
+				html = html.replace(pattern,Replacer);
+			});
+			$(this).html(html).prop("d","1");
+			count++;
+		};
+	});
+}
+
+function getUrlVars()
+{
+    var vars = [], max = 0, hash = "", array = "";
+    var url = window.location.search;
+    hash  = url.slice(1).split('&');    
+    max = hash.length;
+    for (var i = 0; i < max; i++) {
+        array = hash[i].split('='); 
+        vars[array[0]] = array[1];
+    }
+
+    return vars;
+}
+
+function Replacer(str,offset,s){
+	var greater=s.indexOf('>',offset);
+	var lesser=s.indexOf('<',offset);
+	if(greater<lesser||(greater!=-1&&lesser==-1)){
+		return str;
+	} else {
+		return'<hit>'+str+'</hit>';
+	}
+}
+
+
+
+
 $(function() {
 	if ('SpeechSynthesisUtterance' in window) {
 		speech = eval("speechSynthesis");
@@ -504,13 +562,14 @@ $(function(){
 
 		e.preventDefault();
 		var ID = $(this).attr("val");
+		var _ID = ID.replace(/\./g,"");
 
 		if(ignores[ID]){
 
 			var message = "ID:" + ID + " の無視設定を解除します。\nよろしいですか？";
 			if( confirm(message) ){ //解除
-				delete ignores[ID];
-				$(".id"+ID).slideDown().removeAttr("ignored");
+				delete ignores[_ID];
+				$(".id"+_ID).slideDown().removeAttr("ignored");
 				updateIgnore();
 				if( Object.keys(ignores).length ){
 					setStorage(cachekey,JSON.stringify(ignores))
@@ -523,7 +582,7 @@ $(function(){
 
 			var message = "ID:" + ID + " を無視設定します。\nよろしいですか？";
 			if( confirm(message) ){
-				ignores[ID] = 1;
+				ignores[_ID] = 1;
 				setStorage(cachekey,JSON.stringify(ignores));
 				updateIgnore();
 			}
