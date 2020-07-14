@@ -742,14 +742,24 @@ function IDSelectInit(callback){
 
 $(function(){
 	//安価機能
+
 	$(".num").live("click",function(e){ 
+
+
+		if($('#MESSAGE').val()){
+			$('#MESSAGE').val(jQuery.trim( $('#MESSAGE').val() ));
+		}
+
+		var is_ai = $(this).parent().parent().find("ai").html() ? 1 : 0;
+		var text = ($('#MESSAGE').val() ? $('#MESSAGE').val() + "\n" : $('#MESSAGE').val()) + ">>" + $(this).attr("val") + "\n";
+
+		if(is_ai){ text += "!ai " }
+
+
 		if($(".mainBox").css("display") !== "block"){
-			if($('#MESSAGE').val()){
-				$('#MESSAGE').val(jQuery.trim( $('#MESSAGE').val() ));
-			}
 
 			$('#MESSAGE').focus();
-			$('#MESSAGE').val(  ($('#MESSAGE').val() ? $('#MESSAGE').val() + "\n" : $('#MESSAGE').val()) + ">>" + $(this).attr("val") + "\n")
+			$('#MESSAGE').val( text )
 
 
 			if($("#formdiv").css("position") !== "fixed"){
