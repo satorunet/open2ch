@@ -434,17 +434,31 @@ $(function(){
 
 /* 入力中は自動更新を一時停止 */
 var is_update_que = 0;
-/*
+var is_textarea_focus = 0;
+
 $(function(){
+
+	$("[name=MESSAGE]").keydown(function(){
+		if(is_textarea_focus == 0){
+			is_textarea_focus = 1;
+		}
+	});
+
 	$("[name=MESSAGE]").blur(function(){
+		is_textarea_focus = 0;
+
+		$("#new_alert_pending").slideUp("fast",function(){
+			$(this).remove();
+		});
+
 		setTimeout(function(){
 			if($('#autoOpen').is(':checked') && is_update_que == 1){
 				update_res("now");
 			}
-		},1500);
+		},1000);
+
 	});
 })
-*/
 
 /* 履歴 */
 
@@ -2074,6 +2088,9 @@ $(function(){
 // nodeJS版
 function call_update_alert(_server_resnum){
 
+		is_update_que = 1;
+
+
 //	console.log("node-call: server_rewsnum :" + _server_resnum);
 
 		server_resnum = _server_resnum;
@@ -2097,7 +2114,21 @@ function call_update_alert(_server_resnum){
 				}
 			}
 
-			if($('#autoOpen').is(':checked') || submit_flag == 1){
+
+//投稿中は更新延期
+			if( !$('#formfix').is(':checked') && is_textarea_focus == 1 ){
+
+				if(!$("#new_alert_pending").is(":visible")){
+					$("#new_alert").append("<div id='new_alert_pending' style='margin-top:3px;color:pink;font-size:8pt'>※入力中の為、自動更新保留中</div>");
+				}
+
+				return;
+			}
+
+
+			if( $('#autoOpen').is(':checked') || 
+					submit_flag == 1
+				){
 //				setTimeout(function(){update_res()},1000)
 //				update_res();
 
