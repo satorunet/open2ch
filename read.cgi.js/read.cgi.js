@@ -9,6 +9,15 @@ var speech;
 var speechUtt;
 var pm = getUrlVars();
 
+
+/*
+$(function(){
+	$(".hanabi").click(function(){
+		startHanabi();
+	})
+})
+*/
+
 /* del-ank */
 function deleteAnk(val,time){
 	var param = {q:val,t:time};
@@ -2116,8 +2125,11 @@ function submit_form(){
 	$("#submit_button").prop("disabled",true);
 	$("#loading_bar").slideDown('fast');
 
+/*
 	var img = "https://image.open2ch.net/image/read.cgi/image.cgi?" + bbs + "/" + key;
 	$("#statusicon").html("<img width=32 height=32 src='"+img+"'>&nbsp;");
+*/
+
 	$("#status").html("投稿中...");
 
 
@@ -2171,7 +2183,7 @@ function submit_form(){
 		error  : function(res){
 			alert("投稿失敗！\n今はサーバがおかしいみたい。。少し待ってから投稿してみよう！");
 			$("#submit_button").prop("disabled",false);
-			$("#loading_bar").slideUp('slow');
+			$("#loading_bar").slideUp('fast');
 		},
 
 		success: function(res){
@@ -2192,20 +2204,22 @@ function submit_form(){
 					redrawHonban();
 				}
 
+/*
 				var img = "https://image.open2ch.net/image/read.cgi/image.cgi?mode=done&" + bbs + "/" + key;
 				$("#statusicon").html("<img width=32 height=32 src='"+img+"'>&nbsp;");
+*/
 				$("#status").html("投稿完了しました!");
 				submit_flag = 1;
 
 				setTimeout(function(){
 					$("#submit_button").prop("disabled",false);
-					$("#loading_bar").slideUp('slow');
+					$("#loading_bar").slideUp('fast');
 				},1000);
 
 			} else {
 				alert("投稿失敗。。\n何らかの原因で投稿できませんでした。\nちょっと待ってからもう一度試してみよう。\n以下、エラー内容：\n"+res);
 				$("#submit_button").prop("disabled",false);
-				$("#loading_bar").slideUp('slow');
+				$("#loading_bar").slideUp('fast');
 			}
 		}
 	});
@@ -2236,13 +2250,18 @@ function update_res(flag){
 
 
 	
-	if(local_resnum >= 900 && !$(".next_thread_div").is(":visible")){
+	if(local_resnum >= parseInt(max_resnum*0.9) && !$(".next_thread_div").is(":visible")){
 		$(".next_thread_div").slideDown("fast");
 	}
 
-	if(local_resnum >= 1000 && !$(".over_thread_div").is(":visible")){
+	if(local_resnum >= max_resnum && !$(".over_thread_div").is(":visible")){
 		$(".over_thread_div").slideDown("fast");
 	}
+
+	if(local_resnum == max_resnum){
+		startHanabi();
+	}
+
 
 
 	$.ajax({
