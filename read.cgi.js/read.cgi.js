@@ -316,6 +316,7 @@ var oekaki = (function(){
 
 				var _this = this;
 
+
 				if($("#oekakiCanvas").is(":visible")){
 					$('body').scrollTo('#sketch',{},function(){
 						$('#sketch').sketch().setBaseImageURL( local_image_url );
@@ -367,9 +368,14 @@ var oekaki = (function(){
 	this.init_oekaki = function(){
 
 		$(".opic").css({cursor:"pointer"});
+
 		setKoraboLink();
+		funcFilUpload();
+		funcDragAndDrop();
+
 		var doc = document;
 		var body = doc.body;
+
 		/* ツール：戻る*/
 		var back_actions = [];
 
@@ -387,11 +393,11 @@ var oekaki = (function(){
 
 
 		if(getCookie("oekakiMode") == 1){
-			$("#oekakiCanvas").css("visibility","visible");
+			$("#oekakiCanvas").show();
 		}
 
 		//別窓機能
-		if(getCookie("oekaki_window")){
+		if(getCookie("oekaki_window") == 1){
 			$("#oekakiCanvas").addClass("oekaki_betumado");
 			$("#oekaki_window").prop("checked",true);
 		}
@@ -407,7 +413,6 @@ var oekaki = (function(){
 
 
 		$("#prevButton").click(function(){
-
 			if( back_actions.length ){
 				$('#sketch').sketch().actions.push( back_actions.pop() );
 				$('#sketch').sketch().redraw();
@@ -418,10 +423,6 @@ var oekaki = (function(){
 			if( !back_actions.length ){
 				$("#prevButton").prop("disabled","true");
 			}
-
-			funcFilUpload();
-			funcDragAndDrop();
-
 		});
 
 		/* キーで戻る*/
@@ -537,7 +538,9 @@ var oekaki = (function(){
 		});
 
 
-
+		$("#submitOekaki").click(function(){
+			$("#submit_button,.input_button").trigger("click");
+		});
 
 		$("#saveButton").click(function(){
 			if(_this.isOekakiDone){
@@ -574,14 +577,14 @@ var oekaki = (function(){
 		})
 
 		function openOekaki(is_cookie){
-			$("#oekakiCanvas").fadeIn("fast").css("visibility","visible");
+			$("#oekakiCanvas").fadeIn("fast").show();
 			if(is_cookie){
 				setCookie("oekakiMode",1);
 			}
 		}
 
 		function closeOekaki(is_cookie){
-			$("#oekakiCanvas").fadeOut("fast").css("visibility","hidden");
+			$("#oekakiCanvas").fadeOut("fast").hide();
 			if(is_cookie){
 				setCookie("oekakiMode",0);
 			}
@@ -626,7 +629,10 @@ var oekaki = (function(){
 			$(this).addClass("selectedTool");
 			$(this).find("input").trigger("click");
 		})
+
+
 	}
+	/* init ここまで */
 
 	this.redrawHonban = function(){
 		var ctx = $('#sketch_honban').get(0).getContext('2d');
@@ -687,6 +693,11 @@ var oekaki = (function(){
 
 			_this.isOekakiDone = 1;
 		};
+	}
+
+
+	_this.fitImage = function(ctx,img){
+		fitImage(ctx,img);
 	}
 
 	function fitImage(ctx, img) {
@@ -766,9 +777,14 @@ var oekaki = (function(){
 				$("#canvasSize2").trigger("change");
 		});
 
+	$("#_canvas").css({"overflow":"auto","max-width":"200px"});
+
 	$(document).on("change","#scaleSelect",function(){
 		if($(this).val() > 1){
 			$("#_canvas").css("text-align","");
+			$("#oekakiCanvas").css("left","0px");
+			$("#oekakiCanvas").css("right","");
+
 		} else {
 			$("#_canvas").css("text-align","center");
 		}
@@ -783,8 +799,9 @@ var oekaki = (function(){
 
 }());
 
-
-
+function fitImage(ctx,img){
+	oekaki.fitImage(ctx,img);
+}
 
 
 function update_dis(){
