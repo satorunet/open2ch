@@ -1,19 +1,117 @@
 //var NODEJS = "http://nodejs.open2ch.net:8880";
 var NODEJS = "https://nodessl.open2ch.net:8443";
+var speech;
 
+$(function() {
+
+	if ('SpeechSynthesisUtterance' in window) {
+		speech = eval("new SpeechSynthesisUtterance()");
+	}
+
+
+});
+
+var did = {};
+var speching = 0;
+var orgVoice;
 /* 音声再生 */
 $(function(){
-	$("body").bind("UPDATE_NEWRES",function(){
 
-		if(!isSmartPhone){
-			setTimeout(function(){
-					$(".new_audio").each(function(i){
-						$(this).removeClass("new_audio").trigger("click");
-					});
-				},1000);
+	if(speech){
+
+		$(document).on("change","#allow_yomi",function(){
+			speechSynthesis.speak(new SpeechSynthesisUtterance( $(this).prop("checked") ? "読みモードをおんにしまふ" : "読みモードをおふにしまふ。"));
+		});
+
+		$(document).on("change","#use_yomi",function(){
+			speechSynthesis.speak(new SpeechSynthesisUtterance( $(this).prop("checked") ? "読みモードをおんにしまふ。" : "読みモードをおふにしまふ。"));
+		});
+
+
+		$("body").bind("UPDATE_NEWRES",function(event,res){
+
+
+		if( 
+				(isSmartPhone == 0 && $("#use_yomi").prop("checked")) ||
+				(isSmartPhone == 1 && $("#allow_yomi").prop("checked"))
+		){
+
+			var dds = [];
+
+				var dd = $(res).find("kome").each(function(){
+					dds.push($(this).text());
+				});
+
+				var text = dds.join("");
+
+				text = text.replace(/件|\r\n|\n/g,"");
+				text = text.replace(/>>/g,"安価");
+				text = text.replace(/彡\(ﾟ\)\(ﾟ\)/g,"やきうのおにいちゃん");
+				text = text.replace(/彡\(゜\)\(゜\)/g,"やきうのおにいちゃん");
+
+				if(new String(text).length > 100){
+					text = text.substring(0,100) + "以下略";
+				}
+
+		var ran = 3;
+
+			if(isSmartPhone == 0){
+				var rand = 4;
+				var voices = speechSynthesis.getVoices();
+	//		var voice = voices[Math.floor(Math.random()*rand) == 1 ? 5 : 0];
+
+				if(text.match(/^[\u30A0-\u30FF]+$/)){
+					voice = voices[5];
+				} else {
+					voice = voices[0];
+				}
+				
+
+				if(voice){
+						speech.voice = voice;
+				}
+			}
+
+				speech.text = text;
+				speech.lang = 'ja-JP';
+
+				if( isSmartPhone == 1 ){
+					speech.rate = 1.0;
+				} else {
+					speech.rate = 1.5;
+				}
+
+					speech.text = text;
+					speechSynthesis.speak(speech);
+					speechSynthesis.onend = function(event) {
+						speechSynthesis.cancel();
+					}
 		}
-	});
 
+			if(!isSmartPhone){
+				setTimeout(function(){
+						$(".new_audio").each(function(i){
+							$(this).removeClass("new_audio").trigger("click");
+						});
+					},1000);
+			}
+		});
+	} else {
+
+		$(document).on("change","#allow_yomi",function(){
+			if($(this).prop("checked")){
+				alert("無念速報：音声読み上げに対応していないブラウザのようだ。。");
+				$(".view_yomi_on").hide();
+				$("#allow_yomi").prop("checked",false);
+
+				$("#use_yomi").prop("checked",false).trigger("change");
+		
+
+			}
+		});
+
+
+	}
 })
 
 
@@ -1208,9 +1306,13 @@ function update_res(flag){
 		success: function(res){
 
 
+
+
 			if(res.match(/success/)){
 				//update時に最新情報を同時に取得
 				var html = (res.split(""))[1];
+
+
 				
 				
 				//local_resnum = (res.split(""))[2];
@@ -1235,7 +1337,6 @@ function update_res(flag){
 					}
 				})
 
-//音声置換処理(PC用)
 
 
 	if( $("#use_autoaudio").prop("checked") ){
@@ -1260,9 +1361,17 @@ function update_res(flag){
 				;;
 			}
 			//setKoraboLink();
+
+
+//音声置換処理(PC用)
+				$("body").trigger("UPDATE_NEWRES",[html]);
+
+
 		}
+
+
 	});
-	$("body").trigger("UPDATE_NEWRES");
+
 
 }
 
