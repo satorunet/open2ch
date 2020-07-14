@@ -62,9 +62,14 @@ $(function(){
 		aa = aa.replace(/<[^>]+>/g,"");
 		aa = aa.replace(/\!AA\n/g,"\n");
 		aa = aa.replace(/^\n+|\n+$/g,"");
+		aa = aa.replace(/\!AA/g,"");
+	
+		//Empty-check
+		var temp = aa;
+		temp = temp.replace(/\s+/g,"");
+		temp = temp.replace(/\n/g,"");
 
-
-		if(!aa){
+		if(!aa || !temp.length){
 			alert("空のようだ。")
 			return;
 		}
@@ -134,15 +139,9 @@ function addGetLink(_this){
 /* lzstring */
 var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length;n++)t[o][o.charAt(n)]=n}return t[o][r]}var r=String.fromCharCode,n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",e="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",t={},i={compressToBase64:function(o){if(null==o)return"";var r=i._compress(o,6,function(o){return n.charAt(o)});switch(r.length%4){default:case 0:return r;case 1:return r+"===";case 2:return r+"==";case 3:return r+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(e){return o(n,r.charAt(e))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(o){return null==o?"":""==o?null:i._decompress(o.length,16384,function(r){return o.charCodeAt(r)-32})},compressToUint8Array:function(o){for(var r=i.compress(o),n=new Uint8Array(2*r.length),e=0,t=r.length;t>e;e++){var s=r.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null===o||void 0===o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;t>e;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(o){return null==o?"":i._compress(o,6,function(o){return e.charAt(o)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(n){return o(e,r.charAt(n))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(o,r,n){if(null==o)return"";var e,t,i,s={},p={},u="",c="",a="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<o.length;i+=1)if(u=o.charAt(i),Object.prototype.hasOwnProperty.call(s,u)||(s[u]=f++,p[u]=!0),c=a+u,Object.prototype.hasOwnProperty.call(s,c))a=c;else{if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++),s[c]=f++,a=String(u)}if(""!==a){if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==r-1){d.push(n(m));break}v++}return d.join("")},decompress:function(o){return null==o?"":""==o?null:i._decompress(o.length,32768,function(r){return o.charCodeAt(r)})},_decompress:function(o,n,e){var t,i,s,p,u,c,a,l,f=[],h=4,d=4,m=3,v="",w=[],A={val:e(0),position:n,index:1};for(i=0;3>i;i+=1)f[i]=i;for(p=0,c=Math.pow(2,2),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(t=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 2:return""}for(f[3]=l,s=l,w.push(l);;){if(A.index>o)return"";for(p=0,c=Math.pow(2,m),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(l=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 2:return w.join("")}if(0==h&&(h=Math.pow(2,m),m++),f[l])v=f[l];else{if(l!==d)return null;v=s+s.charAt(0)}w.push(v),f[d++]=s+v.charAt(0),h--,s=v,0==h&&(h=Math.pow(2,m),m++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module&&(module.exports=LZString);
 
-/* md5 */
-//# sourceMappingURL=xxhash-wasm.js.map
-!function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):t.xxhash=e()}(this,function(){"use strict";function t(t,e,n){if(e.buffer.byteLength<t.byteLength+n){const i=Math.ceil((t.byteLength+n-e.buffer.byteLength)/65536);e.grow(i)}new Uint8Array(e.buffer,n).set(t)}const e=new Uint8Array([0,97,115,109,1,0,0,0,1,32,5,96,3,127,127,127,1,127,96,2,127,127,1,127,96,3,127,127,126,1,126,96,2,126,126,1,126,96,2,127,127,0,3,5,4,0,2,3,4,5,3,1,0,1,6,113,10,127,0,65,177,243,221,241,121,11,127,0,65,247,148,175,175,120,11,127,0,65,189,220,202,149,124,11,127,0,65,175,214,211,190,2,11,127,0,65,177,207,217,178,1,11,126,0,66,135,149,175,175,152,182,222,155,158,127,11,126,0,66,207,214,211,190,210,199,171,217,66,11,126,0,66,249,243,221,241,153,246,153,171,22,11,126,0,66,227,220,202,149,252,206,242,245,133,127,11,126,0,66,197,207,217,178,241,229,186,234,39,11,7,23,3,3,109,101,109,2,0,5,120,120,104,51,50,0,0,5,120,120,104,54,52,0,3,10,146,6,4,183,2,1,5,127,32,0,32,1,106,33,3,32,1,65,16,79,4,127,32,3,65,16,107,33,7,32,2,35,0,106,35,1,106,33,4,32,2,35,1,106,33,5,32,2,33,6,32,2,35,0,107,33,2,3,64,32,4,32,0,40,2,0,35,1,108,106,65,13,119,35,0,108,33,4,32,5,32,0,65,4,106,34,0,40,2,0,35,1,108,106,65,13,119,35,0,108,33,5,32,6,32,0,65,4,106,34,0,40,2,0,35,1,108,106,65,13,119,35,0,108,33,6,32,2,32,0,65,4,106,34,0,40,2,0,35,1,108,106,65,13,119,35,0,108,33,2,32,0,65,4,106,34,0,32,7,77,13,0,11,32,4,65,1,119,32,5,65,7,119,32,6,65,12,119,32,2,65,18,119,106,106,106,5,32,2,35,4,106,11,32,1,106,33,2,2,64,3,64,32,0,65,4,106,32,3,75,13,1,32,2,32,0,40,2,0,35,2,108,106,65,17,119,35,3,108,33,2,32,0,65,4,106,33,0,12,0,11,0,11,2,64,3,64,32,0,32,3,79,13,1,32,2,32,0,45,0,0,35,4,108,106,65,11,119,35,0,108,33,2,32,0,65,1,106,33,0,12,0,11,0,11,32,2,32,2,65,15,118,115,35,1,108,34,2,32,2,65,13,118,115,35,2,108,34,2,32,2,65,16,118,115,11,131,3,2,2,127,3,126,32,0,32,1,106,33,3,32,1,65,32,79,4,126,32,3,65,32,107,33,4,32,2,35,5,124,35,6,124,33,5,32,2,35,6,124,33,6,32,2,66,0,124,33,7,32,2,35,5,125,33,2,3,64,32,5,32,0,41,3,0,35,6,126,124,66,31,137,35,5,126,33,5,32,6,32,0,65,8,106,34,0,41,3,0,35,6,126,124,66,31,137,35,5,126,33,6,32,7,32,0,65,8,106,34,0,41,3,0,35,6,126,124,66,31,137,35,5,126,33,7,32,2,32,0,65,8,106,34,0,41,3,0,35,6,126,124,66,31,137,35,5,126,33,2,32,0,65,8,106,34,0,32,4,77,13,0,11,32,5,66,1,137,32,6,66,7,137,32,7,66,12,137,32,2,66,18,137,124,124,124,32,5,16,2,32,6,16,2,32,7,16,2,32,2,16,2,5,32,2,35,9,124,11,32,1,173,124,33,2,2,64,3,64,32,0,65,8,106,32,3,75,13,1,32,2,66,0,32,0,41,3,0,34,2,35,6,126,124,66,31,137,35,5,126,133,66,27,137,35,5,126,35,8,124,33,2,32,0,65,8,106,33,0,12,0,11,0,11,32,0,65,4,106,32,3,77,4,64,32,2,32,0,53,2,0,35,5,126,133,66,23,137,35,6,126,35,7,124,33,2,32,0,65,4,106,33,0,11,2,64,3,64,32,0,32,3,79,13,1,32,2,32,0,49,0,0,35,9,126,133,66,11,137,35,5,126,33,2,32,0,65,1,106,33,0,12,0,11,0,11,32,2,32,2,66,33,136,133,35,6,126,34,2,32,2,66,29,136,133,35,7,126,34,2,32,2,66,32,136,133,11,25,0,32,0,66,0,32,1,35,6,126,124,66,31,137,35,5,126,133,35,5,126,35,8,124,11,56,2,1,127,1,126,32,0,34,2,32,0,65,8,106,32,1,32,0,53,2,0,66,32,134,32,0,65,4,106,53,2,0,132,34,3,16,1,34,3,66,32,136,62,2,0,32,2,65,4,106,32,3,62,2,0,11]),n=new TextEncoder;return async function(){var i=(await WebAssembly.instantiate(e)).instance.exports;const o=i.mem,r=i.xxh32,f=i.xxh64;return{h32(e,i=0){const f=n.encode(e);return t(f,o,0),(r(0,f.byteLength,i)>>>0).toString(16)},h64(e,i=0,r=0){const s=n.encode(e);t(s,o,8);const c=new DataView(o.buffer);return c.setUint32(0,i,!0),c.setUint32(4,r,!0),f(0,s.byteLength),c.getUint32(0,!0).toString(16)+c.getUint32(4,!0).toString(16)}}}});
 
-function get_md5sum(input,callback){
-	xxhash().then(hasher => {
-		callback(hasher.h64(input));
-	})
-}
+
+
 
 
 /* 省略表示 */
@@ -237,9 +236,14 @@ function AA_filter(_this){
 
 				$(target).addClass("AA");
 
+
 				var body = $(target).html();
-				    body = body.replace(/\!AA/gi,"");
-				    body = body.replace(/$/gi,"<span rnum="+resnum+" class='_aa'>!AA</span>");
+					    body = body.replace(/<kome[^>]+>/g,"");
+				
+					    body = body.replace(/\!AA/gi,"");
+					    body = body.replace(/<br>/g,"\n");
+					    body = body.replace(/^\n*|\n*$/g,"");
+					    body = body.replace(/$/gi,"<div rnum="+resnum+" class='_aa'>!AA</div>");
 
 
 				$(target).html(body);
@@ -525,7 +529,22 @@ var NGWORDS = {};
 var NGREGEXP = null;
 
 $(function(){
-	NGREGEXP = list2regexp(getListStorage("ng"));
+
+	var ng_list = getListStorage("ng");
+
+	if(SETTING["aa_mode"] == "ng"){
+		ng_list.push("!AA");
+	}
+
+	if(SETTING["icon_view"] == "ng"){
+		ng_list.push("talk");
+	}
+
+	if(ng_list){
+		NGREGEXP = list2regexp(ng_list);
+	}
+
+	
 
 });
 
@@ -720,14 +739,13 @@ function ng_filter(_this){
 //	var body = $(_this).find(".body");
 	var body = $(_this);
 
-
 	if(!NGREGEXP){
 		return;
 	}
 
+	var is_match = $(body).parent().html().match(NGREGEXP);
 
-
-	if($(body).parent().html().match(NGREGEXP)){
+	if(is_match){
 
 		if(SETTING["ng_action"] !== "hide_strong"){
 			var $ng_alert = $("<div style='opacity:.9;text-align:center;display:inline-block;padding:5px;background:black;color:white'>" + 
