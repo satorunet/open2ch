@@ -25,34 +25,6 @@ function setFormKotei(flag){
 			"border":"1pt dotted #999"
 		});
 
-		if(isSmartPhone == "0"){
-/*
-			$("#formdiv").draggable({ 
-					"containment": 'body',
-					scroll: false,
-					"cursor": "move",
-				  "start":function(){
-
-						$(this).css({
-							"filter" : "alpha(opacity=70)",
-							"-moz-opacity": "0.7",
-							"opacity": "0.7"
-						});
-
-					},
-					"stop":function(){
-						$(this).css({
-							"filter" : "",
-							"-moz-opacity": "",
-							"opacity": ""
-						});
-
-					}
-				}
-			);
-*/
-		}
-
 		$(".social").hide();
 
 	} else {
@@ -64,14 +36,10 @@ function setFormKotei(flag){
 				"border":""
 
 			});
-
-		//$("#formdiv").draggable("destroy");
-
 		$(".social").show();
 	}
 }
 // </フォーム固定>
-
 
 
 // <お絵かき高機能モード>
@@ -101,10 +69,7 @@ $(function(){
 });
 // </お絵かき高機能モード>
 
-
 	function loadOekakiEx(){
-//		$("#formdiv").draggable("destroy");
-
 		var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js";
 		$.getScript(url);
 	}
@@ -117,7 +82,6 @@ var hour = new Date().getHours();
 var sec = 1000*10;
 
 var defTitle;
-var is_updating = false;
 
 var selectedID = {};
 
@@ -148,12 +112,10 @@ function updateIDSelected(callback){
 
 
 function updateTuhoNum(){
-
 	var nums = [];
 	$(".tchk:checked").each(function(){
 		nums.push($(this).attr("value"));
 	});
-
 	$("[name=res_num]")
 		.val(nums.join(","))
 		.trigger("change");
@@ -223,7 +185,6 @@ function IDSelectInit(callback){
 	});
 }
 
-var ankMoved;
 $(function(){
 	//安価機能
 	$(".num").live("click",function(e){ 
@@ -232,40 +193,29 @@ $(function(){
 				$('#MESSAGE').val(jQuery.trim( $('#MESSAGE').val() ));
 			}
 			$('#MESSAGE').val(  ($('#MESSAGE').val() ? $('#MESSAGE').val() + "\n" : $('#MESSAGE').val()) + ">>" + $(this).attr("val") + "\n")
-			if(ankMoved !== 1 && $("#formdiv").css("position") !== "fixed"){
+			if($("#formdiv").css("position") !== "fixed"){
 				moveToLink($("[name=_preForm]"));
-				ankMoved = 1;
 			}
 			e.preventDefault();
 		}
 	});
-
-
-
 })
 
 
 
 function tuhoInit(){
-
 	$(window).on('beforeunload', function() {
 		if($(".mainBox").css("display") == "block"){
 			return '削除依頼がしとらんよ。このまま移動してよかとね？';
 		}
 	});
-
 	$(".num").click(function(e){
-
 		if($(".mainBox").css("display") == "block"){
 			$(this).parent().find(".tchk").trigger("click");
 			e.preventDefault();
 		}
 	});
-
-
 	$("[name=res_num_all],[name=res_num],#tuhoComment").bind("change keyup",function(){
-
-
 		$button = $("#tuhoForm").find("[type=submit]");
 		if( $("[name=res_num_all]").prop('checked') || $("[name=res_num]").val() || $("#tuhoComment").val() ){
 			$button.removeAttr("disabled");
@@ -363,46 +313,28 @@ function menuInit(){
 
 
 var isNodeJS;
-
 var updateChecktimer;
-
-function startOldTypeUpdateChecker(){
-/*
-	if(!updateChecktimer){
-		updateChecktimer = setInterval(update_check,sec);
-	}
-*/
-}
 
 $(document).ready(function() {
 
 	tuhoInit();
 
 	defTitle = document.title;
-
-//	if( is_finished == "0"){
-		if ("WebSocket" in window) {
-			//新型チェッカー
-			isNodeJS = 1;
-//		 $("body").append("<script src='/lib/nodejs/socket.io.js?v4'"+new Date().getTime()+"></script>");
-			nodejs_connect();
-		} else {
-			//従来のチェック
-//		startOldTypeUpdateChecker();
-		}
-//	}
+	if ("WebSocket" in window) {
+		isNodeJS = 1;
+		nodejs_connect();
+	}
+	// WebSocketに未対応のブラウザは更新チェックしない。
 
 	oekakiInit();
 	matomeInit();
 	menuInit();
 	iineInit();
 
-
 	//状態をCookieで保持
 	$("#autoOpen").change(function(){
 		setCookie("autoOpen", $(this).is(':checked') ? "1" : "0");
 	});
-
 
 	$("#ajaxSubmit").change(function(){
 		setCookie("submitMode", $(this).is(':checked') ? "1" : "0");
@@ -460,92 +392,31 @@ $(document).ready(function() {
 		$(this).after("<img src=/image/loading.gif id=reuse_req_loading>");
 		setTimeout(function(){reuse_request()},500);
 	});
-
-
-
-	$(".btn").click(function(){
-
-		var flag = $(this).attr("flag");
-
-		var query = {
-			bbs : bbs,
-			key : key,
-			flag: $(this).attr("flag"),
-			guid: "on"
-		};
-
-		$.ajax({
-			type: "POST",
-			url    : "/ajax/bbs_rating.cgi?guid=on",
-			data   : query,
-			cache  : false,
-			success: function(res){
-
-				if(res.match(/success/)){ // 投稿成功
-					
-					var r = res.split(":");
-
-					$("#good").html(r[1]);
-					$("#bad").html(r[2]);
-
-					$("#rating_message").html(flag == "ok" ? "<font color=green>(・∀・)ｲｲ!!</font>"
-					                                       : "<font color=red>(ﾟＡﾟ)ｲｸﾅｲ!</font>");
-					$("#rating_message").slideDown("fast");
-					setTimeout(function(){ $("#rating_message").slideUp("slow") },1000);
-
-				} else {
-
-					$("#rating_message").html("<font color=red>投票済み!</font>");
-					$("#rating_message").slideDown("fast");
-					setTimeout(function(){ $("#rating_message").slideUp("slow") },1000);
-
-					
-
-				}
-
-
-
-
-			}
-		});
-
-
-	});
-
-
 });
 
 
 // MatomeLink
 function matomeInit(){
-
 	var query = {
 		bbs : bbs,
 		key : key,
 	};
-
 	$("#matomeLinks").hide().css("lineHeight","12pt");
-
 	$("#showMatome").click(function(){
-
 			if($(this).text() == "まとめ表示"){
-
 				$(this).hide();
 				$("#matomeLoading").show();
-
 				$.ajax({
 					type: "POST",
 					url    : "/ajax/get_matome.cgi",
 					data   : query,
 					cache  : false,
 					success: function(res){
-
 					setTimeout(function(){
-							$("#matomeLinks").prepend(res).slideDown();
-							$("#matomeLoading").hide();
-							$("#showMatome").text("閉じる").show();
-					},500);
-
+								$("#matomeLinks").prepend(res).slideDown();
+								$("#matomeLoading").hide();
+								$("#showMatome").text("閉じる").show();
+						},500);
 					}
 				});
 			} else {
@@ -557,7 +428,6 @@ function matomeInit(){
 	});
 
 }
-
 
 function setKoraboLink(){
 
@@ -763,11 +633,14 @@ function reuse_request(){
 
 }
 
+
+// フォーム送信関連
+
+var is_updating = false;
+
 function submit_form(){
 
 	is_updating = 1; //定期更新を一時的に停止
-
-
 
 	$("#submit_button").prop("disabled",true);
 	$("#loading_bar").slideDown('fast');
@@ -802,16 +675,13 @@ function submit_form(){
 	$.ajax({
 		type: "POST",
 		url    : "/test/bbs.cgi",
-//	url    : "/ajax/error.cgi",
 		data   : query,
 		cache  : false,
-
 		error  : function(res){
 			alert("投稿失敗！\n今はサーバがおかしいみたい。。少し待ってから投稿してみよう！");
 			$("#submit_button").prop("disabled",false);
 			$("#loading_bar").slideUp('slow');
 			is_updating = 0; 
-
 		},
 
 		success: function(res){
@@ -847,8 +717,6 @@ function submit_form(){
 			}
 		}
 	});
-
-
 }
 
 function update_res(){
@@ -865,13 +733,12 @@ function update_res(){
 			if(res.match(/success/)){
 				//update時に最新情報を同時に取得
 				var html = (res.split(""))[1];
-				local_resnum = server_resnum = (res.split(""))[2];
-				local_updated = server_updated = (res.split(""))[3];
+				local_resnum = (res.split(""))[2];
+				local_updated = (res.split(""))[3];
 
 				if(isNodeJS == 1){
 					nodejs_update_localupdated(local_updated);
 				}
-
 
 				$('#new_alert').slideUp('fast');
 
@@ -895,14 +762,17 @@ function update_res(){
 // nodeJS版
 function call_update_alert(_server_updated,_server_resnum){
 
+	console.log("node-call: server-updated:" + _server_updated + " server_rewsnum:" + _server_resnum);
+
+	server_resnum = _server_resnum;
+	server_updated = _server_updated;
+
 	if(!is_updating){
 
 		var diff = _server_resnum - local_resnum;
 
-		if( server_updated !== _server_updated && diff > 0 ){ // 更新アリ
+		if( diff > 0 ){ // 更新アリ
 			
-			server_resnum = _server_resnum;
-			server_updated = _server_updated;
 
 			$('#new_alert').slideDown('slow');
 
