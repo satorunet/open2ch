@@ -22,9 +22,12 @@ function deleteAnk(val,time){
 	})
 }
 
-
-
 $(function(){
+
+
+
+
+
 	$(".delank").click(function(e){
 		e.preventDefault();
 		$(this).parents(".ankaview").slideUp("fast",function(){
@@ -2399,7 +2402,6 @@ function call_update_alert(_server_resnum){
 			if(!$('#noSoundAlert').is(':checked')){
 				if(isSmartPhone == "0"){
 					soundManager.play('res');
-
 				}
 			}
 
@@ -2586,9 +2588,9 @@ function nodejs_connect(){
 		var ankaLists = ankaListHTML ? ankaListHTML.split("、") : [];
 
 		var url = "/test/read.cgi/" + bbs + "/" + key + "/" + _from;
-		var ank = '<span><a class="_ank closeOther vw" href="'+url+'" url="'+url+'">'+_from+'</a></span>';
+		var ank = '<span><a class="_ank closeOther vw ankbold" href="'+url+'" url="'+url+'">'+_from+'</a></span>';
 
-		ankaLists.push("<b>"+ank+"</b>");
+		ankaLists.push(ank);
 
 
 		if($(".ankaview_div").is(":visible") == false || $(".ankaview").is(":visible") == false){
