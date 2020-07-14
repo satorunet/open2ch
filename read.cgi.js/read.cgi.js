@@ -11,7 +11,7 @@ function updateIgnore(){
 	jQuery.each(ignores, function(key, val) {
 
 		if(key !== "???"){
-			$("."+key + "[ignored!='1']").fadeOut().attr("ignored",1);
+			$(".id"+key + "[ignored!='1']").fadeOut().attr("ignored",1);
 		}
 	})
 	var length = Object.keys(ignores).length;
@@ -54,7 +54,7 @@ $(function(){
 			var message = "ID:" + ID + " の無視設定を解除します。よろしいですか？";
 			if( confirm(message) ){ //解除
 				delete ignores[ID];
-				$("."+ID).slideDown().removeAttr("ignored");
+				$(".id"+ID).slideDown().removeAttr("ignored");
 				updateIgnore();
 				if( Object.keys(ignores).length ){
 					setStorage(cachekey,JSON.stringify(ignores))
