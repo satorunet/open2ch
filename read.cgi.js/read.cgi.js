@@ -1,13 +1,11 @@
-/*
-var NODEJS = "http://nodessl.open2ch.net:8880"; //http
-var NODEJS = "https://nodessl.open2ch.net:2083"; //https-test
-
-*/
-
-
-
 var OEKAKI_EX;
 var OPT;
+
+
+$(function(){
+	$("body").append("<div class=header_alert style='z-index:10000;width:100%;position:fixed;top:0px;left:0px'><ngalert></ngalert></div>");
+})
+
 
 $(function(){
 	OPT = $("body").attr("dev") ? new Date().getTime() : "";
@@ -17,12 +15,95 @@ $(function(){
 
 
 var NODEJS = "https://nodessl.open2ch.net:8443";
-
 var speech;
 var speechUtt;
 var pm = getUrlVars();
-
 var storage = {};
+
+/*
+var NODEJS = "http://nodessl.open2ch.net:8880"; //http
+var NODEJS = "https://nodessl.open2ch.net:2083"; //https-test
+*/
+
+/* NG機能 */
+//NG機能
+var NGWORDS = {};
+var NGREGEXP = null;
+var SETTING = {};
+
+$(function(){
+	SETTING = gethashStorage("setting");
+
+	var ng = getListStorage("ng");
+	if(ng.length > 0){
+		NGREGEXP = new RegExp("(" + new String(ng).split(",").join("|") + ")");
+	}
+});
+
+$(function(){
+	if(NGREGEXP){
+		$(".body").each(function(){
+			ng_filter($(this));
+		});
+	}
+
+	$(document).on("click",".show_ng",function(e){
+		var target = $(this).parent().next();
+		if($(target).hasClass("ng_hide")){
+			$(target).removeClass("ng_hide");
+		} else {
+			$(target).addClass("ng_hide");
+		}
+		e.preventDefault();
+	});
+})
+
+var NG_COUNT = 0;
+
+
+function ng_filter(_this){
+
+//	var body = $(_this).find(".body");
+	var body = $(_this);
+
+
+	if(!NGREGEXP){
+		return;
+	}
+
+
+
+	if($(body).parent().html().match(NGREGEXP)){
+
+		var $ng_alert = $("<div style='opacity:.9;text-align:center;display:inline-block;padding:5px;background:black;color:white'>" + 
+		+ (++NG_COUNT) + "件NGの為、無視しました。</div>");
+		$ng_alert.animate({count:0},{duration:1000*5,complete:function(){
+			$(this).remove();
+			NG_COUNT = 0
+		}})
+
+		$("ngalert").html( $ng_alert );
+
+		if(SETTING["ng_action"] == "hide"){
+
+			$(body).parent().addClass("ng_hide");
+
+
+
+		} else {
+
+			$(body).html($(body).html().replace(NGREGEXP,"<ng>$1</ng>"));
+			$(body).before(
+				"<div class=ng>&nbsp;<img src=/image/icon/svg/hana.svg height=12>&nbsp;NG&nbsp;" + 
+				'<a class=show_ng href=#>表示</a>' +
+				"</div>");
+			$(body).addClass("ng_hide");
+		}
+	}
+
+}
+
+
 
 //SK簡単入力機能
 $(function(){
@@ -1306,6 +1387,9 @@ $(function(){
 
 
 		$("body").bind("UPDATE_NEWRES",function(event,res){
+
+
+
 
 			$("body").trigger("UPDATE_HISTORY");
 
@@ -2752,7 +2836,7 @@ function update_res(flag){
 		$('#new_alert').fadeOut("fast");
 	} else {
 		setTimeout(function(){
-			$('#new_alert').fadeOut("slow");
+			$('#new_alert').fadeOut("fast");
 		},2000);
 	}
 
@@ -2819,22 +2903,23 @@ function update_res(flag){
 						}
 					}
 				})
+
 	if( $("#use_autoaudio").prop("checked") ){ html = html.replace('class="audio"','class="audio new_audio"'); }
 
 	html = html.replace(/class="pic lazy oekaki"/g,'class="openpic hide"');
 	html = html.replace(/class="pic lazy imgur"/g,'class="imgurpic"');
 	html = html.replace(/class="iyoutube"/g,'class="youtubeiframe"');
 
-
 	if(pageMode == "sp"){
 		html = html.replace(/名無しさん＠おーぷん/g,'名無し');
 	}
 
-	var htmls = html.split("<sp />").map(function(e){
 
+
+
+	var htmls = html.split("<sp />").map(function(e){
 		var id = $(e).attr("uid");
 		var _html;
-
 		if(pageMode == "sp"){
 			_html = "<li><dl class=hide><section>" + e + "</section></dl></li>";
 		} else { /* PC */
@@ -2847,9 +2932,18 @@ function update_res(flag){
 			html_obj.attr("ignored",1)
 		}
 
-		$(".thread").append(html_obj);
+			/* NG処理 */
+			if(NGREGEXP){
+				$(html_obj).find(".body").each(function(){
+					ng_filter($(this));
+				});
+			}
 
+
+		$(".thread").append(html_obj);
 	});
+
+
 
 
 
@@ -2887,7 +2981,7 @@ function update_res(flag){
 		},(isSmartPhone ? 5000 : 3000) );
 	}
 
-	$(".thread").find("dl:hidden").not("[ignored=1]").slideDown("fast",function(){
+	$(".thread").find("dl:hidden").not("[ignored=1],.ng_hide").slideDown("fast",function(){
 		if( $("#auto_scroll").is(":checked") ){
 			moveToMiddle($(".thread dl:last"),500);
 		}
