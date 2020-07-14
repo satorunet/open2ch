@@ -485,7 +485,6 @@ $(document).ready(function() {
 	oekakiInit();
 	matomeInit();
 	menuInit();
-	iineInit();
 
 	//状態をCookieで保持
 	$("#autoOpen").change(function(){
@@ -791,12 +790,8 @@ function reuse_request(){
 
 
 // フォーム送信関連
-
-var is_updating = false;
-
+var submit_flag = 0;
 function submit_form(){
-
-	is_updating = 1; //定期更新を一時的に停止
 
 	$("#submit_button").prop("disabled",true);
 	$("#loading_bar").slideDown('fast');
@@ -837,39 +832,37 @@ function submit_form(){
 			alert("投稿失敗！\n今はサーバがおかしいみたい。。少し待ってから投稿してみよう！");
 			$("#submit_button").prop("disabled",false);
 			$("#loading_bar").slideUp('slow');
-			is_updating = 0; 
 		},
 
 		success: function(res){
+
+			$(".dlink").remove();
+
 			if(res.match(/success/)){ // 投稿成功、新規書き込みを読み込む
 
-				server_resnum = (res.split(":"))[1];
-				server_updated = (res.split(":"))[2];
+//			server_resnum = (res.split(":"))[1];
+//			server_updated = (res.split(":"))[2];
 
 				$('#MESSAGE').val("");
 				$('#oekakiData').val("");
 				$("#parent_pid").val("");
 				$('#sketch').sketch().clear();
 
+				var img = "http://image.open2ch.net/image/read.cgi/image.cgi?mode=done&" + bbs + "/" + key;
+				$("#statusicon").html("<img width=32 height=32 src='"+img+"'>&nbsp;");
+				$("#status").html("投稿完了しました!");
+//			update_res();
+				submit_flag = 1;
+
 				setTimeout(function(){
-
-					var img = "http://image.open2ch.net/image/read.cgi/image.cgi?mode=done&" + bbs + "/" + key;
-					$("#statusicon").html("<img width=32 height=32 src='"+img+"'>&nbsp;");
-					$("#status").html("投稿完了しました!");
-					update_res();
-
-					setTimeout(function(){
-						$("#submit_button").prop("disabled",false);
-						$("#loading_bar").slideUp('slow');
-						is_updating = 0; 
-					},1000);
-
+					$("#submit_button").prop("disabled",false);
+					$("#loading_bar").slideUp('slow');
 				},1000);
+
 			} else {
 				alert("投稿失敗。。\n何らかの原因で投稿できませんでした。\nちょっと待ってからもう一度試してみよう。\n以下、エラー内容：\n"+res);
 				$("#submit_button").prop("disabled",false);
 				$("#loading_bar").slideUp('slow');
-				is_updating = 0; 
 			}
 		}
 	});
@@ -877,6 +870,7 @@ function submit_form(){
 
 function update_res(){
 
+	submit_flag = 0;
 	var query = "u=" + local_updated + "&s=" + server_updated;
 
 	$.ajax({
@@ -958,7 +952,6 @@ function call_update_alert(_server_updated,_server_resnum){
 		var diff = _server_resnum - local_resnum;
 
 		if( diff > 0 ){ // 更新アリ
-			
 
 			$('#new_alert').slideDown('fast');
 
@@ -971,11 +964,9 @@ function call_update_alert(_server_updated,_server_resnum){
 				}
 			}
 
-			if(!is_updating){
-				if($('#autoOpen').is(':checked')){
-	//				setTimeout(function(){update_res()},1000)
-						update_res();
-				}
+			if($('#autoOpen').is(':checked') || submit_flag == 1){
+//				setTimeout(function(){update_res()},1000)
+					update_res();
 			}
 
 
@@ -985,61 +976,6 @@ function call_update_alert(_server_updated,_server_resnum){
 			}
 		}
 }
-
-
-
-
-
-// 従来版
-function update_check(){
-
-/*
-	if(!is_updating){
-		$.ajax({
-			type: "GET",
-			url: "/ajax/check_new_res.v4.cgi/" + bbs + "/" + key + "/",
-			data:"u="+server_updated,
-			cache: false,
-			success: function(res){
-
-				var status = (res.split(":"))[0];
-				var _server_updated = (res.split(":"))[2];
-				var _server_resnum = (res.split(":"))[1];
-				var diff = _server_resnum - local_resnum;
-
-				if(res && status == "u" && server_updated !== _server_updated && diff > 0 ){ // 更新アリ
-					
-					server_resnum = _server_resnum;
-					server_updated = _server_updated;
-
-					$('#new_alert').slideDown('slow');
-
-					$('#now_max').html(diff);
-					document.title = "(+" + diff + ")" + defTitle;
-
-					if(!$('#noSoundAlert').is(':checked')){
-						if(isSmartPhone == "0"){
-							$("#soundClip")[0].play();
-						}
-					}
-
-					if($('#alertRes').is(':checked')){
-						setTimeout(function(){
-							alert("◆お知らせ◆\n新規レスが" + diff + "件ついたよ！");
-						},500);
-					}
-
-				}
-			}
-		});
-	}
-*/
-
-}
-
-
-
-
 
 // Node.js-client
 
@@ -1092,43 +1028,9 @@ function nodejs_update_localupdated(_local_updated){
 	socket.emit('set_modified',_local_updated );
 }
 
-
-
-
-function iineInit(){
-
-
-	$(document).on("mousedown touchstart", ".iiButton",function(){
-		$(this).find("img").attr("src","http://open2ch.net/image/button/ii-button-on.png?v22");
-	});
-
-	$(document).on("mouseover touchmove", ".iiButton",function(){
-		$(this).find("img").attr("src","http://open2ch.net/image/button/ii-button-over.png?v22");
-	});
-
-	$(document).on("mouseup mouseleave touchend touchcancel", ".iiButton",function(){
-		$(this).find("img").attr("src","http://open2ch.net/image/button/ii-button.png?v22");
-	});
-
-	$(document).on("click", ".iiButton",function(){
-		var $count = $(this).find("count");
-		new Audio("http://image.open2ch.net/lib/sound/sound.mp3").play();
-
-		$count.css({"color":"red","fontSize":"9pt"});
-
-
-		$(this).attr("count",(parseInt($(this).attr("count")) + 1));
-		$count.text( "+" + $(this).attr("count"));
-	});
-
-}
-
-
 // Twitter
 
 var twitterCheckTimerID;
-
-
 
 $(function(){
 	twitterInit();
