@@ -9,32 +9,37 @@ $(function(){
 })
 
 $(function(){
+
+//	alert("deBUg");
+
 	$(".clean_mode").change(function(){
 		sethashStorage("setting","clean_mode",$(this).is(":checked") ? 1 : 0,100);
+		clean_mode_func();
+	})
 
-		if($(this).is(":checked")){
+	if(SETTING["clean_mode"] == 1){
+		$(".clean_mode").prop("checked",true);
+		clean_mode_func();
+	}
 
-			//$(".OPTIONS").hide();
 
-			$("clean_mode_after").append($(this).parents("label"));
+	function clean_mode_func(){
 
+		if($(".clean_mode").is(":checked")){
+
+			$(".OPTIONS").hide();
+
+			$("clean_mode_after").css({"display":"inline-block","width":"100%"}).append($(".clean_mode").parents("label"));
 
 		} else {
 
 			$(".OPTIONS").show();
-			$("clean_mode_before").append($(this).parents("label"));
+			$("clean_mode_before").append($(".clean_mode").parents("label"));
 		}
-
-
-	})
-
-	if(SETTING["clean_mode"] == 1){
-		$(".clean_mode").prop("checked",true).trigger("change");
 	}
-
-
-
 })
+
+
 
 /* 録音init */
 var RECORD_LOADED;
