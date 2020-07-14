@@ -2443,6 +2443,7 @@ function update_res(flag){
 				;;
 			}
 
+		updateIgnore();
 
 /* 音声置換処理(PC用) */
 
