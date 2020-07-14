@@ -1,3 +1,55 @@
+// レス取得機能
+$(function(){
+
+	$("ares a").click(function(e){
+		e.preventDefault();
+
+		if($(this).attr("open")){
+			$(this).removeAttr("open");
+			var parent = $(this).parent().parent().parent();
+			$(parent).find(".aresdata").fadeOut("fast",function(){$(this).remove()});
+			return;
+		}
+
+		$(this).attr("open","1");
+
+		var resnum = $(this).attr("val");
+		var parent = $(this).parent().parent().parent();
+
+		$(parent).find(".aresdata").remove();
+		$(parent).append("<div class=aresdata><areshtml style='display:table-cell'></areshtml></div>");
+		$(parent).find(".aresdata").hide();
+
+		var query = "resnum=" + resnum + "&s=" + server_updated;
+
+		$.ajax({
+			type: "GET",
+			url    : "/ajax/get_ares.v1.cgi/" + bbs + "/" + key + "/",
+			data   :query,
+			cache  : true,
+			success: function(res){
+				$(parent).find("areshtml").html("<br>" + res );
+				$(parent).find(".aresclose").show();
+
+				$(parent).find("areshtml").find("a").filter(function(){ 
+					if($(this).html().match(/^&gt;&gt;/)){
+						var _resnum = ( $(this).html().match(/^&gt;&gt;(\d+)$/) )[1];
+						if(resnum == _resnum){
+							$(this).css({"background":"#FF6666","color":"white"});
+						}
+
+					} 
+				});
+				$(parent).find(".aresdata").slideDown("fast");
+			}
+		});
+
+
+	});
+
+})
+
+
 // <フォーム固定>
 var cachekey;
 var ignores;
