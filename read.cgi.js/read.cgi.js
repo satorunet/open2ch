@@ -916,6 +916,16 @@ var defTitle;
 var selectedID = {};
 
 $(function(){
+
+	$(document).on("click","img.lazy",function(){
+		$(this).lazyload(
+			{	effect : "fadeIn",
+				effectspeed: 500,
+				threshold: 300
+			})
+	});
+
+
 	$("img.lazy").lazyload(
 		{	effect : "fadeIn",
 			effectspeed: 500,
@@ -925,12 +935,6 @@ $(function(){
 
 	$("body").bind("UPDATE_NEWRES",function(event,res){
 
-		$("img.lazy").lazyload(
-			{	effect : "fadeIn",
-				effectspeed: 500,
-				threshold: 300
-			}
-		);
 
 
 	});
@@ -1680,8 +1684,7 @@ function update_res(flag){
 		html = html.replace('class="audio"','class="audio new_audio"');
 	}
 
-//	html = html.replace('class="pic lazy"','class="openpic"');
-
+	html = html.replace('class="pic lazy"','class="openpic hide"');
 
 	if(pageMode == "sp"){
 		html = html.replace(/名無しさん＠おーぷん/g,'名無し');
@@ -1690,14 +1693,35 @@ function update_res(flag){
 		var html = html.split("<sp />").map(function(e){
 			return "<section><li>" + e + "</li></section>";
 		}).join("\n");
-
 	}
 
 				html = "<dl class=hide>"+html+"</dl>";
 
 				$(".thread").append(html);
 
+
+
+	if(html.match(/openpic/)){
+		$(".openpic").after("<div class=grid><img src=https://image.open2ch.net/image/icon/svg/grid.svg width=100 height=100></div>")
+		setTimeout(function(){
+			$(".grid").fadeOut("fast",function(){
+				$(this).remove();
+
+				$(".openpic").addClass("pic lazy").fadeIn("slow",function(){
+						var org = $(".openpic").attr("data-original");
+						$(".openpic").attr("src",org);
+						$(this).removeClass("openpic");
+						
+				});
+
+			});
+		},3000);
+	}
+
+
+
 				$(".thread").find("dl:hidden").slideDown("fast",function(){
+
 					if(
 						 $("#auto_scroll").is(":checked")
 						){
@@ -1724,6 +1748,14 @@ function update_res(flag){
 
 
 }
+
+$(function(){
+	$(document).on("click",".grid",function(){
+		e.preventDefault();
+		e.stopPropagation();
+		return false;
+	})
+})
 
 // nodeJS版
 function call_update_alert(_server_resnum){
