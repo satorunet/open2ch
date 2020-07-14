@@ -5,6 +5,7 @@ var NODEJS = "https://nodessl.open2ch.net:2083"; //https-test
 */
 
 
+
 var OEKAKI_EX;
 var OPT;
 
@@ -22,11 +23,23 @@ var pm = getUrlVars();
 
 var storage = {};
 
+//SK簡単入力機能
+$(function(){
+	$(".sk_button").click(function(e){
+		var texts = $("[name=MESSAGE]").val() ? new String($("[name=MESSAGE]").val()).split("\n") : [];
+		    texts.push($(".sk_button").attr("text"));
+		$("[name=MESSAGE]").val(texts.join("\n"));
+	});
+});
+
+
+
 $(function(){
 	$("button").click(function(e){
 		e.preventDefault();
 	});
 });
+
 
 //地図機能
 (function() {
