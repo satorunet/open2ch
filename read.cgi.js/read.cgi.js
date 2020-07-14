@@ -456,7 +456,10 @@ $(function(){
 	AA_filter($("body"))
 })
 
-$("body").append("<style>.aaa{cursor:pointer}</style>");
+$("body").append("<style>" + 
+".aaa{cursor:pointer;background:#eee;position:relative}" + 
+".aaa_view{position:absolute;opacity:0}"+
+"</style>");
 
 function AA_filter(_this){
 
@@ -526,18 +529,27 @@ function AA_filter(_this){
 		var count = 0;
 
 		var preview = $(
-			"<div key="+key+" style='count:"+aaa.length+"' class='aaa aa'>&nbsp;</div>" 
+			"<div key="+key+" class='aaa_div'>"+
+			"<div class='aaa_view aa'></div>"+
+			"<div class='aaa_thumb aaa aa'></div>" +
+			"</div>"
 		);
-		preview.text(aaa[0]);
+
+		preview.find(".aaa").text(aaa[0]);
+		preview.find(".aaa_view").text(aaa[0]);
 
 		preview.bind("start",function(){
+
+			preview.find(".aaa_thumb").css("opacity",0);
+			preview.find(".aaa_view").css("opacity",1);
+
 			var timerID = setInterval(function(_this){
 						if(max>count){
 							count++
 						} else {
 							count = 0;
 						}
-				preview.text(aaa[count]);
+				preview.find(".aaa_view").text(aaa[count]);
 			},(1000*speed),this);
 
 			$(this).prop("timer",timerID);
@@ -566,6 +578,8 @@ function AA_filter(_this){
 		})
 
 //		$(this).before(preview);
+
+		
 
 		$(this).wrap("<details><p class=aaa_content></p></details>");
 
