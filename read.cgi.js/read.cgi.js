@@ -78,6 +78,25 @@ $(function(){
 })
 */
 
+// 投票チェックボックス機能
+$(function(){
+	setTimeout(function(){
+		console.log( ">>" + $("[name=mail]").val() );
+		if ( new String($("[name=mail]").val()).match(/投票/) ){
+			$(".ratingBt").prop("checked",true);
+		}
+	},100);
+	$(".ratingBt").click(function(){
+		if ($(this).prop("checked")){
+			$("[name=mail]").val( $("[name=mail]").val() + "投票") ;
+		} else {
+			var val = $("[name=mail]").val();
+			val = new String(val).replace(/投票/,"");
+			$("[name=mail]").val(val);
+		}
+		$("[name=mail]").trigger("change");
+	});
+})
 
 
 
