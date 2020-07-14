@@ -103,11 +103,11 @@ $(function(){
 		    aa = aa.replace(/&gt;/g,">");
 		    aa = aa.replace(/&amp;/g,"&");
 
-		var is_template = aa.match(/@TEXT/);
+		var is_template = aa.match(/@(?:TEXT|TT)/i);
 
 		//発言テンプレ機能
 		if(is_template && $(".aa_talk").val()){
-			aa = aa.replace(/(@TEXT)/gi,$(".aa_talk").val());
+			aa = aa.replace(/(@(?:TEXT|TT))/gi,$(".aa_talk").val());
 		}
 
 		if(is_template){
@@ -314,7 +314,18 @@ $(function(){
 
 function updateAAStamp(){
 	var aa_fav_list = [];
-	$.each(get_AA_favlist(),function(i,a){
+	$(get_AA_favlist())
+	.sort(function(_a,_b){ //Sort
+		var a = JSON.parse(AA_LIST[_a]);
+		var b = JSON.parse(AA_LIST[_b]);
+
+		if (a.updated < b.updated){
+			return 1;
+		} else {
+			return -1;
+		}
+	})
+	.each(function(i,a){
 		var json = JSON.parse(AA_LIST[a]);
 		var text = "title" in json ? json.title : a;
 		aa_fav_list.push("<option value='"+a+"'>" + text + "</option>");
@@ -438,7 +449,7 @@ $(function(){
 	if(SETTING["aa_mode"] == "off"){
 		return;
 	} else {
-		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v4.css?20" type="text/css"  />');
+		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v5.css?20200127_v2" type="text/css"  />');
 	}
 
 	AA_filter($("body"))
@@ -3968,6 +3979,7 @@ function submit_form(){
 				$(".admin_command").val("");
 				$(".aa_talk").val("");
 
+				$(".aa-select").val("");
 
 
 				if($('#sketch').is(":visible")){
