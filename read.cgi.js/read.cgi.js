@@ -889,14 +889,21 @@ function update_res(){
 					}
 				})
 
-				$('#new_alert').hide();
+				$('#new_alert').fadeOut("fast");
+
+				html = "<dl class='hide'>"+html+"</dl>";
 
 				if(pageMode == "sp"){
-					$(".thread").append("<section><li><dl>" + html + "</dl></li></section>");
+					$(".thread").append("<section class='r hide'><li><dl>" + html + "</dl></li></section>");
+					$(html).slideDown("slow");
+
 				} else {
 					$(".thread").append(html);
+					$(".thread").find("dl:hidden").slideDown("slow");
 				}
+
 				
+
 				updateIgnore();
 
 				document.title = defTitle;
