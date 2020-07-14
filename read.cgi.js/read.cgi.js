@@ -8,6 +8,43 @@ $(function(){
 	SETTING = gethashStorage("setting");
 })
 
+/* 逆順モード */
+$(function(){
+
+	$(document).on("click",".yonda",function(){
+		$("#history_add").click();
+	});
+
+	if(SETTING["reverse_mode"] == "on"){
+
+		$("#auto_scroll").prop({"checked":false,"disabled":true});
+		$("[for=auto_scroll]").prop("disabled",true).css("color","#AAA");
+
+
+		if(isSmartPhone == "1"){
+			$(".form").css("padding-bottom","0px");
+			$(".formset").find("hr").remove();
+			$("textarea").css("height","70px");
+
+
+			$(".formset")
+				.append($("<div style='margin:5px;text-align:center;'><input class=yonda type=button value='ここまでよんだ'></div>"))
+				.append($(".history_res"));
+
+		} else {
+			$(".thread").before($(".threadNavOuter"));
+		}
+
+
+		$(".thread").before($(".formset"));
+
+		$(".thread").find(isSmartPhone == "1" ? "li" : "dl").each(function(){
+			$(".thread").prepend($(this));
+		});
+	}
+})
+
+
 /* アイコン非表示 */
 $(function(){
 	icon_filter($("body"))
@@ -599,7 +636,16 @@ $(function(){
 			$("body").prop("IS_KOKOKARA_DONE",1);
 			var $kokokara = $("<div class=kokokara_new style='border:1px solid #eeeeee;padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
 			"↓ここから新着</div>").hide();
-			$("dt.mesg[res="+from+"]").before( $kokokara );
+
+
+			if(SETTING["reverse_mode"] == "on"){
+				$kokokara.text("↑ここから新着");
+				$("dt.mesg[res="+from+"]").parent().after( $kokokara );
+			} else {
+				$("dt.mesg[res="+from+"]").before( $kokokara );
+
+			}
+
 				$kokokara.fadeIn("fast");
 				$(this).unbind("inview");
 		});
@@ -2393,7 +2439,7 @@ function setFormKotei(flag){
 			"padding":"2px",
 			"border":"1px solid #999",
 			"border-radius":"3px",
-			"z-index" : 10000
+			"z-index" : 1000
 		});
 
 		if(isSmartPhone == 1){
@@ -2413,38 +2459,6 @@ function setFormKotei(flag){
 			"<div style='display: inline-block;'><img class=closeKoteiWindow src=//open.open2ch.net/image/icon/svg/batu_white_v2.svg width=10 height=10 style='cursor:pointer;paddnig:3px'></div>" + 
 			"</div>"
 			))
-
-			if(koteiTimer){
-				clearTimeout(koteiTimer);
-				koteiTimer = null;
-			}
-
-			koteiTimer = setTimeout(function(){
-				$(document).on("mouseleave","#formdiv",function(){
-
-					$("#formdiv").stop(true).animate({"hoge":1},{duration:3000,complete:function(){
-						if($('[name="MESSAGE"]').text() == ""){
-							$(this).animate({"opacity":".3"},"fast");
-						}
-					}});
-				});
-
-				$("#formdiv").trigger("mouseleave");
-
-				$(document).on("mouseover","#formdiv",function(){
-					if(mouse !== 'down'){
-						$(this).stop(true).css({"opacity":"1"});
-					}
-				});
-
-				$('[name="MESSAGE"]').focus(function(){
-						$("#formdiv").stop(true).css({"opacity":"1"});
-				})
-
-				$(document).on("keydown","#formdiv",function(){
-					$("#formdiv").stop(true).css({"opacity":"1"});
-				});
-			},1000);
 
 			$("#formdiv").css({
 				"position":"fixed",
@@ -3278,9 +3292,12 @@ function update_res(flag){
 			url_info_handler($(html_obj))
 
 
-		$(".thread").append(html_obj);
+			if(SETTING["reverse_mode"] == "on"){
+				$(".thread").prepend(html_obj);
+			} else {
+				$(".thread").append(html_obj);
+			}
 	});
-
 
 
 
@@ -3345,6 +3362,7 @@ function update_res(flag){
 
 
 }
+
 
 $(function(){
 	$(document).on("click",".grid",function(){
