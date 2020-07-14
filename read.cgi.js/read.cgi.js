@@ -11,20 +11,20 @@ $(function(){
 
 	$("body").append("<style>hit{background:yellow}</style>");
 
-	if(pm["id"]){
+	if(pm["id"] || pm["q"] ){
 		updateHit()
 	}
 
 })
 
 function updateHit(){
-	var query = pm["id"];
-	var count = 0;
 
-	$(".id").filter(function(obj,i){
+	var query = decodeURI(pm["id"] || pm["q"]);
+
+	var count = 0;
+	$(".id,.mesg").filter(function(obj,i){
 		if( !$(this).prop("d") ){
 			var html = $(this).html();
-
 			query.split(/ |　/).filter(function(word){
 				var pattern=new RegExp(word,["gi"]);
 				html = html.replace(pattern,Replacer);
@@ -33,6 +33,7 @@ function updateHit(){
 			count++;
 		};
 	});
+
 }
 
 function getUrlVars()
@@ -830,6 +831,13 @@ $(function(){
 	});
 })
 
+$(function(){
+
+	$(document).on("click",".closeTuhoWindow",function(){
+		$("#tuhoButton").click()
+	});
+
+});
 
 
 function tuhoInit(){
