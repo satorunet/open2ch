@@ -74,7 +74,30 @@ $(function(){
 			return;
 		}
 
+		var md5 = XXH.h32( aa, "open2ch" ).toString(16).toUpperCase();
 
+		if(md5 in AA_LIST){
+			addGetLink(_this);
+			return;
+		}
+
+		if(confirm("ID:" + md5 + "\nこのAAをゲットするぽ？") ){
+
+			var val = LZString.compressToUTF16(aa);
+			var data = {
+				"time": parseInt(new Date().getTime()/1000),
+				"data":val,
+				"bbskey": bbs + "/" + key + "/",
+				"resnum": $(_this).attr("rnum")
+			};
+			var json = sethashStorage_json("aa",md5,data,1000);
+			AA_LIST[md5] = json;
+
+			addGetLink(_this);
+		}
+
+
+/*
 		get_md5sum(aa,function(md5){
 
 				console.log(AA_LIST)
@@ -99,6 +122,8 @@ $(function(){
 					addGetLink(_this);
 				}
 		})
+*/
+
 	})
 
 		var aa_fav_list = [];
@@ -142,19 +167,6 @@ var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length
 
 
 
-
-
-/* 省略表示 */
-$(function(){
-	$(".syoicon").click(function(e){
-		if($(".syo").is(":visible")){
-			$(".syo").hide()
-		} else {
-			$(".syo").show()
-		}
-		e.preventDefault();
-	})
-})
 
 
 /* Dev */
@@ -644,14 +656,12 @@ function url_info_handler(_this){
 
 			var urls = $(this).find(".url");
 			if(urls){
-				if(urls.length == 1){
-					$(this).find(".url").removeClass("url").on("inview",function(){
+					$(this).find(".url:last").removeClass("url").on("inview",function(){
 						var _this = $(this);
 						url2info_request($(this),function(text){
 							$(_this).html(text);
 						});
 					});
-				}
 			}
 		});
 
