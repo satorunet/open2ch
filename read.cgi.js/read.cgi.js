@@ -1172,8 +1172,16 @@ $(function(){
 	});
 */
 
+	$("iframe[data-src]").lazy(
+		{	effect : "fadeIn",
+			effectspeed: 500,
+			threshold: 300
+		}
+	);
 
-	$("img.lazy").lazyload(
+
+
+	$("img.lazy").lazy(
 		{	effect : "fadeIn",
 			effectspeed: 500,
 			threshold: 300
@@ -2109,7 +2117,7 @@ function update_res(flag){
 
 	html = html.replace(/class="pic lazy oekaki"/g,'class="openpic hide"');
 	html = html.replace(/class="pic lazy imgur"/g,'class="imgurpic"');
-
+	html = html.replace(/class="iyoutube"/g,'class="youtubeiframe"');
 
 	if(pageMode == "sp"){
 		html = html.replace(/名無しさん＠おーぷん/g,'名無し');
@@ -2127,10 +2135,22 @@ function update_res(flag){
 
 	if(html.match(/imgurpic/)){
 		$(".imgurpic").each(function(){
-			var org = $(this).attr("data-original");
+			var org = $(this).attr("data-src");
 			$(this).attr("src",org).removeClass("imgurpic");
 		})
 	}
+
+	if(html.match(/youtubeiframe/)){
+		$(".youtubeiframe").each(function(){
+			var org = $(this).attr("data-src");
+			var embed = "https://www.youtube.com/embed/" + org;
+			$(this).attr("src",embed).removeClass("youtubeiframe");
+
+//			console.log("iframe:org" + org);
+
+		})
+	}
+
 
 
 	if(html.match(/openpic/)){
@@ -2142,7 +2162,7 @@ function update_res(flag){
 				$(this).remove();
 
 				$(".openpic").addClass("pic lazy").fadeIn("slow",function(){
-						var org = $(".openpic").attr("data-original");
+						var org = $(".openpic").attr("data-src");
 						$(".openpic").attr("src",org);
 						$(this).removeClass("openpic");
 						
