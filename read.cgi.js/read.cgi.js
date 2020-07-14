@@ -6,6 +6,28 @@ var speechUtt;
 
 var pm = getUrlVars();
 
+//設定ボタン関連
+$(function(){
+
+	$(".settingButton_pc").click(function(){
+		if($(".options-1").is(":visible")){
+			$(".options-1,.options-2").slideUp("fast");
+			$($(this).find("img")).attr("src","//open.open2ch.net/image/icon/setting_on.gif");
+			localStorage.offSetting_pc = 1;
+		} else {
+			$(".options-1,.options-2").slideDown("fast");
+			$($(this).find("img")).attr("src","//open.open2ch.net/image/icon/setting_off.gif");
+			localStorage.offSetting_pc = 0;
+		}
+	});
+
+	if( localStorage.offSetting_pc == 1 ){
+		$(".settingButton_pc").click();
+	}
+
+
+});
+
 //検索を目立たせる
 $(function(){
 
@@ -601,7 +623,7 @@ $(function(){
 				ignores[_ID] = 1;
 				ignores_array.unshift(_ID);
 
-				console.log(ignores_array)
+//				console.log(ignores_array)
 
 				if(ignores_array.length > IGNORE_MAX){
 					ignores_array.length = IGNORE_MAX;
@@ -620,7 +642,7 @@ $(function(){
 	$("#formfix").click(function(){
 		var flag = $(this).prop("checked") ? "1" : "0";
 		setCookie("fm_kotei",flag);
-		setFormKotei(flag)
+		setFormKotei(flag);
 		$(this).dr;
 	});
 
@@ -630,52 +652,222 @@ $(function(){
 	}
 });
 
+
+/* 位置固定:移動関連 */
+$(function(){
+	$("body").append("<style>.bottomDiv{position:fixed}</style>");
+
+
+
+	$("textarea").keydown(function(e){
+		if(event.ctrlKey){
+			if(e.keyCode === 13 && $(this).val()){
+				$("#form1").submit();
+				return false;
+			}
+		}
+	});
+	
+});
+
+
+$(function(){
+	
+	if(isSmartPhone == 1){
+		return;
+	}
+
+
+})
+
+var is_mouseEventInit;
+
+function mouseEventInit(){
+
+	var is_moving;
+
+	var clickOffsetTop;
+	var clickOffsetLeft;
+	var mouse;
+	var e = $("#formdiv").get(0);
+
+	if(is_mouseEventInit){
+		return;
+	}
+
+	is_mouseEventInit = 1;
+
+
+	$(document).on("click",".closeKoteiWindow",function(){
+		$("#formfix").prop("checked",false);
+		setCookie("fm_kotei","");
+		setFormKotei(0)
+	});
+
+
+	$(document).on("mousedown",".ddWindow",function(evt){
+		if($("#formfix").is(":checked") ){
+			is_moving = 1;
+			$("body").css({
+				"-moz-user-select": "none",
+				"-webkit-user-select": "none",
+				"-ms-user-select": "none"
+			});
+
+			$("#MESSAGE").after("<div class=pata style='position:absolute;width:100%' align=center></div>")
+
+			var icons = ["anime_matanki01","anime_matanki02"];
+
+			for(var i=0;i<(1+Math.floor(Math.random()*12));i++){
+
+				var icon = icons[Math.floor(Math.random()*icons.length)];
+
+				var img = $("<img class='_pata' style='position:relative;top:-60' src=//image.open2ch.net/image/icon/2ch/"+icon+".gif>");
+				img.hide();
+				$(".pata").append(img);
+				img.css("animation-duration", "1." + Math.floor(Math.random()*10) + "s");
+				img.fadeIn("fast");
+
+			}
+
+			mouse = 'down';
+			$("#formdiv").css({"opacity":".8","box-shadow":"2px 2px 4px gray"});
+
+			evt = (evt) || window.event;
+
+			clickOffsetTop = evt.clientY - e.offsetTop;
+			clickOffsetLeft = evt.clientX - e.offsetLeft;
+
+		}
+	});
+
+	$(document).mouseup(function(){
+		if(is_moving && $("#formfix").is(":checked") ){
+			$("#formdiv").css({"opacity":"1","box-shadow":""});
+			$(".pata").remove();
+			var posi = e.style.top + ":" + e.style.left;
+			localStorage.formPosition = posi;
+			//console.log(posi);
+			mouse = 'up';
+			$("body").css({
+				"-moz-user-select": "",
+				"-webkit-user-select": "",
+				"-ms-user-select": ""
+			});
+			is_moving = 0;
+		}
+	});
+
+	$(document).mousemove(function(evt){
+		if($("#formfix").is(":checked")){
+			evt = (evt) || window.event;
+			if(mouse == 'down'){
+				if( (evt.clientY - clickOffsetTop > 0)  && 
+						(evt.clientY - clickOffsetTop) + $("#formdiv").outerHeight() < window.innerHeight + 100
+					){
+					e.style.top = evt.clientY - clickOffsetTop + 'px';
+				}
+				if( (evt.clientX - clickOffsetLeft > -30) &&
+						((evt.clientX - clickOffsetLeft)+$("#formdiv").outerWidth() < window.innerWidth + 30)
+				){
+					e.style.left = evt.clientX - clickOffsetLeft + 'px';
+				}
+			}
+		}
+	});
+
+
+}
+
 function setFormKotei(flag){
+
+	mouseEventInit();
+
+	$(".closeKoteiWindow_div").remove("");
 
 	if(flag == 1){
 		$("#formdiv").hide();
 
+
 		$("#formdiv").css({
-			"bottom":"0",
-			"position":"fixed",
 			"backgroundColor":"#DDD",
 			"padding":"2px",
-			"border":"1pt dotted #999"
+			"border":"1px solid #999",
+			"border-radius":"3px",
+			"z-index" : 10000
 		});
 
-		$(".social").hide();
-
 		if(isSmartPhone == 1){
-			$("#formdiv").css({"width":"100%"});
+			$("#formdiv").css({
+				"position":"fixed",
+				"bottom":0,
+				"width":"100%"
+			});
+			$("#formdiv").slideDown("fast");
+		} else {
+
+			$(".formDivDefault").after("<p class=closeKoteiWindow_div><button class=closeKoteiWindow>位置固定リセット</button></p>");
+
+			$("#formdiv").prepend($(
+			"<div class=ddWindow style='border-radius:3px;font-size:0pt;background:#449;color:#007;padding:4px;cursor: move !important;'>"+
+			"<div style='width:95%;text-align:center;display: inline-block;'>&nbsp;</div>"+
+			"<div style='display: inline-block;'><img class=closeKoteiWindow src=//open.open2ch.net/image/icon/svg/batu_white_v2.svg width=10 height=10 style='cursor:pointer;paddnig:3px'></div>" + 
+			"</div>"
+			))
+
+			console.log(window.innerHeight)
+
+			$("#formdiv").css({
+				"position":"fixed",
+				"top": (window.innerHeight - $("#formdiv").outerHeight()) - 30,
+				"left":30,
+			});
+
+			if(localStorage.formPosition){
+				var posi =localStorage.formPosition;
+				var p = posi.split(":");
+				$("#formdiv").css({top:p[0],left:p[1]});
+			}
+
+			$("#formdiv").slideDown("fast");
+			$("body").append($("#formdiv"));
+
+
 		}
 
-		$("#formdiv").slideDown("slow");
 
 
 	} else {
 
+		localStorage.removeItem('formPosition');
+		
+		$(".ddWindow").remove();
+
+
 		$("#formdiv").fadeOut("fast");
 
 		$("#formdiv").css({
-				"bottom":"",
+				"top":"",
 				"position":"",
 				"backgroundColor":"",
 				"padding":"",
-				"border":""
-			});
-		$(".social").show();
+				"border":"",
+				"border-radius":"",
+
+		});
 
 		if(isSmartPhone == 1){
 			$("#formdiv").css({"width":""});
+		} else {
+			$(".formDivDefault").append($("#formdiv"));
 		}
 
 		$("#formdiv").fadeIn("fast");
-
 	}
-
-
-
 }
+
+
+
 // </フォーム固定>
 
 
@@ -730,7 +922,22 @@ $(function(){
 			threshold: 300
 		}
 	);
+
+	$("body").bind("UPDATE_NEWRES",function(event,res){
+
+		$("img.lazy").lazyload(
+			{	effect : "fadeIn",
+				effectspeed: 500,
+				threshold: 300
+			}
+		);
+
+
+	});
+
+
 });
+
 
 function updateIDSelected(callback){
 
@@ -1472,6 +1679,8 @@ function update_res(flag){
 	if( $("#use_autoaudio").prop("checked") ){
 		html = html.replace('class="audio"','class="audio new_audio"');
 	}
+
+//	html = html.replace('class="pic lazy"','class="openpic"');
 
 
 	if(pageMode == "sp"){
