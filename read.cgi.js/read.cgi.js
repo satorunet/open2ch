@@ -1821,13 +1821,16 @@ $(function(){
 	/* 開いた後*/
 
 
+
 	/* 開く前*/
+/*
 	$("body").bind("SP_ANK_OPEN",function(e,mado){
 		rating_filter($(mado));
 	});
+*/
 
 
-	$("body").bind("ANK_OPEN ARES_OPEN",function(e,mado){
+	$("body").bind("SP_ANK_OPEN ANK_OPEN ARES_OPEN",function(e,mado){
 
 
 		icon_filter($(mado));
@@ -1835,10 +1838,7 @@ $(function(){
 		/* Twitetr処理 */
 		twitter_handler($(mado));
 		nico_handler($(mado));
-
 		url_info_handler($(mado))
-
-
 
 		if(SETTING["nanasi_mode"] == "on"){
 			$(mado).find(".name").each(function(){
