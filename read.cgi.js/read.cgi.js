@@ -36,21 +36,32 @@ $(function(){
 
 
 	$(".viewRight").live("click",function(e){
-		if($(this).prop("returnObj")){
+
+
+		if($(this).prop("returnObj")){ //Return
+
 
 			var obj = $(this).prop("returnObj");
 			var table = $(this).parents("table");
 
+			var $vt = table.find(".vt");
+			var $boon = $("<div style='position:relative'><img width=100 style='top:50px;left:100px;transform: scale(-1, 1);position:absolute;z-index:1000' src=http://image.open2ch.net/image/icon/2ch/anime_boon02.gif></div>");
+			$vt.prepend($boon);
+
 			table.css({position:"absolute"}).animate(
 					{
 						"opacity":.5,
-						"left": -($(window).width() - 50) ,
+						"left":  -($(this).offset().left - $(obj).offset().left - table.width()) ,
 						"top" :  $(obj).offset().top - $(window).scrollTop(),
 					},
 					{duration: "slow", easing: "swing",
 						complete: function(){
 							$(table).css({position:"",left:"",top:"","opacity":""});
 							$(obj).prepend(table);
+
+							$boon.fadeOut("fast",function(){$(this).remove()});
+
+
 						}
 					}
 			);
@@ -59,9 +70,14 @@ $(function(){
 
 
 
-		} else {
+		} else { //Go
+
 			var p = $(this).parents("v");
 			var table = $(p).find("table");
+
+			var $vt = table.find(".vt");
+			var $boon = $("<div style='position:relative'><img width=100 style='left:100px;top:50px;position:absolute;z-index:1000' src=http://image.open2ch.net/image/icon/2ch/anime_boon02.gif></div>");
+			$vt.prepend($boon);
 
 			table.css({position:"absolute"}).animate({
 						"opacity":.5,
@@ -72,6 +88,9 @@ $(function(){
 						complete: function(){
 						$(table).css({position:"",left:"",top:"","opacity":""});
 						$("#rightVideoDiv").append(table);
+
+							$boon.fadeOut("fast",function(){$(this).remove()});
+
 					}
 			}
 
