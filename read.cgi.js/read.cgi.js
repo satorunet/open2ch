@@ -1,10 +1,96 @@
-//var NODEJS = "http://nodejs.open2ch.net:8880";
-var NODEJS = "https://nodessl.open2ch.net:8443";
-
+//var NODEJS = "http://nodessl.open2ch.net:8880"; //http
+var NODEJS = "https://nodessl.open2ch.net:8443"; //https
 var speech;
 var speechUtt;
-
 var pm = getUrlVars();
+
+
+//お絵描き画像うｐ関連
+$(function(){
+	funcFilUpload();
+	funcDragAndDrop();
+})
+
+// Drag-And-Drop
+function funcDragAndDrop(){
+	var droppable = $("#sketch");
+	var cancelEvent = function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		return false;
+	}
+	var handleDroppedFile = function(event) {
+		cancelEvent(event);
+		var file = event.originalEvent.dataTransfer.files[0];
+		$("#sketch").css("border","");
+		setFile(file);
+		return false;
+	}
+
+	var handleDragOver = function(event){
+		cancelEvent(event);
+		$("#sketch").css("border","2pt dashed #444");
+		return false;
+	}
+	droppable.bind("dragover", handleDragOver);
+	droppable.bind("dragenter", cancelEvent);
+	droppable.bind("drop", handleDroppedFile);
+}
+
+// File-Select
+function funcFilUpload(){
+	$('#upImage').click(function() {
+		$('input[name=photo]').trigger('click');
+	});
+	$('input[name=photo]').change(function(e) {
+		var file = e.target.files[0];
+		setFile(file);
+	});
+}
+
+function setFile(file){
+	var img = new Image();
+	var ctx = $("#sketch").get(0).getContext('2d');
+	var fileReader = new FileReader();
+	fileReader.onload = function(event) {
+		$(img).attr('src', event.target.result);
+	}
+	fileReader.readAsDataURL(file);
+	img.onload = function() {
+		fitImage(ctx, img);
+		$('#sketch').sketch().setBaseImageURL($("#sketch").get(0).toDataURL());
+
+		isOekakiDone = 1;
+	};
+}
+
+function fitImage(ctx, img) {
+ var r;
+ if (img.width / ctx.canvas.width > img.height / ctx.canvas.height) 
+  r = ctx.canvas.width / img.width
+ else 
+  r = ctx.canvas.height / img.height;
+ if (r > 1) r = 1;
+ putImage(ctx, img, 0.5, 0.5, r);
+}
+
+function putImage(ctx, img, rx, ry, ratio) {
+ var w = img.width * ratio;
+ var h = img.height * ratio;
+ var x = (ctx.canvas.width - w) * clamp(rx, 0, 1);
+ var y = (ctx.canvas.height - h) * clamp(ry, 0, 1);
+ ctx.drawImage(img, x, y, w, h);
+}
+
+function clamp(num, min, max) {
+ if (min < num) {
+  if (num < max) {
+   return num;
+  }
+  return max;
+ }
+ return min;
+}
 
 //設定ボタン関連
 $(function(){
@@ -939,7 +1025,19 @@ $(function(){
 //	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js";
 		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v2.js?v3";
 		$.getScript(url,function(){
+
+
+//整合性調整
 			$('#sketch').sketch().bgcolor = "#FFFFFF";
+
+			$("#prevButton").hide();
+			$("#clearButton").val("消");
+
+			setTimeout(function(){
+				$("#goBtn").val("進む");
+			},500)
+
+
 		});
 	}
 
@@ -1307,10 +1405,14 @@ $(document).ready(function() {
 //	alert("debug");
 
 
+//お絵描きデータ生成
 		if( isOekakiDone == 1 && 
 		    $("#oekakiMode").is(':checked') && 
 		    ($('#sketch').sketch().actions.length || $('#sketch').sketch().baseImageURL) && 
 		    $("[name=oekakiData]").val() == ""){
+
+
+		redrawHonban();
 
 		$("#submit_button").prop("disabled",true);
 
@@ -1455,11 +1557,47 @@ function oekakiInit(){
 
 	setKoraboLink();
 
+    var doc = document;
+    var body = doc.body;
+
+/*
+    var stalker = doc.createElement("div");
+    stalker.id = "stalker";
+    stalker.innerHTML = 'x';
+    body.appendChild(stalker);
+*/
+
+
 	// ツール：戻る
+	var back_actions = [];
+
 	$("#backButton").click(function(){
-		$('#sketch').sketch().actions.pop();
-		$('#sketch').sketch().redraw();
+
+		if( $('#sketch').sketch().actions.length ){
+			back_actions.push( $('#sketch').sketch().actions.pop() );
+			$("#prevButton").prop("disabled","");
+			$('#sketch').sketch().redraw();
+		} else {
+			alert("no history");
+		}
 	});
+
+	$("#prevButton").click(function(){
+
+		if( back_actions.length ){
+			$('#sketch').sketch().actions.push( back_actions.pop() );
+			$('#sketch').sketch().redraw();
+		} else {
+			alert("no history");
+		}
+
+		if( !back_actions.length ){
+			$("#prevButton").prop("disabled","true");
+		}
+
+
+	});
+
 
 	// キーで戻る
 	$(document).keydown(function(e){
@@ -1473,16 +1611,19 @@ function oekakiInit(){
 	//お絵かきモード
 	var sketch = $('#sketch').sketch();
 
+/*
 	$('#sketch').bind("stopPainting",function(){
-	
-		var ctx = $('#sketch_honban').get(0).getContext('2d');
-		ctx.fillStyle = $("#sketch").prop("bgcolor");
-		ctx.fillRect(0,0,$(this).width(),$(this).height());
-		ctx.drawImage($('#sketch').get(0),0,0);
+		redrawHonban();
 	});
+*/
+
 
 	sketch.bind("mousedown", function(){
 		isOekakiDone = 1;
+
+		back_actions = [];
+		$("#prevButton").prop("disabled","true");
+		
 	});
 
 	//スマホ用
@@ -1491,8 +1632,13 @@ function oekakiInit(){
 	});
 
 	// 色選択
-
 	$("#colorPicker").spectrum({
+		palette: [
+		["#000000","#1d2b53","#7e2553","#008751",],
+		["#ab5236","#5f574f","#c2c3c7","#fff1e8"],
+		["#ff004d","#ffa300","#ffec27","#00e436"],
+		["#29adff","#83769c","#ff77a8","#ffccaa"],
+		["#FFFFFF"]],
 		showAlpha: true,
 		showPalette: true,
 		change: function(color) {
@@ -1508,9 +1654,8 @@ function oekakiInit(){
 	}
 
 	function changeColorPicker(){
-		var color = $("#colorPicker").val();
-		$('#sketch').sketch("color",color2rgb(color));
-		$(".nowColor").css("color",color);
+		var color = $("#colorPicker").next().find(".sp-preview-inner").css("background-color");
+		$('#sketch').sketch("color",color);
 	}
 	
 
@@ -1522,13 +1667,14 @@ function oekakiInit(){
 	$("#bgcolorPicker").spectrum({
 		color: "#FFFFFF",
 		showPalette: true,
-		change: function(color) {
-			setBGColor();
-		}
+		move:setBGColor,
+		change:setBGColor
 	});
 
 	function setBGColor(){
-		var color = $("#bgcolorPicker").val();
+//		var color = $("#bgcolorPicker").val();
+		var color = $("#bgcolorPicker").next().find(".sp-preview-inner").css("background-color");
+
 		$('#sketch').css("background",color);
 		$('#sketch').prop("bgcolor",color);
 
@@ -1547,15 +1693,23 @@ function oekakiInit(){
 		$('#sketch').sketch("size",$(this).val());
 	});
 
-	// ツール：消す＆描くモード
+	// ツール：消しゴム
 	$("#kesu").click(function(){
 		$("[data-tool=eraser]").click();
 	});
 
-	// ツール：消す＆描くモード
+	// ツール：スポイト
 	$("#spoit").click(function(){
 		$("[data-tool=spoit]").click();
 	});
+
+	// ツール：塗り
+	$("#fill").click(function(){
+		$("[data-tool=fill]").click();
+	});
+
+
+
 
 	$("#saveButton").click(function(){
 		if(isOekakiDone){
@@ -1590,10 +1744,13 @@ function oekakiInit(){
 		}
 	})
 
+
 	//サイズ変更
 	$("#canvasSize").change(function(){
 		var size = $(this).val().split("x");
+
 		var ctx = $("#sketch").get(0).getContext('2d');
+		var ctx2 = $("#sketch_honban").get(0).getContext('2d');
 
 		$(ctx.canvas).animate({ 
 			width : size[0],
@@ -1601,11 +1758,25 @@ function oekakiInit(){
 		}, "fast",function(){
 			ctx.canvas.width = size[0];
 			ctx.canvas.height = size[1];
+
+			ctx2.canvas.width = size[0];
+			ctx2.canvas.height = size[1];
+
+
+
 			$("#sketch").sketch().redraw();
 		});
 	});
 
 }
+
+function redrawHonban(){
+	var ctx = $('#sketch_honban').get(0).getContext('2d');
+	ctx.fillStyle = $("#sketch").prop("bgcolor");
+	ctx.fillRect(0,0,$(this).width(),$(this).height());
+	ctx.drawImage($('#sketch').get(0),0,0);
+}
+
 
 function reuse_request(){
 
@@ -1716,7 +1887,7 @@ function submit_form(){
 				if($('#sketch').is(":visible")){
 					$('#sketch').sketch().clear();
 					//honbanを更新するため呼び出し
-					$('#sketch').trigger("stopPainting");
+					redrawHonban();
 				}
 
 				var img = "https://image.open2ch.net/image/read.cgi/image.cgi?mode=done&" + bbs + "/" + key;
