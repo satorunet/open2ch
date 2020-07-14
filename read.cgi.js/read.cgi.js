@@ -2234,6 +2234,17 @@ function update_res(flag){
 	local_resnum = server_resnum;
 	nodejs_set_resnum(local_resnum);
 
+
+	
+	if(local_resnum >= 900 && !$(".next_thread_div").is(":visible")){
+		$(".next_thread_div").slideDown("fast");
+	}
+
+	if(local_resnum >= 1000 && !$(".over_thread_div").is(":visible")){
+		$(".over_thread_div").slideDown("fast");
+	}
+
+
 	$.ajax({
 		type: "GET",
 		url    : "/ajax/get_res.v7.cgi/" + bbs + "/" + key + "/",
