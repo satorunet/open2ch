@@ -1,6 +1,5 @@
 //var NODEJS = "http://nodejs.open2ch.net:8880";
-var NODEJS = "https://nodessl.open2ch.net:2053";
-//'https://nodessl.open2ch.net:8443'
+var NODEJS = "https://nodessl.open2ch.net:8443";
 
 var speech;
 var speechUtt;
@@ -1355,16 +1354,10 @@ function update_res(flag){
 		cache  : true,
 		success: function(res){
 
-
-
-
 			if(res.match(/success/)){
 				//update時に最新情報を同時に取得
 				var html = (res.split(""))[1];
 
-
-				
-				
 				//local_resnum = (res.split(""))[2];
 				//nodejs_set_resnum(local_resnum);
 
@@ -1392,19 +1385,23 @@ function update_res(flag){
 	if( $("#use_autoaudio").prop("checked") ){
 		html = html.replace('class="audio"','class="audio new_audio"');
 	}
+
 				html = "<dl class=hide>"+html+"</dl>";
+
 				if(pageMode == "sp"){
 					$(".thread").append("<section><li>" + html + "</li></section>");
 				} else {
 					$(".thread").append(html);
 				}
-				$(".thread").find("dl:hidden").slideDown("slow",function(){
+
+				$(".thread").find("dl:hidden").slideDown("fast",function(){
 					if(
 						 $("#auto_scroll").is(":checked")
 						){
 						moveToMiddle($(".thread dl:last"),500);
 					}
 				});
+
 				updateIgnore();
 				document.title = defTitle;
 			} else {
