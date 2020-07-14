@@ -682,6 +682,7 @@ $(function(){
 })
 
 var is_mouseEventInit;
+var mouse;
 
 function mouseEventInit(){
 
@@ -689,7 +690,6 @@ function mouseEventInit(){
 
 	var clickOffsetTop;
 	var clickOffsetLeft;
-	var mouse;
 	var e = $("#formdiv").get(0);
 
 	if(is_mouseEventInit){
@@ -819,34 +819,37 @@ function setFormKotei(flag){
 			setTimeout(function(){
 				$(document).on("mouseleave","#formdiv",function(){
 					$("#formdiv").stop(true).animate({"hoge":1},{duration:3000,complete:function(){
-						$(this).animate({"opacity":".3"},"fast");
+						if($('[name="MESSAGE"]').text() == ""){
+							$(this).animate({"opacity":".3"},"fast");
+						}
 					}});
 				});
+
+				$("#formdiv").trigger("mouseleave");
+
 
 				$(document).on("mouseover","#formdiv",function(){
-						$(this).stop(true).animate({"opacity":"1"},"fast");
+						if(mouse !== 'down'){
+							$(this).stop(true).animate({"opacity":"1"},"fast");
+						}
 				});
 
-					$("#formdiv").stop(true).animate({"hoge":1},{duration:500,complete:function(){
-						$(this).animate({"opacity":".3"},"fast");
-					}});
-				
+
 				$('[name="MESSAGE"]').focus(function(){
 						$("#formdiv").stop(true).animate({"opacity":"1"},"fast");
 				})
 
+/*
 				$('[name="MESSAGE"]').blur(function(){
 					$("#formdiv").stop(true).animate({"hoge":1},{duration:3000,complete:function(){
 						$(this).animate({"opacity":".3"},"fast");
 					}});
 				})
+*/
 
 				$(document).on("keydown","#formdiv",function(){
 					$("#formdiv").stop(true).animate({"opacity":"1"},"fast");
 				});
-
-
-
 			},1000);
 
 			console.log(window.innerHeight)
@@ -934,7 +937,7 @@ $(function(){
 
 	function loadOekakiEx(){
 //	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js";
-		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v2.js";
+		var url = "//open.open2ch.net/lib/oekakiex/hJmd88Dl4M4W.bookmarklet.v2.js?v3";
 		$.getScript(url);
 	}
 
@@ -1310,7 +1313,15 @@ $(document).ready(function() {
 		$("#submit_button").prop("disabled",true);
 
 			var img = new Image();
-			var source = $('#sketch').sketch().el.toDataURL("image/png");
+
+			var source_id = "#sketch";
+	
+			if(!$("#oekaki_plugin").is(":checked")){
+				source_id = "#sketch_honban";
+			}
+
+			var source = $(source_id).get(0).toDataURL("image/png");
+
 			img.src = source;
 			img.onload = function(){
 
@@ -1411,8 +1422,37 @@ function setKoraboLink(){
 }
 
 function setPaletColor(color){
-	$("#colorPicker").spectrum("set", color);
+
+
+	if(isSmartPhone == 1){
+		var _color = rgb2color(color);
+		$("#colorPicker").val(_color);
+		$(".nowColor").css("color",_color);
+
+	} else {
+		$("#colorPicker").spectrum("set", color);
+	}
 }
+
+function rgb2color(rgb){
+	var hex_rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/); 
+	function hex(x) {return ("0" + parseInt(x).toString(16)).slice(-2);}
+	if (hex_rgb) {
+		return "#" + hex(hex_rgb[1]) + hex(hex_rgb[2]) + hex(hex_rgb[3]);
+	} else {
+		return rgb;
+	}
+}
+
+function color2rgb(color){
+	color = color.replace(/^#/, '');
+	var r = parseInt(color.substr(0, 2), 16);
+	var g = parseInt(color.substr(2, 2), 16);
+	var b = parseInt(color.substr(4, 2), 16);
+	var code = ([r,g,b]).join(",");
+	return "rgb("+code+")";
+}
+
 
 var isOekakiDone = 0;
 
@@ -1440,6 +1480,14 @@ function oekakiInit(){
 	//お絵かきモード
 	var sketch = $('#sketch').sketch();
 
+	$('#sketch').bind("stopPainting",function(){
+	
+		var ctx = $('#sketch_honban').get(0).getContext('2d');
+		ctx.fillStyle = $("#sketch").prop("bgcolor");
+		ctx.fillRect(0,0,$(this).width(),$(this).height());
+		ctx.drawImage($('#sketch').get(0),0,0);
+	});
+
 	sketch.bind("mousedown", function(){
 		isOekakiDone = 1;
 	});
@@ -1450,27 +1498,58 @@ function oekakiInit(){
 	});
 
 	// 色選択
-	$("#colorPicker").spectrum({
-		showAlpha: true,
-		showPalette: true,
-		move: function(color) {
-			$('#sketch').sketch("color",color.toRgbString());
-		}
-	});
+
+	if(isSmartPhone == 1){
+		$("#colorPicker").bind("change",function(color){
+
+			$('#sketch').sketch("color",color2rgb($(this).val()));
+			$(".nowColor").css("color",$(this).val());
+
+
+		});
+	} else {
+		$("#colorPicker").spectrum({
+			showAlpha: true,
+			showPalette: true,
+			change: function(color) {
+
+				$('#sketch').sketch("color",color.toRgbString());
+
+			}
+		});
+	}
 
 	// 背景色
-	$("#bgcolorPicker").spectrum({
-		showAlpha: true,
-		color: "#fff",
-		showPalette: true,
-		move: function(color) {
-//				$('#sketch').sketch("color",color.toHexString());
-//			alert("hoe");
+	$('#sketch').css("background","#FFF");
+	$('#sketch').prop("bgcolor","#FFF");
+	$('#sketch_honban').hide();
 
-			$('#sketch').sketch().setBgcolor(color.toRgbString());
-		}
-	});
+	if(isSmartPhone == 1){
+		$("#bgcolorPicker").bind("change",function(color){
 
+			$('#sketch').sketch().setBgcolor($(this).val());
+			$('#sketch').prop("bgcolor",$(this).val());
+			$('#sketch').css("background",$(this).val());
+
+		});
+	} else {
+		$("#bgcolorPicker").spectrum({
+			showAlpha: true,
+			color: "#fff",
+			showPalette: true,
+			change: function(color) {
+	//				$('#sketch').sketch("color",color.toHexString());
+	//			alert("hoe");
+
+//キャンバスはcss背景のみ
+					$('#sketch').css("background",color.toRgbString());
+					$('#sketch').prop("bgcolor",color.toRgbString());
+
+
+
+			}
+		});
+	}
 
 
 	// ツール：サイズ
@@ -1492,7 +1571,7 @@ function oekakiInit(){
 		if(isOekakiDone){
 			var link = document.createElement('a');
 			link.download = ["open2ch",new Date().getTime()].join("-") + ".png";
-			link.href = $('#sketch').sketch().download("png");
+			link.href = $('#sketch_honban').get(0).toDataURL("image/png");
 			link.click();
 		} else {
 			alert("まだ何も描かれていないようだ。。");
@@ -1642,7 +1721,13 @@ function submit_form(){
 				$('#MESSAGE').val("");
 				$('#oekakiData').val("");
 				$("#parent_pid").val("");
-				$('#sketch').sketch().clear();
+
+
+				if($('#sketch').is(":visible")){
+					$('#sketch').sketch().clear();
+					//honbanを更新するため呼び出し
+					$('#sketch').trigger("stopPainting");
+				}
 
 				var img = "https://image.open2ch.net/image/read.cgi/image.cgi?mode=done&" + bbs + "/" + key;
 				$("#statusicon").html("<img width=32 height=32 src='"+img+"'>&nbsp;");
