@@ -236,6 +236,44 @@ $(function(){
 	});
 
 
+
+
+
+	$(document).on("click",".kopipe_aaa",function(e){
+
+		$(".aa").attr("checked",true).trigger("change");
+		$("[name=MESSAGE]").val($(this).parents("li,dl").find(".aaa_hide").contents().text()).trigger("change"); 
+
+		alert("コメント欄にAAAのソースをコピペしますた。");
+
+		e.preventDefault();
+
+	});
+
+	$(document).on("click",".view_aaa_source",function(e){
+
+		if(!$(this).hasClass("open_aaa_source")){
+
+			var preview = "<div class='aa aaa_source_viewer' style='user-select: text;border:1px solid #ccc;padding:5px;background:white'>" + 
+										"!AA\n" + 
+										$(this).parents("li,dl").find(".aaa_hide").contents().text() + 
+										"</div>"
+
+			$(this).addClass("open_aaa_source");
+
+			$(this).parents(".aa_regist").append(preview);
+
+		} else {
+			$(this).removeClass("open_aaa_source");
+			$(this).parents(".aa_regist").find(".aaa_source_viewer").slideUp("fast",function(){
+				$(this).remove();
+			})
+		}
+
+		e.preventDefault();
+
+	});
+
 	$(document).on("click","._aa",function(e){
 
 		var _this = this;
@@ -272,7 +310,8 @@ $(function(){
 
 			var input = $(
 				"<div class=aa_regist aid="+md5+">" + 
-				"<div><label><input type=checkbox checked class=is_use>すぐ使う</label></div>" + 
+				"<div><label><input type=checkbox checked class=is_use>すぐ使う</label>" + 
+				"</div>" + 
 				"<input size=12 class=title placeholder='AAスタンプ名'>" + 
 				"<input class='aa_ok' type=button value=" + (is_already ? "再登録" : "登録") + ">" + 
 				(is_already ? "<input class='aa_del' type=button value='削除'>" : "") + 
@@ -281,6 +320,12 @@ $(function(){
 				(is_already ? "<font color=red>登録済み</font>＞<a href="+url+" target=_blank>AAスタンプ</a>" 
 				            : "<font color=#CCC>未登録</font>") + 
 				"<div style='float:right;display:inline-block'><font size=1 color=#999>ID:" + md5 + "</div>" + 
+				(res.aa.match(/@aaa/i) ? "<div>" + 
+				 "<a style='color:black' class='view_aaa_source' href=#>@AAAソース表示</a>&nbsp;&nbsp;" + 
+				 "<a style='color:black' class='kopipe_aaa' href=#>コメ欄にコピペ</a>" + 
+				 "</div><div class=source_view_div></div>"
+				 : "")+ 
+
 				"</div>");
 
 			if(is_already){
@@ -450,16 +495,32 @@ $(function(){
 	if(SETTING["aa_mode"] == "off"){
 		return;
 	} else {
-		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v5.css?20200127_v444" type="text/css"  />');
+		$("body").append('<link rel="stylesheet" href="/lib/aa/css/aa.v6.css?20200128_v1" type="text/css"  />');
 	}
 
 	AA_filter($("body"))
+
+
+	$("body").append("<style>" + 
+	".aaa_div{display:inline-block;cursor:pointer}"+
+	".aaa{position:relative}" + 
+	".aaa_view{position:absolute;opacity:0}"+
+	".playing_aaa{;}" +
+	".over_aaa{background:#dddddd}" +
+	".aaa_hide{display:none;background:#ddd}"+
+	"</style>");
+
+	$(document).on("mouseover",".aaa_div",function(){
+		$(this).addClass("over_aaa");
+	})
+
+	$(document).on("mouseout",".aaa_div",function(){
+		$(this).removeClass("over_aaa");
+	})
+
+
 })
 
-$("body").append("<style>" + 
-".aaa{cursor:pointer;background:#eee;position:relative}" + 
-".aaa_view{position:absolute;opacity:0}"+
-"</style>");
 
 function AA_filter(_this){
 
@@ -507,13 +568,24 @@ function AA_filter(_this){
 	//AAA処理
 	$(_this).find(".AAA").each(function(i,a){
 
-		var aa = $(this).text();
+		var text = new String($(this).text());
+		    text = text.replace(/@aaa/i,"@AAA");
+
+		var n = new String(text).indexOf("@AAA");
+		var no_aa = text.substring(0,n);
+		var aa = text.substring(n,text.length);
 
 		var _speed = aa.match(/\@aaa:([\d\.]+)/);
 		var speed = 0.25;
 
 		if(_speed){
 			speed = _speed[1];
+		}
+
+		if(speed < 0.01){
+			speed = 0.01;
+		} else if(speed > 10){
+			speed = 10;
 		}
 
 		    aa = aa.replace(/@aaa(?::[\d\.]+|)/gi,"");
@@ -525,6 +597,7 @@ function AA_filter(_this){
 			return a;
 		});
 
+
 		var max = aaa.length;
 		var count = 0;
 
@@ -535,13 +608,20 @@ function AA_filter(_this){
 			"</div>"
 		);
 
+
 		preview.find(".aaa").text(aaa[0]);
 		preview.find(".aaa_view").text(aaa[0]);
 
 		preview.bind("start",function(){
 
+			if($(this).hasClass("stop_aaa")){
+				return;
+			}
+
+			$(this).addClass("playing_aaa");
+
 			preview.find(".aaa_thumb").css("opacity",0);
-			preview.find(".aaa_view").css("opacity",1);
+			preview.find(".aaa_view").css({"opacity":1});
 
 			var timerID = setInterval(function(_this){
 						if(max>count){
@@ -557,7 +637,12 @@ function AA_filter(_this){
 		})
 
  $(preview).on('inview', function(event, isInView){
-    if (!isInView && $(this).hasClass("playing")){
+
+    if (isInView && !SETTING["aaa_view"] && !$(this).hasClass("playing_aaa")){
+    	$(this).trigger("start");
+    }
+
+    if (!isInView && $(this).hasClass("playing_aaa")){
     	$(this).trigger("stop");
     }
   });		
@@ -565,27 +650,43 @@ function AA_filter(_this){
 
 		preview.bind("stop",function(){
 			clearInterval($(this).prop("timer"));
-			$(this).removeClass("playing");
+			$(this).removeClass("playing_aaa");
 		});
 
+
+
 		preview.bind("click",function(){
-			if($(this).hasClass("playing")){
+
+			if($(this).hasClass("playing_aaa")){
+				$(this).addClass("stop_aaa"); //任意停止フラグ
 				$(this).trigger("stop");
+
 			} else {
+				$(this).removeClass("stop_aaa");
 				$(this).trigger("start");
-				$(this).addClass("playing");
+
 			}
 		})
 
 //		$(this).before(preview);
 
 
-		$(this).contents().wrap("<details><p class=aaa_content></p></details>");
+		$(this).contents().wrap("<div class=aaa_hide></div>");
 
-		$(this).parents("li,dl").find("details")
-			.append("<summary>@AAA</summary>")
-			.before(preview);
+		$(this).parents("li,dl").find(".aaa_hide")
+			.before(preview)
+			.hide();
+
+		if(no_aa){
+			$(this).parents("li,dl").find(".aaa_div").before($("<div>"+no_aa+"</div>"))
+		}
+
+
 		$(this).parents("dt").append($(this));
+
+		$(this).parents("li,dl").find("._aa")
+			.text("@AAA");
+
 
 		//$(this).remove();	
 
@@ -861,16 +962,21 @@ $(function(){
 
 function icon_filter(_this){
 
+
+	if(SETTING["icon_size"] > 0){
+		$(_this).find("[iconimg=1]").css(
+			{ "width":SETTING["icon_size"],
+				"height":SETTING["icon_size"],
+				"border-radius":parseInt(SETTING["icon_size"]*2)
+			})
+	}
+
 	if(SETTING["icon_view"] !== "off"){
 		return;
 	}
 
 	$(_this).find(".body").each(function(){
-		if($(this).find(".talk")){
-			var content = $(this).find(".says p").html();
-			$(this).append(content);
-			$(this).find(".talk").remove();
-		}
+		$(this).find("[icon=1]").remove()
 	})
 }
 
@@ -918,8 +1024,13 @@ $(function(){
 	}
 
 	if(SETTING["icon_view"] == "ng"){
-		ng_list.push("talk");
+		ng_list.push("<icon>");
 	}
+
+	if(SETTING["aaa_view"] == "ng"){
+		ng_list.push("@AAA");
+	}
+
 
 	if(ng_list){
 		NGREGEXP = list2regexp(ng_list);
@@ -945,6 +1056,8 @@ $(function(){
 		}
 
 		AA_filter($(mado))
+
+		console.log($(mado).html());
 
 
 	});
@@ -1047,7 +1160,7 @@ function url2info_request(_this,callback){
 
 
 		var url = $(_this).text();
-		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v3/" + escape(url);
+		var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v4/" + escape(url);
 
 		if(url.match(/(i\.img|imgur|png|jpg|mp4|gif|pdf)$/)){
 			return;
@@ -2417,6 +2530,12 @@ function updateHit(){
 	$(".id,.mesg").filter(function(obj,i){
 		if( !$(this).prop("d") ){
 			var html = $(this).html();
+
+			if(html.match(/@AAA/i)){
+				return ;
+			}
+
+
 			query.split(/ |　/).filter(function(word){
 				var pattern=new RegExp(word,["gi"]);
 				html = html.replace(pattern,Replacer);
@@ -4244,6 +4363,7 @@ function update_res(flag){
 
 			/* URL処理 */
 			url_info_handler($(html_obj));
+
 
 			/* AA処理 */
 			AA_filter($(html_obj));
