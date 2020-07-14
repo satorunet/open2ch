@@ -10,27 +10,19 @@ $(function(){
 
 /* 可変コメント欄*/
 $(function(){
-
-
-	if(isSmartPhone !== 1){
 		$("[name=MESSAGE]").bind("keyup change paste",function(){
 			var n = $(this).val().split("\n").length;
 			var to;
 
-			if(n < 3){
-				to = 3
+			if(n < 4){
+				to = 4
 			} else if(n > 20){
 				to = 20;
 			} else {
-				to = n;
+				to = n+1;
 			}
-
 			$(this).attr("rows",to);
-
 		})
-
-	}
-
 
 })
 
@@ -69,9 +61,7 @@ $(function(){
 		$("#history_add").click();
 	});
 
-	if(new String(document.title).match(/実況/)){
-		SETTING["reverse_mode"] = "on";
-	}
+
 
 	if(SETTING["reverse_mode"] == "on"){
 		$("[name=reverse_mode]").attr("checked",true);
@@ -121,7 +111,6 @@ function setReverseMode(){
 	if(isSmartPhone == "1"){
 		$(".form").css("padding-bottom","0px");
 		$(".formset").find("hr").remove();
-		$("textarea").css("height","70px");
 		$(".formset")
 			.append($("<div style='margin:5px;text-align:center;'><input class=yonda type=button value='ここまでよんだ'></div>"))
 			.append($(".history_res"));
