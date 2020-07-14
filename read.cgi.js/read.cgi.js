@@ -1174,15 +1174,6 @@ function update_res(flag){
 	}
 
 
-	if(flag == "now" || $('#autoOpen').is(':checked') == false){
-		$('#new_alert').fadeOut("fast");
-	} else {
-		setTimeout(function(){
-			$('#new_alert').fadeOut("slow");
-		},2000);
-	}
-
-
 	local_resnum = server_resnum;
 	nodejs_set_resnum(local_resnum);
 
@@ -1274,12 +1265,31 @@ function call_update_alert(_server_resnum){
 
 		if( diff > 0 ){ // 更新アリ
 
+			var $new_alert = $("<div class='new_alert'>" + 
+'<font size=2 color="white">' + 
+'<font color=yellow size=3><b>+<span id=now_max>'+diff+'</span>件</b></font> の新着レス <a href=# id=gotoNewRes>▼</a>' +
+'</font></div>');
+
+
+	if( $('#autoOpen').is(':checked') == false){
+		$("#new_alert_div").html( $new_alert );
+	} else {
+		$("#new_alert_div").append( $new_alert );
+	}
+
+
+
 			if(!$("#new_alert_hide").is(":checked")){
-				$('#new_alert').fadeIn('fast');
+				$new_alert.fadeIn('fast');
 			}
 
+	setTimeout(function(){
+		$new_alert.animate( { opacity: '0.2',}, { duration: 2000, easing: 'swing', complete:function(){
+			$(this).slideUp("fast");
+		}});
+	},1000);
 
-			$('#now_max').html(diff);
+
 			document.title = "(+" + diff + ")" + defTitle;
 
 			if(!$('#noSoundAlert').is(':checked')){
