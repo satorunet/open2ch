@@ -1828,6 +1828,22 @@ $(document).ready(function() {
 	});
 
 
+	if(getCookie("useMap") == "on"){
+		$("#gps").show();
+	}
+
+	$("#useMap").change(function(){
+		setCookie("useMap", $(this).is(':checked') ? "on" : "off");
+
+		if($(this).is(":checked") ){
+			$("#gps").show();
+		} else {
+			$("#gps").hide();
+		}
+
+	});
+
+
 	$("#useAnka").change(function(){
 		setCookie("useAnka", $(this).is(':checked') ? "on" : "off");
 		$(".ankaview_div").show();
