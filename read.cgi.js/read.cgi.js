@@ -4,6 +4,20 @@ var speech;
 var speechUtt;
 var pm = getUrlVars();
 
+//アイコンクリック
+$(function(){
+	$(".faceicon img").live("mouseover",function(){
+		$(this).css("border","solid 3px #fed7eb");
+		$(this).addClass("faceicon_colored");
+	});
+
+	$(".faceicon_colored").live("mouseout",function(){
+		$(this).css("border","solid 3px #d7ebfe");
+		$(this).removeClass("faceicon_colored");
+	});
+
+});
+
 
 //お絵描き画像うｐ関連
 $(function(){
