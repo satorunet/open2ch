@@ -65,7 +65,7 @@ $(function(){
 				return;
 			}
 
-			if(isScrolling == 0 && message_inview == 1){
+			if(isScrolling == 0 && message_inview == 1 && !$(".mado").is(":visible") ){
 
 				$(window).scrollTop( $(window).scrollTop() + diff );
 			}
@@ -1890,10 +1890,10 @@ $(function(){
 
 		$("body").append(
 			"<style>" + 
-			".ufull{border:1px solid #ddd;padding:3px;background:#f5f5f5;border-radius:2px;margin:2px}"+
-			".urlinfo{max-width:"+(isSmartPhone ==1 ? "90%" : "600px")+";font-size:10pt;color:#777;display:inline-block;padding:2px}" + 
-			".uim{border-radius:3px;width:30px;height:30px;object-fit:cover;padding-right:2px}" + 
-			".ufullim{width:100px;height:100px;object-fit:cover;float:left;margin-right:5px;}" + 
+			".ufull{border:1px solid #ddd;padding:3px;background:#f5f5f5;border-radius:2px;margin:2px;border-radius:5px}"+
+			".urlinfo{max-width:"+(isSmartPhone ==1 ? "90%" : "600px")+";font-size:10pt;color:#777;display:inline-block;padding:2px;;padding-right:2px}" + 
+			".uim{border-radius:3px;width:30px;height:30px;object-fit:cover;padding-right:2px;}" + 
+			".ufullim{width:100px;height:100px;object-fit:cover;float:left;margin-right:5px;;border-radius:10px}" + 
 			".udetail{max-width:600px;margin-top:3px;user-select: none;-moz-user-select: none;-ms-user-select: none;line-height:12pt;font-size:"+(isSmartPhone==1?8:9)+"pt}"+
 			".ut{overflow: hidden;white-space: nowrap;text-overflow:ellipsis;}" + 
 			".utt{font-size:"+(isSmartPhone == 1 ? "7" : "9" )+"pt}" + 
@@ -2031,12 +2031,7 @@ function url_info_handler(_this){
 					$(this).find(".url:last").removeClass("url").one("inview",function(){
 						var _this = $(this);
 						url2info_request($(this),function(text){
-
-			if(text.match(/ダイナモ/)){
-				;
-			} else {
-				$(_this).html(text);
-			}
+							$(_this).html(text);
 						});
 					});
 			}
@@ -2050,7 +2045,8 @@ function url2info_request(_this,callback){
 
 
 		var url = $(_this).attr("href");
-		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200206_v3/" + escape(url);
+
+		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200203_v9/" + escape(url);
 
 //		var json = "https://cache02.open2ch.net/url2info/url2info.cgi/v20200203_v7/" + escape(url);
 //	var json = "https://cache.open2ch.net/lib/url2info/url2info.cgi/v200229_08/" + escape(url);
