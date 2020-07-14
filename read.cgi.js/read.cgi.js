@@ -103,48 +103,16 @@ $(function(){
 		    aa = aa.replace(/&gt;/g,">");
 		    aa = aa.replace(/&amp;/g,"&");
 
+		var is_template = aa.match(/@TEXT/);
+
 		//発言テンプレ機能
-		var is_template = aa.match(/@TEXT/) ? 1 : 0;
-
-		//位置調査
-		var n = 0;
-		var l = 0;
-		var i = 0;
-
-		var aa_array = aa.split("\n");
-
-		$.each(aa_array,function(i,a){
-			if(a.match(/@TEXT/)){
-				n=i;
-				l = a.indexOf("@TEXT");
-			}
-			i++;
-		});
-
-		console.log(n +":" + l);
-		
-		if($(".aa_talk").val()){
-
-				aa_array[n] = aa_array[n].replace(/@TEXT/,"");
-
-				var texts = new String($(".aa_talk").val()).split("\n");
-				$.each(texts,function(i,a){
-
-					var new_words = a.split("");
-			
-					var aa_array_strings = aa_array[n+i] ? aa_array[n+i].split("") : [];
-					    aa_array_strings.splice(l,new_words.length,new_words.join(""));
-
-					var marged = aa_array_strings.join("");
-					aa_array[n+i] = marged;
-				});
-			aa = aa_array.join("\n");
+		if(is_template && $(".aa_talk").val()){
+			aa = aa.replace(/(@TEXT)/gi,$(".aa_talk").val());
 		}
-
 
 		if(is_template){
 			if(!$(".aa_talk").length){
-				$("aa_talk_div").html("<textarea cols=40 rows=4 class=aa_talk placeholder='発言テンプレ'></textarea>")
+				$("aa_talk_div").html("<input size=30 class=aa_talk placeholder='発言テンプレ'>")
 			}
 		} else {
 			$(".aa_talk").remove();
@@ -305,7 +273,7 @@ $(function(){
 				"<div class=aa_regist aid="+md5+">" + 
 				"<div><label><input type=checkbox checked class=is_use>すぐ使う</label></div>" + 
 				"<input size=12 class=title placeholder='AAスタンプ名'>" + 
-				"<input class='aa_ok' type=button value=" + (is_already ? "修正" : "登録") + ">" + 
+				"<input class='aa_ok' type=button value=" + (is_already ? "再登録" : "登録") + ">" + 
 				(is_already ? "<input class='aa_del' type=button value='削除'>" : "") + 
 				"<input class='aa_cancel' type=button value='取消'>" + 
 				"<div>" + 
@@ -349,7 +317,7 @@ function updateAAStamp(){
 	$.each(get_AA_favlist(),function(i,a){
 		var json = JSON.parse(AA_LIST[a]);
 		var text = "title" in json ? json.title : a;
-		aa_fav_list.unshift("<option value='"+a+"'>" + text + "</option>");
+		aa_fav_list.push("<option value='"+a+"'>" + text + "</option>");
 	})
 
 	$(".aa-fav-div").remove();
