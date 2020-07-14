@@ -1503,6 +1503,11 @@ $(document).ready(function() {
 		setCookie("noWait", $(this).is(':checked') ? "1" : "0");
 	});
 
+	$("#noBGVideo").change(function(){
+		setCookie("noBGVideo", $(this).is(':checked') ? "1" : "0");
+	});
+
+
 
 	$("#noSoundAlert").change(function(){
 		setCookie("noSoundAlert", $(this).is(':checked') ? "1" : "0");
