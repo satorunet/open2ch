@@ -93,14 +93,20 @@ function update_dis(){
 /*背景動画*/
 $(function(){
 
-	setInterval(check_bg_tag,3000);
+
 	$("#useBGVideo").change(function(){
+		
+		setCookie("useBGVideo", $(this).is(':checked') ? "on" : "off");
+
 		if(!$(this).is(":checked")){
 			removeBGVideo();
 		}
 	});
 
+	setInterval(check_bg_tag,3000);
+
 })
+
 
 function check_bg_tag(){
 	if(!$("#useBGVideo").is(':checked')){
@@ -1695,7 +1701,8 @@ $(document).ready(function() {
 		setCookie("no_nusi", $(this).is(':checked') ? "1" : "0");
 	});
 
-	if(getCookie("no_nusi")){
+
+	if(getCookie("no_nusi") == 1){
 		$("[name=no_nusi]").prop("checked",true);
 	}
 
@@ -1712,12 +1719,9 @@ $(document).ready(function() {
 		setCookie("noWait", $(this).is(':checked') ? "1" : "0");
 	});
 
-	$("#useBGVideo").change(function(){
-		setCookie("useBGVideo", $(this).is(':checked') ? "1" : "0");
-	});
 
 	$("#useAnka").change(function(){
-		set1("useAnka", $(this).is(':checked') ? "on" : "off");
+		setCookie("useAnka", $(this).is(':checked') ? "on" : "off");
 		$(".ankaview_div").show();
 
 		if($(this).is(":checked") && parseInt($("AnkaNum").text()) > 0 ){
@@ -1753,7 +1757,7 @@ $(document).ready(function() {
 
 		redrawHonban();
 
-		$("#submit_button").prop("disabled",true);
+		$("#submit_button,#resSubmit").prop("disabled",true);
 
 			var img = new Image();
 
@@ -2171,7 +2175,7 @@ function submit_form(){
 
 
 
-	$("#submit_button").prop("disabled",true);
+	$("#submit_button,#resSubmit").prop("disabled",true);
 	$("#loading_bar").slideDown('fast');
 
 /*
@@ -2227,7 +2231,7 @@ function submit_form(){
 		cache  : false,
 		error  : function(res){
 			alert("投稿失敗！\n今はサーバがおかしいみたい。。少し待ってから投稿してみよう！");
-			$("#submit_button").prop("disabled",false);
+			$("#submit_button,#resSubmit").prop("disabled",false);
 			$("#loading_bar").slideUp('fast');
 		},
 
@@ -2262,13 +2266,13 @@ function submit_form(){
 				submit_flag = 1;
 
 				setTimeout(function(){
-					$("#submit_button").prop("disabled",false);
+					$("#submit_button,#resSubmit").prop("disabled",false);
 					$("#loading_bar").slideUp('fast');
 				},1000);
 
 			} else {
 				alert("投稿失敗。。\n"+res);
-				$("#submit_button").prop("disabled",false);
+				$("#submit_button,#resSubmit").prop("disabled",false);
 				$("#loading_bar").slideUp('fast');
 			}
 		}
@@ -2403,8 +2407,11 @@ function update_res(flag){
 	if(html.match(/youtubeiframe/)){
 		$(".youtubeiframe").each(function(){
 			var org = $(this).attr("data-src");
-			var embed = "https://www.youtube.com/embed/" + org;
+			var param = $(this).attr("param");
+			var embed = "https://www.youtube.com/embed/" + org + (param ? "?" + param : "");
 			$(this).attr("src",embed).removeClass("youtubeiframe");
+
+
 		})
 	}
 
@@ -2750,7 +2757,7 @@ function nodejs_connect(){
 
 		ankaLists.unshift(ank);
 
-		if($("#useAnka").is(":checked")){
+		if($("#useAnka").is(":checked") == "on"){
 
 			if($(".ankaview_div").is(":visible") == false || $(".ankaview").is(":visible") == false){
 
