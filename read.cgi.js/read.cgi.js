@@ -375,6 +375,11 @@ $(function(){
 	}
 
 
+//var map_history = [];
+
+	$(function(){
+		show_map();
+	});
 
 	$(document).on("change",".map_draw",function(){
 		var val = $(this).is(":checked");
