@@ -9,6 +9,15 @@ var speech;
 var speechUtt;
 var pm = getUrlVars();
 
+$(function(){
+	updateHistory();
+})
+
+function updateHistory(){
+	var bbskey = bbs +"/"+key;
+	sethashStorage("hist",bbskey,server_resnum,30);
+}
+
 
 /*
 $(function(){
@@ -504,6 +513,9 @@ $(function(){
 
 
 		$("body").bind("UPDATE_NEWRES",function(event,res){
+
+		
+		updateHistory();
 
 
 		if( 
