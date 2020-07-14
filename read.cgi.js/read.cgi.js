@@ -9,6 +9,30 @@ var speech;
 var speechUtt;
 var pm = getUrlVars();
 
+/* del-ank */
+function deleteAnk(val,time){
+	var param = {q:val,t:time};
+	$.ajax({
+		data : param,
+		type:'POST',
+		url : "/ajax/history/del_ank.cgi",
+		success:function(res){
+			;
+		}
+	})
+}
+
+
+
+$(function(){
+	$(".delank").click(function(e){
+		e.preventDefault();
+		$(this).parents(".ankaview").slideUp("fast");
+		deleteAnk($(this).attr("val"),$(this).attr("time"));
+	})
+});
+
+
 /*バルス*/
 var doneValus = false;
 $(function(){
@@ -1650,6 +1674,18 @@ $(document).ready(function() {
 
 	$("#useBGVideo").change(function(){
 		setCookie("useBGVideo", $(this).is(':checked') ? "1" : "0");
+	});
+
+	$("#useAnka").change(function(){
+		setCookie("useAnka", $(this).is(':checked') ? "on" : "off");
+
+		if($(this).is(":checked")){
+			$(".ankaview_div").show();
+			$(".ankaview").hide().slideDown("fast");
+		} else {
+			$(".ankaview").slideUp("fast");
+		}
+
 	});
 
 
