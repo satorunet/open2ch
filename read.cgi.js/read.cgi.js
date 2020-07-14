@@ -1685,9 +1685,9 @@ $(document).ready(function() {
 
 	$("#useAnka").change(function(){
 		setCookie("useAnka", $(this).is(':checked') ? "on" : "off");
+		$(".ankaview_div").show();
 
-		if($(this).is(":checked")){
-			$(".ankaview_div").show();
+		if($(this).is(":checked") && parseInt($("AnkaNum").text()) > 0 ){
 			$(".ankaview").hide().slideDown("fast");
 		} else {
 			$(".ankaview").slideUp("fast");
@@ -2592,26 +2592,31 @@ function nodejs_connect(){
 
 		ankaLists.push(ank);
 
+		if($("#useAnka").is(":checked")){
 
-		if($(".ankaview_div").is(":visible") == false || $(".ankaview").is(":visible") == false){
+			if($(".ankaview_div").is(":visible") == false || $(".ankaview").is(":visible") == false){
 
-			$(".ankaview").hide();
-			$(".ankaview_div").show();
+				$(".ankaview").hide();
+				$(".ankaview_div").show();
 
-			$("AnkaNum").text(parseInt($("AnkaNum").text())+1);
-			$(".AnkaList").html(ankaLists.join("、"));;
-			$(".ankaview").slideDown("fast")
-
-		} else {
-			$(".ankaShake").fadeOut(500,function(){
 				$("AnkaNum").text(parseInt($("AnkaNum").text())+1);
 				$(".AnkaList").html(ankaLists.join("、"));;
-				$(this).fadeIn("fast");
+				$(".ankaview").slideDown("fast")
 
-			});
+			} else {
+				$(".ankaShake").fadeOut(500,function(){
+					$("AnkaNum").text(parseInt($("AnkaNum").text())+1);
+					$(".AnkaList").html(ankaLists.join("、"));;
+					$(this).fadeIn("fast");
+
+				});
+			}
+		} else {
+			$("AnkaNum").text(parseInt($("AnkaNum").text())+1);
+			$(".AnkaList").html(ankaLists.join("、"));;
 		}
 
-		if(!$('#noSoundAlert').is(':checked')){
+		if(!$('#noSoundAlert').is(':checked') && $("#useAnka").is(":checked") ){
 			if(isSmartPhone == "0"){
 				soundManager.play('anka');
 			}
