@@ -3,6 +3,17 @@ var NODEJS = "http://nodessl.open2ch.net:8880"; //http
 var NODEJS = "https://nodessl.open2ch.net:2083"; //https-test
 
 */
+
+
+var OEKAKI_EX;
+var OPT;
+
+$(function(){
+	OPT = $("body").attr("dev") ? new Date().getTime() : "";
+	OEKAKI_EX = "https://open.open2ch.net/lib/oekakiex/o2oEXLite.js/o2oEXLite.v6.js?v4"+OPT;
+});
+
+
 var NODEJS = "https://nodessl.open2ch.net:8443";
 
 var speech;
@@ -296,6 +307,9 @@ var oekaki = (function(){
 		$("#oekaki_plugin").change(function(){
 			update_dis();
 		})
+
+		$("#oekakiCanvas").css("z-index",21);
+
 		update_dis();
 	})
 
@@ -364,8 +378,53 @@ var oekaki = (function(){
 
 	this.isOekakiDone = 0;
 
-
 	this.init_oekaki = function(){
+
+/* 移動処理 */ 
+		$("#oekakiCanvas").on("dragend",function(e){
+
+			let toX = e.originalEvent.clientX - parseInt($(this).prop("dragX"));
+			let toY = $(window).height() - e.originalEvent.clientY - $(this).height() + parseInt($(this).prop("dragY"));
+
+			let ytLimit = $(window).height() - $("#oekakiCanvas").height();
+			let ybLimit = $(window).height() -300;
+			let xrLimit = $(window).width() - $("#oekakiCanvas").width() + 300;
+
+
+			//限界調整
+			if(toY > ytLimit ){ //上
+				toY = ytLimit;
+			} else if(Math.abs(toY) > ybLimit ){ //下
+				toY = -(ybLimit);
+			}
+
+			if(toX < 0){ //左
+				toX = 0;
+			} else if(toX > xrLimit){ //右
+				toX = xrLimit;
+			}
+
+//			$("body").append("<div class=debug style='background:white;position:fixed;bottom:0;left:0'></div>");
+//			$(".debug").html(toX + ":" + toY + ":wt:" + ytLimit + "/yb" + ybLimit + "<br>xr:" + xrLimit);
+
+
+			$(this).css({
+				left: toX,
+				bottom: toY 
+			});
+		});
+
+
+
+		$("#oekakiCanvas").on("dragstart",function(e){
+			$("body").trigger("OEKAKI_FOCUS");
+			$(this).prop({
+				"dragX":e.originalEvent.offsetX,
+				"dragY":e.originalEvent.offsetY
+				})
+		});
+
+/* お絵描き関連処理 */ 
 
 		$(".opic").css({cursor:"pointer"});
 
@@ -376,46 +435,30 @@ var oekaki = (function(){
 		var doc = document;
 		var body = doc.body;
 
-		/* ツール：戻る*/
+		/* お絵描き履歴：戻る*/
 		var back_actions = [];
 
 		$("#backButton").click(function(){
-
 			if( $('#sketch').sketch().actions.length ){
 				back_actions.push( $('#sketch').sketch().actions.pop() );
-				$("#prevButton").prop("disabled","");
 				$('#sketch').sketch().redraw();
+					$("#backButton").prop("disabled", $('#sketch').sketch().actions.length > 0 ? "" : "true");
+					$("#prevButton").prop("disabled", "");
 			} else {
 				alert("no history");
 			}
 		});
 
-
-
-		if(getCookie("oekakiMode") == 1){
-			$("#oekakiCanvas").show();
-		}
-
-		//別窓機能
-		if(getCookie("oekaki_window") == 1){
-			$("#oekakiCanvas").addClass("oekaki_betumado");
-			$("#oekaki_window").prop("checked",true);
-		}
-
-		$("#oekaki_window").click(function(){
-			if($("#oekakiCanvas").hasClass("oekaki_betumado")){
-				$("#oekakiCanvas").removeClass("oekaki_betumado")
-			} else {
-				$("#oekakiCanvas").addClass("oekaki_betumado")
-			}
-			setCookie("oekaki_window",$(this).is(":checked") ? 1 : 0);
-		});
-
-
+		/* お絵描き履歴：進む*/
 		$("#prevButton").click(function(){
 			if( back_actions.length ){
 				$('#sketch').sketch().actions.push( back_actions.pop() );
 				$('#sketch').sketch().redraw();
+
+				$("#prevButton").prop("disabled", $('#sketch').sketch().actions.length > 0 ? "" : "true");
+				$("#backButton").prop("disabled", "");
+
+
 			} else {
 				alert("no history");
 			}
@@ -424,6 +467,58 @@ var oekaki = (function(){
 				$("#prevButton").prop("disabled","true");
 			}
 		});
+
+
+		if(getCookie("oekakiMode") == 1){
+			$("#oekakiCanvas").show();
+		}
+
+		//別窓機能
+		if(getCookie("oekaki_window") == 1){
+			set_OekakiBetumado();
+			$("#oekaki_window").prop("checked",true);
+		}
+
+		//表示順位入れ替え
+		$(document).on("click","#komediv",function(){
+//			console.log( "o:" + $("#oekakiCanvas").css("z-index") + " k:" + $("#komediv").css("z-index") );
+			if($("#oekakiCanvas").css("z-index") > $("#komediv").css("z-index")){
+				$("#komediv").css("z-index",parseInt($("#oekakiCanvas").css("z-index"))+1);
+			}
+		})
+
+		$(document).on("click","#oekakiCanvas",function(){
+			$("body").trigger("OEKAKI_FOCUS");
+		});
+
+		$("body").bind("OEKAKI_FOCUS",function(){
+			if($("#komediv").css("z-index") > $("#oekakiCanvas").css("z-index")){
+				$("#oekakiCanvas").css("z-index",parseInt($("#komediv").css("z-index"))+1);
+			}
+		});
+
+
+
+		function set_OekakiBetumado(){
+			$("#oekakiCanvas").addClass("oekaki_betumado").attr("draggable",true);
+			$(".oekaki_bar").css("cursor","move");
+			$("body").append($("#oekakiCanvas"));
+		}
+
+		function reset_OekakiBetumado(){
+			$("#oekakiCanvas").removeClass("oekaki_betumado").attr("draggable",false)
+			$(".oekaki_bar").css("cursor","");
+		}
+
+		$("#oekaki_window").click(function(){
+			if($("#oekakiCanvas").hasClass("oekaki_betumado")){
+				reset_OekakiBetumado()
+			} else {
+				set_OekakiBetumado();
+			}
+			setCookie("oekaki_window",$(this).is(":checked") ? 1 : 0);
+		});
+
 
 		/* キーで戻る*/
 
@@ -443,6 +538,7 @@ var oekaki = (function(){
 			is_oekaki_done = 0;
 			horyu_counter = 0;
 			$("horyu").html(horyu_counter);
+			$("#backButton").prop("disabled",false);
 		});
 
 		sketch.bind("stopPainting", function(){
@@ -452,6 +548,7 @@ var oekaki = (function(){
 
 
 		sketch.bind("mousedown", function(){
+			$("body").trigger("OEKAKI_FOCUS");
 			_this.isOekakiDone = 1;
 			
 			back_actions = [];
@@ -555,11 +652,15 @@ var oekaki = (function(){
 
 
 		/* ツール：クリアボタン */
+		_this.oekakiClear = function(){
+			$('#sketch').sketch().clear();
+			_this.isOekakiDone = 0;
+			$("#prevButton,#backButton").prop("disabled",true);
+		}
 
 		$("#clearButton").click(function(){
 			if(confirm("お絵かきをクリアします。よろしいですか？")){
-				$('#sketch').sketch().clear();
-				_this.isOekakiDone = 0;
+				_this.oekakiClear();
 			}
 		});
 
@@ -732,8 +833,9 @@ var oekaki = (function(){
 /* <お絵かき高機能モード */
 
 		function loadOekakiEx(){
+
 	/*	var url = "http://let.st-hatelabo.com/Fxnimasu/let/hJmd88Dl4M4W.bookmarklet.js"; */
-			var url = "//open.open2ch.net/lib/oekakiex/oekakiex.v5.js?v20191218_v11";
+			var url = "//open.open2ch.net/lib/oekakiex/loader.js/loader.v6.js?" + OPT;
 
 			$(".dis").show();
 			$(".toolBt").hide();
@@ -782,8 +884,6 @@ var oekaki = (function(){
 	$(document).on("change","#scaleSelect",function(){
 		if($(this).val() > 1){
 			$("#_canvas").css("text-align","");
-			$("#oekakiCanvas").css("left","0px");
-			$("#oekakiCanvas").css("right","");
 
 		} else {
 			$("#_canvas").css("text-align","center");
