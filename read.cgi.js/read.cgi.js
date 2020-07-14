@@ -18,7 +18,7 @@ $(function(){
 
 	if(SETTING["nouse_autoscroll"] !== "off"){
 
-		console.log("auto_scroll");
+//		console.log("auto_scroll");
 
 		window.addEventListener( "scroll", function () {
 			isScrolling = 1 ;
@@ -1829,11 +1829,16 @@ $(function(){
 
 	$("body").bind("ANK_OPEN ARES_OPEN",function(e,mado){
 
-		console.log(mado);
 
 		icon_filter($(mado));
 
+		/* Twitetr処理 */
+		twitter_handler($(mado));
+		nico_handler($(mado));
+
 		url_info_handler($(mado))
+
+
 
 		if(SETTING["nanasi_mode"] == "on"){
 			$(mado).find(".name").each(function(){
@@ -1913,6 +1918,90 @@ $(function(){
 
 })
 
+
+
+/* Twitter-Handler */
+
+$(function(){
+	$(".twitter").removeClass("twitter").attr('data-offset', 1000).one("inview",function(e,inview){
+		if(inview){
+			twitter_request($(this));
+		}
+	});
+})
+
+function twitter_handler(_this){
+	$(_this).find(".twitter").each(function(){
+		$(this).removeClass("twitter").one("inview",function(e,inview){
+			if(inview){
+				twitter_request($(this));
+			}
+		});
+	});
+}
+
+function twitter_request(_this){
+	var code = ($(_this).html().match(/\[(.*)\]/))[1];
+	var tw = code.split(":");
+	var url = "https://twitter.com/"+tw[1]+"/status/" + tw[2];
+	var html = '<blockquote class="twitter-tweet" data-lang="ja">' + 
+	           '<a href="'+url+'?ref_src=twsrc\%5Etfw"><img src=https://open2ch.net/image/loading.gif></a>' + 
+	           '</blockquote>'+
+	           '<a target=_blank href='+url+'><font size=2>'+url+'</font></a>';
+
+	$.ajax( {
+		"timeout": 5000,
+		"url": "https://open2ch.net/lib/twitter/widgets.v1.js",
+		"dataType": "script",
+		"cache": true,
+	} );
+	$(_this).html(html);
+}
+
+/* Nico-Handler */
+
+$(function(){
+	$(".nico").removeClass("nico").one("inview",function(e,inview){
+		if(inview){
+			nico_request($(this));
+		}
+	});
+})
+
+function nico_handler(_this){
+	$(_this).find(".nico").each(function(){
+		$(this).removeClass("nico").one("inview",function(e,inview){
+			if(inview){
+				nico_request($(this));
+			}
+		});
+
+		
+
+	});
+}
+
+function nico_request(_this){
+	var code = ($(_this).html().match(/\[(.*)\]/))[1];
+	var ar = code.split(":");
+	var vid = ar[1];
+
+	var html = '<v>'+
+	'<table><tr valign=top><td class="vt">'+
+	'<iframe allowfullscreen="allowfullscreen" allow="autoplay" frameborder="0" size width="320" height="180" ' + 
+	' src="https://embed.nicovideo.jp/watch/'+vid+'?oldScript=1&amp;allowProgrammaticFullScreen=1"></iframe>' + 
+	'</td><td>' + 
+	'<a class="movieicon viewRight" href=#><img src=//image.open2ch.net/image/icon/svg/unko.svg width=16 height=16></a>'+
+	'</td>'+
+	'</table>'+
+	'</v>';
+
+//'<div><font size=2><a href=$url target=_blank>$url</a></font></div>'+
+
+	$(_this).html(html);
+}
+
+
 function url_info_handler(_this){
 
 		if(IS_BOT){
@@ -1928,7 +2017,7 @@ function url_info_handler(_this){
 
 			var urls = $(this).find(".url");
 			if(urls){
-					$(this).find(".url:last").removeClass("url").on("inview",function(){
+					$(this).find(".url:last").removeClass("url").one("inview",function(){
 						var _this = $(this);
 						url2info_request($(this),function(text){
 
@@ -2442,7 +2531,7 @@ $(function(){
 
 		$("dt.mesg[res="+from+"]").before( "<a class='new_kokokara'></a>" );
 
-		$(".mesg[res="+to+"]").on("inview",function(){
+		$(".mesg[res="+to+"]").one("inview",function(){
 				$(".attayo").stop().fadeOut("slow");
 				$(this).animate({count:0},{duration:1000*5,complete:function(){
 					$news.fadeOut("fast");
@@ -2453,7 +2542,7 @@ $(function(){
 				$("body").trigger("UPDATE_HISTORY");
 		});
 
-		$("dt.mesg[res="+from+"]").on("inview",function(){
+		$("dt.mesg[res="+from+"]").one("inview",function(){
 			$("body").prop("IS_KOKOKARA_DONE",1);
 			var $kokokara = $("<div class=kokokara_new style='border:1px solid #eeeeee;padding:5px;margin-bottom:2px;background:#ffeeee'>" + 
 			"↓ここから新着</div>").hide();
@@ -2474,7 +2563,7 @@ $(function(){
 
 	function setup(){
 
-		$(document).on("inview","nn",function(){
+		$(document).one("inview","nn",function(){
 			if(!$(this).prop("on")){
 				$(this).prop("on",1).animate({count:0},{duration:1000*5,complete:function(){
 					$(this).contents().unwrap();
@@ -2537,7 +2626,7 @@ $(function(){
 /*バルス*/
 var doneValus = false;
 $(function(){
-	$(".valus_res").on("inview",function(event, isInView, visiblePartX, visiblePartY){
+	$(".valus_res").one("inview",function(event, isInView, visiblePartX, visiblePartY){
 		if(isInView && !doneValus){
 			doneValus=1;
 			$("#is_valus_after").val(0);
@@ -4589,6 +4678,13 @@ function update_res(flag){
 
 			/* ICON処理 */
 			icon_filter($(html_obj));
+
+
+			/* Twitetr処理 */
+			twitter_handler($(html_obj));
+
+			/* Nico */
+			nico_handler($(html_obj));
 
 
 			/* URL処理 */
