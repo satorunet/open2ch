@@ -33,12 +33,10 @@ var SETTING = {};
 
 $(function(){
 	SETTING = gethashStorage("setting");
+	NGREGEXP = list2regexp(getListStorage("ng"));
 
-	var ng = getListStorage("ng");
-	if(ng.length > 0){
-		NGREGEXP = new RegExp("(" + new String(ng).split(",").join("|") + ")");
-	}
 });
+
 
 $(function(){
 	if(NGREGEXP){
