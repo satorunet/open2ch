@@ -1691,6 +1691,14 @@ $(document).ready(function() {
 
 	});
 
+	$("[name=no_nusi]").change(function(){
+		setCookie("no_nusi", $(this).is(':checked') ? "1" : "0");
+	});
+
+	if(getCookie("no_nusi")){
+		$("[name=no_nusi]").prop("checked",true);
+	}
+
 
 	$("#ajaxSubmit").change(function(){
 		setCookie("submitMode", $(this).is(':checked') ? "1" : "0");
@@ -1709,7 +1717,7 @@ $(document).ready(function() {
 	});
 
 	$("#useAnka").change(function(){
-		setCookie("useAnka", $(this).is(':checked') ? "on" : "off");
+		set1("useAnka", $(this).is(':checked') ? "on" : "off");
 		$(".ankaview_div").show();
 
 		if($(this).is(":checked") && parseInt($("AnkaNum").text()) > 0 ){
@@ -2181,6 +2189,7 @@ function submit_form(){
 		sage : ($("[name=sage]").is(':checked') ? 1 : 0),
 		ninja : ($("[name=ninja]").is(':checked') ? 1 : 0),
 		rating : ($("[name=rating]").is(':checked') ? 1 : 0),
+		no_nusi : ($("[name=no_nusi]").is(':checked') ? 1 : 0),
 
 		MESSAGE : $('#MESSAGE').val(),
 		bbs : bbs,
@@ -2200,11 +2209,6 @@ function submit_form(){
 		oekakiData : ($("#oekakiMode").is(':checked') ? $("[name=oekakiData]").val() : "")
 	};
 
-				$('#MESSAGE').val("");
-				$('#oekakiData').val("");
-				$("#parent_pid").val("");
-
-				$(".admin_command").val("");
 
 			console.log("submit-func");
 			is_textarea_focus = 0;
@@ -2235,6 +2239,11 @@ function submit_form(){
 
 			if(res.match(/success/)){
 
+				$('#MESSAGE').val("");
+				$('#oekakiData').val("");
+				$("#parent_pid").val("");
+
+				$(".admin_command").val("");
 
 
 
@@ -2258,7 +2267,7 @@ function submit_form(){
 				},1000);
 
 			} else {
-				alert("投稿失敗。。\n何らかの原因で投稿できませんでした。\nちょっと待ってからもう一度試してみよう。\n以下、エラー内容：\n"+res);
+				alert("投稿失敗。。\n"+res);
 				$("#submit_button").prop("disabled",false);
 				$("#loading_bar").slideUp('fast');
 			}
